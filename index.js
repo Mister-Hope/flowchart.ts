@@ -1,6 +1,6 @@
-require('./src/flowchart.shim');
-var parse = require('./src/flowchart.parse');
-require('./src/jquery-plugin');
+require('./lib/flowchart.shim');
+var parse = require("./lib/flowchart.parse");
+require("./lib/jquery-plugin");
 
 var FlowChart = {
 	parse: parse

@@ -1,45 +1,49 @@
 {
-  "author": "adrai",
   "name": "flowchart.js",
-  "version": "1.17.1",
-  "main": "./index",
-  "private": false,
-  "engines": {
-    "node": ">=4.0.0"
-  },
-  "dependencies": {
-    "raphael": "2.3.0"
-  },
-  "types": "types/index.d.ts",
-  "devDependencies": {
-    "eslint": "^4.18.2",
-    "eslint-config-defaults": "^8.0.2",
-    "express": ">= 0.0.1",
-    "jquery": "^3.4.0",
-    "lodash": ">=0.2.1",
-    "moment": "^2.11.1",
-    "webpack": "^1.12.11",
-    "webpack-dev-middleware": "^1.4.0",
-    "webpack-hot-middleware": "^2.6.0"
-  },
-  "scripts": {
-    "init": "git submodule init && git submodule update && git submodule status",
-    "start": "node devserver.js",
-    "lint": "eslint src",
-    "build:unminified": "NODE_ENV=production webpack -d --config webpack.config.js",
-    "build:minified": "NODE_ENV=production MINIFIED=1 webpack -d --config webpack.config.js",
-    "build": "npm run build:unminified && npm run build:minified && cp ./release/flowchart.js ./site/flowchart-latest.js",
-    "test": "npm run lint"
-  },
+  "version": "1.0.0-alpha.0",
+  "author": "Mister-Hope",
+  "description": "Flowchart support",
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adrai/flowchart.js.git"
+    "url": "https://github.com/Mister-Hope/flowchart.js.git"
   },
   "keywords": [
-    "flowchart",
-    "client",
-    "script"
+    "flowchart"
   ],
   "homepage": "http://flowchart.js.org/",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "cross-env NODE_ENV=production webpack",
+    "build:dev": "webpack",
+    "build:js": "cross-env NODE_ENV=production webpack --config webpack.config.old.js",
+    "build:js:dev": "webpack --config webpack.config.old.js",
+    "dev": "vite dev",
+    "watch": "webpack -w",
+    "watch:js": "cross-env NODE_ENV=production webpack --config webpack.config.old.js -w",
+    "tsc": "tsc",
+    "ts:watch": "tsc --watch",
+    "lint": "prettier --check --write . && eslint . --ext .ts,.js --fix",
+    "lint:check": "prettier --check . && eslint . --ext .ts,.js"
+  },
+  "dependencies": {
+    "@types/raphael": "^2.3.3",
+    "raphael": "2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.17",
+    "@typescript-eslint/eslint-plugin": "5.47.0",
+    "@typescript-eslint/parser": "5.47.0",
+    "eslint": "8.30.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "prettier": "2.8.1",
+    "rollup": "^3.8.1",
+    "rollup-plugin-esbuild": "^5.0.0",
+    "tslib": "^2.4.1",
+    "typescript": "4.9.4",
+    "vite": "^4.0.3"
+  },
+  "packageManager": "pnpm@7.19.0"
 }
