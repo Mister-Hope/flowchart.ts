@@ -237,7 +237,7 @@ export class Condition extends FlowChartSymbol {
     if (this.no_symbol)
       this.drawLineTo(
         this.no_symbol,
-        this.no_annotation || (this.getAttr("yes-text") as string),
+        this.no_annotation || (this.getAttr("no-text") as string),
         this.no_direction
       );
   }
