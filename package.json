@@ -1,6 +1,6 @@
 {
   "name": "flowchart.ts",
-  "version": "1.0.0-alpha.0",
+  "version": "0.1.0",
   "author": "Mister-Hope",
   "description": "Flowchart support",
   "main": "./dist/flowchart.js",
