@@ -10,5 +10,14 @@ export default defineConfig({
     VERSION: JSON.stringify(version),
   },
 
+  build: {
+    lib: {
+      entry: resolve(__dirname, "src/index.ts"),
+      formats: ["es", "cjs"],
+      fileName: "flowchart",
+    },
+    outDir: resolve(__dirname, "dist"),
+  },
+
   plugins: [],
 });

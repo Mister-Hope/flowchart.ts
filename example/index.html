@@ -1,84 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="utf-8">
-  <title>flowchart.js · Playground</title>
-  <style type="text/css">
-    .end-element {
-      fill: #FFCCFF;
-    }
-  </style>
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
-  <script src="http://flowchart.js.org/flowchart-latest.js"></script>
-  <!-- <script src="../release/flowchart.min.js"></script> -->
-  <!-- <script src="../release/flowchart.js"></script> -->
-  <script>
-
-    window.onload = function () {
-      const buttonElement = document.getElementById("run"),
-        codeElement = document.getElementById("code");
-      let chart;
-
-      (buttonElement.onclick = () => {
-        const code = codeElement.value;
-        console.log(code)
-        if (chart) chart.clean();
-
-        chart = flowchart.parse(code);
-        chart.drawSVG('canvas', {
-          // 'x': 30,
-          // 'y': 50,
-          'line-width': 3,
-          'maxWidth': 3,//ensures the flowcharts fits within a certian width
-          'line-length': 50,
-          'text-margin': 10,
-          'font-size': 14,
-          'font': 'normal',
-          'font-family': 'Helvetica',
-          'font-weight': 'normal',
-          'font-color': 'black',
-          'line-color': 'black',
-          'element-color': 'black',
-          'fill': 'white',
-          'yes-text': 'yes',
-          'no-text': 'no',
-          'arrow-end': 'block',
-          'scale': 1,
-          'symbols': {
-            'start': {
-              'font-color': 'red',
-              'element-color': 'green',
-              'fill': 'yellow'
-            },
-            'end': {
-              'class': 'end-element'
-            }
-          },
-          'flowstate': {
-            'past': { 'fill': '#CCCCCC', 'font-size': 12 },
-            'current': { 'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold' },
-            'future': { 'fill': '#FFFF99' },
-            'request': { 'fill': 'blue' },
-            'invalid': { 'fill': '#444444' },
-            'approved': { 'fill': '#58C4A3', 'font-size': 12, 'yes-text': 'APPROVED', 'no-text': 'n/a' },
-            'rejected': { 'fill': '#C45879', 'font-size': 12, 'yes-text': 'n/a', 'no-text': 'REJECTED' }
-          }
-        });
-      })();
-
-    };
-
+  <head>
+    <title>Demo page</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  </head>
+  <body>
+    <div id="chart"></div>
+    <script>
+      
     function myFunction(event, node) {
       console.log("You just clicked this node:", node);
     }
+    </script>
+    <script type="module">
+      import { parse } from "../dist/flowchart.mjs";
 
-  </script>
-</head>
-
-<body>
-  <div>
-    <textarea id="code" style="width: 100%;" rows="20">
+      const flowchart = `\
 st=>start: Start|past:>http://www.google.com[blank]
 e=>end: End:>http://www.google.com
 op1=>operation: My Operation|past:$myFunction
@@ -100,12 +39,12 @@ para(path1, bottom)->sub1(left)->op1
 para(path2, right)->op2->e
 
 st@>op1({"stroke":"Red"})@>cond({"stroke":"Red","stroke-width":6,"arrow-end":"classic-wide-long"})@>c2({"stroke":"Red"})@>op2({"stroke":"Red"})@>e({"stroke":"Red"})
-    </textarea>
-  </div>
-  <div>
-    <button id="run" type="button">Run</button>
-  </div>
-  <div id="canvas" />
-</body>
+`;
 
+      const svg = parse(flowchart);
+
+      // draw svg to #id
+      svg.drawSVG(document.querySelector("#chart"));
+    </script>
+  </body>
 </html>
