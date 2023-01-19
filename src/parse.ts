@@ -12,7 +12,14 @@ import {
 
 import type { DrawOptions, SymbolOptions } from "./options";
 
-const chart = {
+interface Chart {
+  symbols: Record<string, SymbolOptions>;
+  start: SymbolOptions | null;
+  diagram: FlowChart | null;
+  draw: (container: HTMLElement | string, options?: DrawOptions) => void;
+}
+
+const getChart = () => ({
   symbols: {} as Record<string, SymbolOptions>,
   start: null,
   diagram: null as null | FlowChart,
@@ -60,8 +67,8 @@ const chart = {
 
     const constructChart = (
       symbol: SymbolOptions,
-      prevDisplay: FlowChartSymbol,
-      prev: FlowChartSymbol
+      prevDisplay?: FlowChartSymbol,
+      prev?: FlowChartSymbol
     ) => {
       const displaySymbol = getDisplaySymbol(symbol);
 
@@ -106,7 +113,7 @@ const chart = {
   options(): DrawOptions {
     return this.diagram?.options || {};
   },
-};
+});
 
 const getLines = (input: string): string[] => {
   const lines = [];
@@ -157,7 +164,7 @@ const getSymbolValue = (line: string): string => {
   return "";
 };
 
-const getSymbol = (line: string) => {
+const getSymbol = (line: string, chart: Chart) => {
   const startIndex = line.indexOf("(") + 1;
   const endIndex = line.indexOf(")");
   if (startIndex >= 0 && endIndex >= 0)
@@ -182,22 +189,9 @@ const getAnnotation = (line: string): string => {
     : "";
 };
 
-export const parse = (input = ""): void => {
+export const parse = (input = ""): Chart => {
+  const chart = getChart();
   const lines = getLines(input.trim());
-
-  const getNextPath = (line: string): string => {
-    let next = "next";
-    const startIndex = line.indexOf("(") + 1;
-    const endIndex = line.indexOf(")");
-    if (startIndex >= 0 && endIndex >= 0) {
-      next = flowSymb.substring(startIndex, endIndex);
-
-      if (next.indexOf(",") < 0)
-        if (next !== "yes" && next !== "no") next = `next, ${next}`;
-    }
-
-    return next;
-  };
 
   while (lines.length > 0) {
     let line = lines.splice(0, 1)[0].trim();
@@ -283,46 +277,64 @@ export const parse = (input = ""): void => {
 
       chart.symbols[symbol.key] = symbol;
     } else if (line.indexOf("->") >= 0) {
-      let ann = getAnnotation(line);
-      if (ann) {
-        line = line.replace("@" + ann, "");
-      }
+      let annotation = getAnnotation(line);
+
+      if (annotation) line = line.replace("@" + annotation, "");
+
       // flow
       const flowSymbols = line.split("->");
+
       for (let iS = 0, lenS = flowSymbols.length; iS < lenS; iS++) {
-        var flowSymb = flowSymbols[iS];
-        const symbVal = getSymbolValue(flowSymb);
+        let flowSymbol = flowSymbols[iS];
+        const symbVal = getSymbolValue(flowSymbol);
 
         if (symbVal === "true" || symbVal === "false") {
           // map true or false to yes or no respectively
-          flowSymb = flowSymb.replace("true", "yes");
-          flowSymb = flowSymb.replace("false", "no");
+          flowSymbol = flowSymbol.replace("true", "yes");
+          flowSymbol = flowSymbol.replace("false", "no");
         }
 
-        let next = getNextPath(flowSymb);
-        const realSymb = getSymbol(flowSymb);
+        const getNextPath = (line: string): string => {
+          let next = "next";
+          const startIndex = line.indexOf("(") + 1;
+          const endIndex = line.indexOf(")");
+          if (startIndex >= 0 && endIndex >= 0) {
+            next = flowSymbol.substring(startIndex, endIndex);
+
+            if (next.indexOf(",") < 0)
+              if (next !== "yes" && next !== "no") next = `next, ${next}`;
+          }
+
+          return next;
+        };
+
+        let next = getNextPath(flowSymbol);
+        const realSymbol = getSymbol(flowSymbol, chart);
 
         let direction = null;
+
         if (next.indexOf(",") >= 0) {
-          const condOpt = next.split(",");
-          next = condOpt[0];
-          direction = condOpt[1].trim();
+          const conditionOption = next.split(",");
+
+          next = conditionOption[0];
+          direction = conditionOption[1].trim();
         }
 
-        if (ann) {
-          if (next == "yes" || next == "true") realSymb.yes_annotation = ann;
-          else realSymb.no_annotation = ann;
-          ann = null;
+        if (annotation) {
+          if (next == "yes" || next == "true")
+            realSymbol.yes_annotation = annotation;
+          else realSymbol.no_annotation = annotation;
+
+          annotation = null;
         }
 
-        if (!chart.start) {
-          chart.start = realSymb;
-        }
+        if (!chart.start) chart.start = realSymbol;
 
         if (iS + 1 < lenS) {
           const nextSymb = flowSymbols[iS + 1];
-          realSymb[next] = getSymbol(nextSymb);
-          realSymb["direction_" + next] = direction;
+
+          realSymbol[next] = getSymbol(nextSymb, chart);
+          realSymbol["direction_" + next] = direction;
           direction = null;
         }
       }
@@ -331,8 +343,8 @@ export const parse = (input = ""): void => {
       const lineStyleSymbols = line.split("@>");
       for (let iSS = 0, lenSS = lineStyleSymbols.length; iSS < lenSS; iSS++) {
         if (iSS + 1 !== lenSS) {
-          const currentSymbol = getSymbol(lineStyleSymbols[iSS]);
-          const nextSymbol = getSymbol(lineStyleSymbols[iSS + 1]);
+          const currentSymbol = getSymbol(lineStyleSymbols[iSS], chart);
+          const nextSymbol = getSymbol(lineStyleSymbols[iSS + 1], chart);
 
           currentSymbol["lineStyle"][nextSymbol.key] = JSON.parse(
             getStyle(lineStyleSymbols[iSS + 1])
