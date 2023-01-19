@@ -42,7 +42,7 @@ export class FlowChartSymbol {
   rightEnd?: boolean;
   pathOk?: boolean;
   constructor(
-    chart: Flowchart,
+    chart: FlowChart,
     options: Partial<SymbolOptions>,
     symbol?: RaphaelElement<"SVG" | "VML", Element | SVGRectElement>
   ) {
@@ -52,8 +52,8 @@ export class FlowChartSymbol {
     this.connectedTo = [];
     this.symbolType = options.symbolType;
     this.flowstate = options.flowstate || "future";
-    this.lineStyle = options.lineStyle || {};
-    this.key = options.key || "";
+    this.lineStyle = options.lineStyle ?? {};
+    this.key = options.key ?? "";
 
     this.next_direction =
       options.next && options["direction_next"]
@@ -82,21 +82,23 @@ export class FlowChartSymbol {
     if (fontWeight) this.text.attr({ "font-weight": fontWeight });
 
     if (options.link) this.text.attr("href", options.link);
+    if (options.target) this.text.attr("target", options.target);
 
-    //ndrqu Add click function with event and options params
+    // Add click function with event and options params
     if (options.function) {
       this.text.attr({ cursor: "pointer" });
 
       this.text.node.addEventListener(
         "click",
         (event) => {
-          (window as any)[options.function as string](event, options);
+          (window as Window & Record<string, any>)[options.function as string](
+            event,
+            options
+          );
         },
         false
       );
     }
-
-    if (options.target) this.text.attr("target", options.target);
 
     const maxWidth = this.getAttr<number>("maxWidth");
 

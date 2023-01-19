@@ -21,40 +21,41 @@ const chart = {
     if (this.diagram) this.diagram.clean();
 
     const diagram = new FlowChart(container, options);
+
     this.diagram = diagram;
 
-    const dispSymbols: Record<string, FlowChartSymbol> = {};
+    const displaySymbols: Record<string, FlowChartSymbol> = {};
 
     const getDisplaySymbol = (options: SymbolOptions): FlowChartSymbol => {
-      if (dispSymbols[options.key]) return dispSymbols[options.key];
+      if (displaySymbols[options.key]) return displaySymbols[options.key];
 
       switch (options.symbolType) {
         case "start":
-          dispSymbols[options.key] = new Start(diagram, options);
+          displaySymbols[options.key] = new Start(diagram, options);
           break;
         case "end":
-          dispSymbols[options.key] = new End(diagram, options);
+          displaySymbols[options.key] = new End(diagram, options);
           break;
         case "operation":
-          dispSymbols[options.key] = new Operation(diagram, options);
+          displaySymbols[options.key] = new Operation(diagram, options);
           break;
         case "inputoutput":
-          dispSymbols[options.key] = new InputOutput(diagram, options);
+          displaySymbols[options.key] = new InputOutput(diagram, options);
           break;
         case "subroutine":
-          dispSymbols[options.key] = new Subroutine(diagram, options);
+          displaySymbols[options.key] = new Subroutine(diagram, options);
           break;
         case "condition":
-          dispSymbols[options.key] = new Condition(diagram, options);
+          displaySymbols[options.key] = new Condition(diagram, options);
           break;
         case "parallel":
-          dispSymbols[options.key] = new Parallel(diagram, options);
+          displaySymbols[options.key] = new Parallel(diagram, options);
           break;
         default:
-          throw new Error("Wrong symbol type!");
+          throw new Error(`Unknown symbol type ${options.symbolType}!`);
       }
 
-      return dispSymbols[options.key];
+      return displaySymbols[options.key];
     };
 
     const constructChart = (
@@ -68,13 +69,10 @@ const chart = {
       else if (prevDisplay && prev && !prevDisplay.pathOk) {
         if (prevDisplay instanceof Condition) {
           if (prev.yes === symbol) prevDisplay.yes(displaySymbol);
-
           if (prev.no === symbol) prevDisplay.no(displaySymbol);
         } else if (prevDisplay instanceof Parallel) {
           if (prev.path1 === symbol) prevDisplay.path1(displaySymbol);
-
           if (prev.path2 === symbol) prevDisplay.path2(displaySymbol);
-
           if (prev.path3 === symbol) prevDisplay.path3(displaySymbol);
         } else prevDisplay.then(displaySymbol);
       }
@@ -102,11 +100,11 @@ const chart = {
   },
 
   clean(): void {
-    this.diagram.clean();
+    this.diagram?.clean();
   },
 
-  options(): void {
-    return this.diagram.options;
+  options(): DrawOptions {
+    return this.diagram?.options || {};
   },
 };
 
@@ -333,10 +331,10 @@ export const parse = (input = ""): void => {
       const lineStyleSymbols = line.split("@>");
       for (let iSS = 0, lenSS = lineStyleSymbols.length; iSS < lenSS; iSS++) {
         if (iSS + 1 !== lenSS) {
-          const curSymb = getSymbol(lineStyleSymbols[iSS]);
+          const currentSymbol = getSymbol(lineStyleSymbols[iSS]);
           const nextSymbol = getSymbol(lineStyleSymbols[iSS + 1]);
 
-          curSymb["lineStyle"][nextSymbol.key] = JSON.parse(
+          currentSymbol["lineStyle"][nextSymbol.key] = JSON.parse(
             getStyle(lineStyleSymbols[iSS + 1])
           );
         }

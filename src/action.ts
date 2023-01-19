@@ -80,6 +80,7 @@ export const drawPath = (
 
   // @ts-ignore
   const symbol = chart.paper.path(path, pathValues);
+
   symbol.attr("stroke", chart.options["element-color"]);
   symbol.attr("stroke-width", chart.options["line-width"]);
 
@@ -110,6 +111,7 @@ export const drawLine = (
 
   // @ts-ignore
   const line = chart.paper.path(path, pathValues);
+
   line.attr({
     stroke: chart.options["line-color"],
     "stroke-width": chart.options["line-width"],
