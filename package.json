@@ -36,7 +36,8 @@
     "lint:check": "prettier --check . && eslint . --ext .ts,.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "typings"
   ],
   "dependencies": {
     "@types/raphael": "2.3.3",
