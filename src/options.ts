@@ -32,10 +32,10 @@ export interface SVGOptions {
 }
 
 export interface DrawOptions extends Partial<SVGOptions> {
-  /** Stymbol Styles */
+  /** Symbol Styles */
   symbols?: Record<string, Partial<SVGOptions>>;
   /** FlowState config */
-  flowstate?: Record<string, Partial<SVGOptions>>;
+  flowstate?: string;
 }
 
 export interface ParsedDrawOptions extends Partial<SVGOptions> {

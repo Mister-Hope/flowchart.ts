@@ -3,8 +3,16 @@
   "version": "1.0.0-alpha.0",
   "author": "Mister-Hope",
   "description": "Flowchart support",
-  "main": "./lib/index.js",
-  "types": "./types/index.d.ts",
+  "main": "./dist/flowchart.js",
+  "types": "./typings/flowchart.d.ts",
+  "exports": {
+    ".": {
+      "types": "./typings/flowchart.d.ts",
+      "import": "./dist/flowchart.mjs",
+      "require": "./dist/flowchart.js",
+      "default": "./dist/flowchart.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Mister-Hope/flowchart.js.git"
@@ -15,7 +23,7 @@
   "homepage": "http://flowchart.js.org/",
   "license": "MIT",
   "scripts": {
-    "build": "vite build",
+    "build": "rollup -c rollup.config.ts --configPlugin esbuild",
     "build:dev": "webpack",
     "build:js": "cross-env NODE_ENV=production webpack --config webpack.config.old.js",
     "build:js:dev": "webpack --config webpack.config.old.js",
@@ -31,22 +39,25 @@
     "dist"
   ],
   "dependencies": {
-    "@types/raphael": "^2.3.3",
-    "raphael": "2.3.0"
+    "@types/raphael": "2.3.3",
+    "raphael": "2.3.0",
+    "tslib": "2.4.1"
   },
   "devDependencies": {
-    "@types/node": "^18.11.17",
-    "@typescript-eslint/eslint-plugin": "5.47.0",
-    "@typescript-eslint/parser": "5.47.0",
-    "eslint": "8.30.0",
-    "eslint-config-prettier": "8.5.0",
+    "@rollup/plugin-commonjs": "24.0.0",
+    "@rollup/plugin-node-resolve": "15.0.1",
+    "@types/node": "18.11.18",
+    "@typescript-eslint/eslint-plugin": "5.48.2",
+    "@typescript-eslint/parser": "5.48.2",
+    "esbuild": "0.17.3",
+    "eslint": "8.32.0",
+    "eslint-config-prettier": "8.6.0",
     "eslint-plugin-prettier": "4.2.1",
-    "prettier": "2.8.1",
-    "rollup": "^3.8.1",
-    "rollup-plugin-esbuild": "^5.0.0",
-    "tslib": "^2.4.1",
+    "prettier": "2.8.3",
+    "rollup": "3.10.0",
+    "rollup-plugin-esbuild": "5.0.0",
     "typescript": "4.9.4",
-    "vite": "^4.0.3"
+    "vite": "4.0.4"
   },
-  "packageManager": "pnpm@7.19.0"
+  "packageManager": "pnpm@7.25.1"
 }

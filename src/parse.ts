@@ -17,7 +17,7 @@ const chart = {
   start: null,
   diagram: null as null | FlowChart,
 
-  drawSVG(container: HTMLElement | string, options: DrawOptions = {}): void {
+  draw(container: HTMLElement | string, options: DrawOptions = {}): void {
     if (this.diagram) this.diagram.clean();
 
     const diagram = new FlowChart(container, options);
