@@ -120,9 +120,9 @@ export class Parallel extends FlowChartSymbol {
         this.path3_direction = "top";
       }
     } else {
-      this.path1_direction = options.direction_path1;
-      this.path2_direction = options.direction_path2;
-      this.path3_direction = options.direction_path3;
+      this.path1_direction = options.direction_path1!;
+      this.path2_direction = options.direction_path2!;
+      this.path3_direction = options.direction_path3!;
     }
 
     this.path1_direction = this.path1_direction || "bottom";

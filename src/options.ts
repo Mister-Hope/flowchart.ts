@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { FlowChartSymbol } from "./symbol/index.js";
 
 export type SymbolType =
@@ -28,6 +29,7 @@ export interface SVGOptions {
   "arrow-end": string;
   class: string;
   scale: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [props: string]: any;
 }
 
@@ -42,7 +44,7 @@ export interface ParsedDrawOptions extends Partial<SVGOptions> {
   /** Stymbol Styles */
   symbols: Record<string, Partial<SVGOptions>>;
   /** FlowState config */
-  flowstate?: string;
+  flowstate?: string | null;
 }
 
 export type Direction =
@@ -59,7 +61,7 @@ export interface SymbolOptions extends ParsedDrawOptions {
 
   key: string;
 
-  text: string | undefined;
+  text: string | null;
   link: string | null;
   target: string | null;
   function: null | string;

@@ -32,8 +32,8 @@ export class FlowChartSymbol {
   next?: FlowChartSymbol;
   next_direction: Direction | undefined;
   isPositioned?: boolean;
-  width: number;
-  height: number;
+  width = 0;
+  height = 0;
   topStart?: boolean;
   topEnd?: boolean;
   rightStart?: boolean;
@@ -104,7 +104,7 @@ export class FlowChartSymbol {
 
     if (maxWidth) {
       // using this approach: http://stackoverflow.com/a/3153457/22466
-      const words = options.text.split(" ");
+      const words = options.text!.split(" ");
       let tempText = "";
 
       for (let index = 0; index < words.length; index++) {
@@ -144,7 +144,8 @@ export class FlowChartSymbol {
         symbol.node.addEventListener(
           "click",
           (event) => {
-            window[options.function](event, options);
+            // @ts-ignore
+            window[options.function!](event, options);
           },
           false
         );
@@ -170,14 +171,16 @@ export class FlowChartSymbol {
 
     const opt3 = this.chart.options ? this.chart.options[attName] : undefined;
     const opt2 = this.chart.options.symbols
-      ? this.chart.options.symbols[this.symbolType][attName]
+      ? this.chart.options.symbols[this.symbolType!][attName]
       : undefined;
 
     if (
       this.chart.options.flowstate &&
+      // @ts-ignore
       this.chart.options.flowstate[this.flowstate]
     ) {
       const opt1: T | undefined =
+        // @ts-ignore
         this.chart.options.flowstate[this.flowstate][attName];
       if (opt1) return opt1;
     }
@@ -783,29 +786,29 @@ export class FlowChartSymbol {
               let newSegment: [string, ...number[]];
               if (line2FromY === line2ToY) {
                 if (line2FromX > line2ToX) {
-                  newSegment = ["L", res.x + lineWith * 2, line2FromY];
+                  newSegment = ["L", res.x! + lineWith * 2, line2FromY];
                   lPath.splice(lP + 1, 0, newSegment);
                   newSegment = [
                     "C",
-                    res.x + lineWith * 2,
+                    res.x! + lineWith * 2,
                     line2FromY,
-                    res.x,
+                    res.x!,
                     line2FromY - lineWith * 4,
-                    res.x - lineWith * 2,
+                    res.x! - lineWith * 2,
                     line2FromY,
                   ];
                   lPath.splice(lP + 2, 0, newSegment);
                   line.attr("path", lPath as unknown as string);
                 } else {
-                  newSegment = ["L", res.x - lineWith * 2, line2FromY];
+                  newSegment = ["L", res.x! - lineWith * 2, line2FromY];
                   lPath.splice(lP + 1, 0, newSegment);
                   newSegment = [
                     "C",
-                    res.x - lineWith * 2,
+                    res.x! - lineWith * 2,
                     line2FromY,
-                    res.x,
+                    res.x!,
                     line2FromY - lineWith * 4,
-                    res.x + lineWith * 2,
+                    res.x! + lineWith * 2,
                     line2FromY,
                   ];
                   lPath.splice(lP + 2, 0, newSegment);
@@ -813,30 +816,30 @@ export class FlowChartSymbol {
                 }
               } else {
                 if (line2FromY > line2ToY) {
-                  newSegment = ["L", line2FromX, res.y + lineWith * 2];
+                  newSegment = ["L", line2FromX, res.y! + lineWith * 2];
                   lPath.splice(lP + 1, 0, newSegment);
                   newSegment = [
                     "C",
                     line2FromX,
-                    res.y + lineWith * 2,
+                    res.y! + lineWith * 2,
                     line2FromX + lineWith * 4,
-                    res.y,
+                    res.y!,
                     line2FromX,
-                    res.y - lineWith * 2,
+                    res.y! - lineWith * 2,
                   ];
                   lPath.splice(lP + 2, 0, newSegment);
                   line.attr("path", lPath as unknown as string);
                 } else {
-                  newSegment = ["L", line2FromX, res.y - lineWith * 2];
+                  newSegment = ["L", line2FromX, res.y! - lineWith * 2];
                   lPath.splice(lP + 1, 0, newSegment);
                   newSegment = [
                     "C",
                     line2FromX,
-                    res.y - lineWith * 2,
+                    res.y! - lineWith * 2,
                     line2FromX + lineWith * 4,
-                    res.y,
+                    res.y!,
                     line2FromX,
-                    res.y + lineWith * 2,
+                    res.y! + lineWith * 2,
                   ];
                   lPath.splice(lP + 2, 0, newSegment);
                   line.attr("path", lPath as unknown as string);

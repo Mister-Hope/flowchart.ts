@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { FlowChart } from "./chart.js";
 import {
   Condition,
@@ -10,16 +11,23 @@ import {
   Subroutine,
 } from "./symbol/index.js";
 
-import type { DrawOptions, SymbolOptions } from "./options";
+import type {
+  DrawOptions,
+  SymbolOptions,
+  SymbolType,
+  ParsedDrawOptions,
+} from "./options.js";
 
 interface Chart {
   symbols: Record<string, SymbolOptions>;
   start: SymbolOptions | null;
   diagram: FlowChart | null;
   draw: (container: HTMLElement | string, options?: DrawOptions) => void;
+  clean: () => void;
+  options: () => ParsedDrawOptions | Record<string, never>;
 }
 
-const getChart = () => ({
+const getChart = (): Chart => ({
   symbols: {} as Record<string, SymbolOptions>,
   start: null,
   diagram: null as null | FlowChart,
@@ -27,6 +35,8 @@ const getChart = () => ({
   draw(container: HTMLElement | string, options: DrawOptions = {}): void {
     if (this.diagram) this.diagram.clean();
 
+    // FIXME:
+    // @ts-ignore
     const diagram = new FlowChart(container, options);
 
     this.diagram = diagram;
@@ -69,38 +79,73 @@ const getChart = () => ({
       symbol: SymbolOptions,
       prevDisplay?: FlowChartSymbol,
       prev?: FlowChartSymbol
-    ) => {
+    ): FlowChartSymbol => {
       const displaySymbol = getDisplaySymbol(symbol);
 
       if (this.start === symbol) diagram.startWith(displaySymbol);
       else if (prevDisplay && prev && !prevDisplay.pathOk) {
         if (prevDisplay instanceof Condition) {
+          // FIXME:
+          // @ts-ignore
           if (prev.yes === symbol) prevDisplay.yes(displaySymbol);
+
+          // FIXME:
+          // @ts-ignore
           if (prev.no === symbol) prevDisplay.no(displaySymbol);
         } else if (prevDisplay instanceof Parallel) {
+          // FIXME:
+          // @ts-ignore
           if (prev.path1 === symbol) prevDisplay.path1(displaySymbol);
+
+          // FIXME:
+          // @ts-ignore
           if (prev.path2 === symbol) prevDisplay.path2(displaySymbol);
+
+          // FIXME:
+          // @ts-ignore
           if (prev.path3 === symbol) prevDisplay.path3(displaySymbol);
-        } else prevDisplay.then(displaySymbol);
+        }
+        // FIXME:
+        // @ts-ignore
+        else prevDisplay.then(displaySymbol);
       }
 
       if (displaySymbol.pathOk) return displaySymbol;
 
       if (displaySymbol instanceof Condition) {
-        if (symbol.yes) constructChart(symbol.yes, displaySymbol, symbol);
-        if (symbol.no) constructChart(symbol.no, displaySymbol, symbol);
+        if (symbol.yes)
+          // FIXME:
+          // @ts-ignore
+          constructChart(symbol.yes, displaySymbol, symbol);
+        if (symbol.no)
+          // FIXME:
+          // @ts-ignore
+          constructChart(symbol.no, displaySymbol, symbol);
       } else if (displaySymbol instanceof Parallel) {
-        if (symbol.path1) constructChart(symbol.path1, displaySymbol, symbol);
+        if (symbol.path1)
+          // FIXME:
+          // @ts-ignore
+          constructChart(symbol.path1, displaySymbol, symbol);
 
-        if (symbol.path2) constructChart(symbol.path2, displaySymbol, symbol);
+        if (symbol.path2)
+          // FIXME:
+          // @ts-ignore
+          constructChart(symbol.path2, displaySymbol, symbol);
 
-        if (symbol.path3) constructChart(symbol.path3, displaySymbol, symbol);
+        if (symbol.path3)
+          // FIXME:
+          // @ts-ignore
+          constructChart(symbol.path3, displaySymbol, symbol);
       } else if (symbol.next)
+        // FIXME:
+        // @ts-ignore
         constructChart(symbol.next, displaySymbol, symbol);
 
       return displaySymbol;
     };
 
+    // FIXME:
+    // @ts-ignore
     constructChart(this.start);
 
     diagram.render();
@@ -110,7 +155,7 @@ const getChart = () => ({
     this.diagram?.clean();
   },
 
-  options(): DrawOptions {
+  options(): ParsedDrawOptions | Record<string, never> {
     return this.diagram?.options || {};
   },
 });
@@ -164,7 +209,7 @@ const getSymbolValue = (line: string): string => {
   return "";
 };
 
-const getSymbol = (line: string, chart: Chart) => {
+const getSymbol = (line: string, chart: Chart): SymbolOptions => {
   const startIndex = line.indexOf("(") + 1;
   const endIndex = line.indexOf(")");
   if (startIndex >= 0 && endIndex >= 0)
@@ -200,9 +245,11 @@ export const parse = (input = ""): Chart => {
       // definition
       const parts = line.split("=>");
 
+      // FIXME:
+      // @ts-ignore
       const symbol: SymbolOptions = {
         key: parts[0].replace(/\(.*\)/, ""),
-        symbolType: parts[1],
+        symbolType: <SymbolType>parts[1],
         text: null,
         link: null,
         target: null,
@@ -224,34 +271,36 @@ export const parse = (input = ""): Chart => {
         }
       }
 
-      var sub;
+      let sub: string[];
 
       if (symbol.symbolType.indexOf(": ") >= 0) {
         sub = symbol.symbolType.split(": ");
-        symbol.symbolType = sub.shift();
+        // FIXME:
+        // @ts-ignore
+        symbol.symbolType = <SymbolType>sub.shift();
         symbol.text = sub.join(": ");
       }
 
       if (symbol.text && symbol.text.indexOf(":$") >= 0) {
         sub = symbol.text.split(":$");
-        symbol.text = sub.shift();
+        symbol.text = sub.shift()!;
         symbol.function = sub.join(":$");
       } else if (symbol.symbolType.indexOf(":$") >= 0) {
         sub = symbol.symbolType.split(":$");
-        symbol.symbolType = sub.shift();
+        symbol.symbolType = <SymbolType>sub.shift();
         symbol.function = sub.join(":$");
       } else if (symbol.text && symbol.text.indexOf(":>") >= 0) {
         sub = symbol.text.split(":>");
-        symbol.text = sub.shift();
+        symbol.text = sub.shift()!;
         symbol.link = sub.join(":>");
       } else if (symbol.symbolType.indexOf(":>") >= 0) {
         sub = symbol.symbolType.split(":>");
-        symbol.symbolType = sub.shift();
+        symbol.symbolType = <SymbolType>sub.shift();
         symbol.link = sub.join(":>");
       }
 
       if (symbol.symbolType.indexOf("\n") >= 0) {
-        symbol.symbolType = symbol.symbolType.split("\n")[0];
+        symbol.symbolType = <SymbolType>symbol.symbolType.split("\n")[0];
       }
 
       /* adding support for links */
@@ -269,7 +318,8 @@ export const parse = (input = ""): Chart => {
       if (symbol.text) {
         if (symbol.text.indexOf("|") >= 0) {
           const txtAndState = symbol.text.split("|");
-          symbol.flowstate = txtAndState.pop().trim();
+
+          symbol.flowstate = txtAndState.pop()!.trim();
           symbol.text = txtAndState.join("|");
         }
       }
@@ -277,7 +327,7 @@ export const parse = (input = ""): Chart => {
 
       chart.symbols[symbol.key] = symbol;
     } else if (line.indexOf("->") >= 0) {
-      let annotation = getAnnotation(line);
+      let annotation: string | null = getAnnotation(line);
 
       if (annotation) line = line.replace("@" + annotation, "");
 
@@ -286,9 +336,9 @@ export const parse = (input = ""): Chart => {
 
       for (let iS = 0, lenS = flowSymbols.length; iS < lenS; iS++) {
         let flowSymbol = flowSymbols[iS];
-        const symbVal = getSymbolValue(flowSymbol);
+        const symbolValue = getSymbolValue(flowSymbol);
 
-        if (symbVal === "true" || symbVal === "false") {
+        if (symbolValue === "true" || symbolValue === "false") {
           // map true or false to yes or no respectively
           flowSymbol = flowSymbol.replace("true", "yes");
           flowSymbol = flowSymbol.replace("false", "no");
@@ -328,15 +378,18 @@ export const parse = (input = ""): Chart => {
           annotation = null;
         }
 
-        if (!chart.start) chart.start = realSymbol;
+        if (!chart.start)
+          if (iS + 1 < lenS) {
+            // FIXME:
+            // @ts-ignore
+            chart.start = realSymbol;
 
-        if (iS + 1 < lenS) {
-          const nextSymb = flowSymbols[iS + 1];
+            const nextSymbol = flowSymbols[iS + 1];
 
-          realSymbol[next] = getSymbol(nextSymb, chart);
-          realSymbol["direction_" + next] = direction;
-          direction = null;
-        }
+            realSymbol[next] = getSymbol(nextSymbol, chart);
+            realSymbol["direction_" + next] = direction;
+            direction = null;
+          }
       }
     } else if (line.indexOf("@>") >= 0) {
       // line style

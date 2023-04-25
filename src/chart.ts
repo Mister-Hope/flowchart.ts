@@ -14,8 +14,8 @@ export class FlowChart {
   start: null | FlowChartSymbol = null;
 
   paper: RaphaelPaper<"SVG" | "VML"> & RaphaelSet<"SVG" | "VML">;
-  minXFromSymbols: number = 0;
-  maxXFromLine: number = 0;
+  minXFromSymbols = 0;
+  maxXFromLine = 0;
 
   constructor(container: string | HTMLElement, options: ParsedDrawOptions) {
     // width and height are not required
@@ -100,15 +100,15 @@ export class FlowChart {
 
     this.symbols.forEach((symbol) => {
       symbol.shiftX(
-        this.options.x +
+        this.options.x! +
           (maxWidth - symbol.width) / 2 +
-          this.options["line-width"]
+          this.options["line-width"]!
       );
 
       symbol.shiftY(
-        this.options.y +
+        this.options.y! +
           (maxHeight - symbol.height) / 2 +
-          this.options["line-width"]
+          this.options["line-width"]!
       );
     });
 
@@ -153,8 +153,8 @@ export class FlowChart {
       if (y2 > maxY) maxY = y2;
     }
 
-    const scale = this.options["scale"];
-    const lineWidth = this.options["line-width"];
+    const scale = this.options["scale"]!;
+    const lineWidth = this.options["line-width"]!;
 
     if (this.minXFromSymbols < minX) minX = this.minXFromSymbols;
 

@@ -4,10 +4,11 @@
   "author": "Mister-Hope",
   "description": "Flowchart support",
   "main": "./dist/flowchart.js",
-  "types": "./typings/flowchart.d.ts",
+  "module": "./dist/flowchart.mjs",
+  "types": "./dist/flowchart.d.ts",
   "exports": {
     ".": {
-      "types": "./typings/flowchart.d.ts",
+      "types": "./dist/flowchart.d.ts",
       "import": "./dist/flowchart.mjs",
       "require": "./dist/flowchart.js",
       "default": "./dist/flowchart.js"
@@ -24,14 +25,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin esbuild",
-    "build:dev": "webpack",
-    "build:js": "cross-env NODE_ENV=production webpack --config webpack.config.old.js",
-    "build:js:dev": "webpack --config webpack.config.old.js",
     "dev": "vite dev",
-    "watch": "webpack -w",
-    "watch:js": "cross-env NODE_ENV=production webpack --config webpack.config.old.js -w",
-    "tsc": "tsc",
-    "ts:watch": "tsc --watch",
     "lint": "prettier --check --write . && eslint . --ext .ts,.js --fix",
     "lint:check": "prettier --check . && eslint . --ext .ts,.js"
   },
@@ -56,6 +50,7 @@
     "eslint-plugin-prettier": "4.2.1",
     "prettier": "2.8.8",
     "rollup": "3.21.0",
+    "rollup-plugin-dts": "5.3.0",
     "rollup-plugin-esbuild": "5.0.0",
     "typescript": "5.0.4",
     "vite": "4.3.1"

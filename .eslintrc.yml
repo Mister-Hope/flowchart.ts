@@ -4,13 +4,12 @@ env:
   node: true
 
 extends:
-  - "eslint:recommended"
-  - prettier
+  - eslint:recommended
+  - plugin:prettier/recommended
 
 ignorePatterns:
   - "*.js"
   - "*.d.ts"
-  - "!webpack.config.js"
 
 overrides:
   - files:
@@ -20,7 +19,6 @@ overrides:
       - "plugin:@typescript-eslint/eslint-recommended"
       - "plugin:@typescript-eslint/recommended"
       - "plugin:@typescript-eslint/recommended-requiring-type-checking"
-      - prettier/@typescript-eslint
 
     plugins:
       - "@typescript-eslint"

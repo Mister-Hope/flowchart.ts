@@ -35,5 +35,5 @@
     "outDir": "./lib",
     "declarationDir": "./types"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["**/*.ts"]
 }
