@@ -18,7 +18,7 @@ import type {
   ParsedDrawOptions,
 } from "./options.js";
 
-interface Chart {
+export interface Chart {
   symbols: Record<string, SymbolOptions>;
   start: SymbolOptions | null;
   diagram: FlowChart | null;
