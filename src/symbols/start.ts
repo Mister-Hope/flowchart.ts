@@ -1,7 +1,6 @@
 import FlowChartSymbol from "./symbol.js";
 import FlowChart from "../chart.js";
-
-import type { SymbolOptions } from "../options.js";
+import { type SymbolOptions } from "../options.js";
 
 class Start extends FlowChartSymbol {
   then?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;

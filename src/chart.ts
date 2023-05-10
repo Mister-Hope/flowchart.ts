@@ -1,14 +1,14 @@
 import Raphael, {
   type RaphaelPaper,
-  type RaphaelSet,
   type RaphaelPath,
+  type RaphaelSet,
 } from "raphael";
 
 import { defaultOptions } from "./config.js";
+import { type ParsedDrawOptions } from "./options.js";
 import Condition from "./symbols/condition";
 import Parallel from "./symbols/parallel";
 import FlowChartSymbol from "./symbols/symbol.js";
-import { type ParsedDrawOptions } from "./options.js";
 import { deepAssign } from "./utils.js";
 
 class FlowChart {
@@ -80,6 +80,7 @@ class FlowChart {
       symbol.then = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
         symbol.next = nextSymbol;
         symbol.pathOk = true;
+
         return this.handle(nextSymbol);
       };
     }

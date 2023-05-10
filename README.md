@@ -1,8 +1,6 @@
-[![JS.ORG](https://img.shields.io/badge/js.org-flowchart-ffb400.svg?style=flat-square)](http://js.org)
+# flowchart.ts
 
-# [flowchart.js](http://flowchart.js.org)
-
-flowchart.js is a flowchart DSL and SVG render that runs in the browser and [terminal](https://github.com/francoislaberge/diagrams/#flowchart).
+flowchart.ts is modern version of flowchart.js, a flowchart DSL and SVG render that runs in the browser.
 
 Nodes and connections are defined separately so that nodes can be reused and connections can be quickly changed.
 Fine grain changes to node and connection style can also be made right in the DSL.
@@ -27,18 +25,6 @@ para(path2, top)->op1
 ```
 
 ![Example Flowchart](/imgs/example.svg)
-
-## CLI
-
-See [francoislaberge/diagrams](https://github.com/francoislaberge/diagrams/#flowchart) on how to flowchart.js in the terminal.
-
-## Browser Usage
-
-flowchart.js is on [CDNJS](https://cdnjs.com/libraries/flowchart), feel free to use it.
-
-You will also need [Raphaël](http://www.raphaeljs.com/), which is also on [CDNJS](https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js).
-
-The demo html page is at [example/index.html](example/index.html).
 
 ## Node Syntax
 
@@ -267,11 +253,3 @@ para(path3@an3, bottom)->e
  ![img](https://user-images.githubusercontent.com/1086194/137810516-0d7d7307-fc55-466f-b06d-a6ca9f6b8785.png)
  
 </details>
-
-## Contributors
-
-via [GitHub](https://github.com/adrai/flowchart.js/graphs/contributors)
-
-## Thanks
-
-Many thanks to [js-sequence-diagrams](http://bramp.github.io/js-sequence-diagrams/) which greatly inspired this project, and forms the basis for the syntax.

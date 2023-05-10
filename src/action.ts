@@ -102,9 +102,7 @@ export const drawLine = (
   let path = "M{0},{1}";
 
   // TODO: Remove
-  if (Object.prototype.toString.call(to) !== "[object Array]") {
-    to = [to];
-  }
+  if (Object.prototype.toString.call(to) !== "[object Array]") to = [to];
 
   for (let i = 2; i < 2 * to.length + 2; i += 2) path += ` L{${i}},{${i + 1}}`;
 
@@ -164,7 +162,9 @@ export const drawLine = (
         if (from.x > firstTo.x) {
           x -= chart.options["text-margin"] / 2;
           textAnchor = "end";
-        } else x += chart.options["text-margin"] / 2;
+        } else {
+          x += chart.options["text-margin"] / 2;
+        }
 
         y -= chart.options["text-margin"];
       } else {

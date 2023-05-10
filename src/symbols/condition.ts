@@ -51,8 +51,10 @@ class Condition extends FlowChartSymbol {
     this.text.attr({ x: this.textMargin * 2 });
 
     let width = this.text.getBBox().width + 3 * this.textMargin;
+
     width += width / 2;
     let height = this.text.getBBox().height + 2 * this.textMargin;
+
     height += height / 2;
     height = Math.max(width * 0.5, height);
 
@@ -136,6 +138,7 @@ class Condition extends FlowChartSymbol {
         const shift = (): void => {
           let hasSymbolUnder = false;
           let symbol: FlowChartSymbol;
+
           for (let index = 0; index < this.chart.symbols.length; index++) {
             symbol = this.chart.symbols[index];
 

@@ -1,6 +1,5 @@
 import FlowChartSymbol from "./symbol.js";
 import FlowChart from "../chart.js";
-
 import { type Direction, type SymbolOptions } from "../options.js";
 
 class Parallel extends FlowChartSymbol {
@@ -41,23 +40,22 @@ class Parallel extends FlowChartSymbol {
       options.direction_next === "path1" &&
       !options[options.direction_next] &&
       options.next
-    ) {
+    )
       options[options.direction_next] = options.next;
-    }
+
     if (
       options.direction_next === "path2" &&
       !options[options.direction_next] &&
       options.next
-    ) {
+    )
       options[options.direction_next] = options.next;
-    }
+
     if (
       options.direction_next === "path3" &&
       !options[options.direction_next] &&
       options.next
-    ) {
+    )
       options[options.direction_next] = options.next;
-    }
 
     if (
       options.path1 &&
@@ -194,6 +192,7 @@ class Parallel extends FlowChartSymbol {
         const shift = (): void => {
           let hasSymbolUnder = false;
           let symbol: FlowChartSymbol;
+
           for (let index = 0; index < this.chart.symbols.length; index++) {
             symbol = this.chart.symbols[index];
 
@@ -204,6 +203,7 @@ class Parallel extends FlowChartSymbol {
               const diff = Math.abs(
                 symbol.getCenter().x - this.left_symbol!.getCenter().x
               );
+
               if (
                 symbol.getCenter().y > this.left_symbol!.getCenter().y &&
                 diff <= this.left_symbol!.width / 2
@@ -240,6 +240,7 @@ class Parallel extends FlowChartSymbol {
         const shift = (): void => {
           let hasSymbolUnder = false;
           let symbol: FlowChartSymbol;
+
           for (let index = 0; index < this.chart.symbols.length; index++) {
             symbol = this.chart.symbols[index];
 
@@ -250,6 +251,7 @@ class Parallel extends FlowChartSymbol {
               const diff = Math.abs(
                 symbol.getCenter().x - this.right_symbol!.getCenter().x
               );
+
               if (
                 symbol.getCenter().y > this.right_symbol!.getCenter().y &&
                 diff <= this.right_symbol!.width / 2

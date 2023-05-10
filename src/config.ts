@@ -1,4 +1,4 @@
-import type { ParsedDrawOptions } from "./options.js";
+import { type ParsedDrawOptions } from "./options.js";
 
 export const defaultOptions: ParsedDrawOptions = {
   x: 0,

@@ -1,20 +1,19 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import FlowChart from "./chart.js";
-import Start from "./symbols/start.js";
-import End from "./symbols/end.js";
-import Operation from "./symbols/operation.js";
-import InputOutput from "./symbols/inputoutput.js";
-import Subroutine from "./symbols/subroutine.js";
-import Condition from "./symbols/condition.js";
-import Parallel from "./symbols/parallel.js";
-import FlowChartSymbol from "./symbols/symbol.js";
-
 import {
   type DrawOptions,
+  type ParsedDrawOptions,
   type SymbolOptions,
   type SymbolType,
-  type ParsedDrawOptions,
 } from "./options.js";
+import Condition from "./symbols/condition.js";
+import End from "./symbols/end.js";
+import InputOutput from "./symbols/inputoutput.js";
+import Operation from "./symbols/operation.js";
+import Parallel from "./symbols/parallel.js";
+import Start from "./symbols/start.js";
+import Subroutine from "./symbols/subroutine.js";
+import FlowChartSymbol from "./symbols/symbol.js";
 
 export interface Chart {
   symbols: Record<string, SymbolOptions>;
@@ -83,7 +82,7 @@ const getChart = (): Chart => ({
       const displaySymbol = getDisplaySymbol(symbol);
 
       if (this.start === symbol) diagram.startWith(displaySymbol);
-      else if (prevDisplay && prev && !prevDisplay.pathOk) {
+      else if (prevDisplay && prev && !prevDisplay.pathOk)
         if (prevDisplay instanceof Condition) {
           // FIXME:
           // @ts-ignore
@@ -107,8 +106,9 @@ const getChart = (): Chart => ({
         }
         // FIXME:
         // @ts-ignore
-        else prevDisplay.then(displaySymbol);
-      }
+        else {
+          prevDisplay.then(displaySymbol);
+        }
 
       if (displaySymbol.pathOk) return displaySymbol;
 
@@ -136,10 +136,11 @@ const getChart = (): Chart => ({
           // FIXME:
           // @ts-ignore
           constructChart(symbol.path3, displaySymbol, symbol);
-      } else if (symbol.next)
+      } else if (symbol.next) {
         // FIXME:
         // @ts-ignore
         constructChart(symbol.next, displaySymbol, symbol);
+      }
 
       return displaySymbol;
     };
@@ -185,7 +186,9 @@ const getLines = (input: string): string[] => {
       lines[index - 1] += `\n${currentLine}`;
       lines.splice(index, 1);
       length--;
-    } else index++;
+    } else {
+      index++;
+    }
   }
 
   return lines;
@@ -194,6 +197,7 @@ const getLines = (input: string): string[] => {
 const getStyle = (line: string): string => {
   const startIndex = line.indexOf("(") + 1;
   const endIndex = line.indexOf(")");
+
   if (startIndex >= 0 && endIndex >= 0)
     return line.substring(startIndex, endIndex);
 
@@ -203,6 +207,7 @@ const getStyle = (line: string): string => {
 const getSymbolValue = (line: string): string => {
   const startIndex = line.indexOf("(") + 1;
   const endIndex = line.indexOf(")");
+
   if (startIndex >= 0 && endIndex >= 0)
     return line.substring(startIndex, endIndex);
 
@@ -212,6 +217,7 @@ const getSymbolValue = (line: string): string => {
 const getSymbol = (line: string, chart: Chart): SymbolOptions => {
   const startIndex = line.indexOf("(") + 1;
   const endIndex = line.indexOf(")");
+
   if (startIndex >= 0 && endIndex >= 0)
     return chart.symbols[line.substring(0, startIndex - 1)];
 
@@ -222,9 +228,9 @@ const getAnnotation = (line: string): string => {
   const startIndex = line.indexOf("(") + 1,
     endIndex = line.indexOf(")");
   let temp = line.substring(startIndex, endIndex);
-  if (temp.indexOf(",") > 0) {
-    temp = temp.substring(0, temp.indexOf(","));
-  }
+
+  if (temp.indexOf(",") > 0) temp = temp.substring(0, temp.indexOf(","));
+
   const tempSplit = temp.split("@");
 
   return tempSplit.length > 1
@@ -261,13 +267,14 @@ export const parse = (input = ""): Chart => {
 
       //parse parameters
       const params = parts[0].match(/\((.*)\)/);
+
       if (params && params.length > 1) {
         const entries = params[1].split(",");
+
         for (let i = 0; i < entries.length; i++) {
           const entry = entries[i].split("=");
-          if (entry.length == 2) {
-            symbol.params[entry[0]] = entry[1];
-          }
+
+          if (entry.length == 2) symbol.params[entry[0]] = entry[1];
         }
       }
 
@@ -299,14 +306,14 @@ export const parse = (input = ""): Chart => {
         symbol.link = sub.join(":>");
       }
 
-      if (symbol.symbolType.indexOf("\n") >= 0) {
+      if (symbol.symbolType.indexOf("\n") >= 0)
         symbol.symbolType = <SymbolType>symbol.symbolType.split("\n")[0];
-      }
 
       /* adding support for links */
       if (symbol.link) {
         const startIndex = symbol.link.indexOf("[") + 1;
         const endIndex = symbol.link.indexOf("]");
+
         if (startIndex >= 0 && endIndex >= 0) {
           symbol.target = symbol.link.substring(startIndex, endIndex);
           symbol.link = symbol.link.substring(0, startIndex - 1);
@@ -315,14 +322,14 @@ export const parse = (input = ""): Chart => {
       /* end of link support */
 
       /* adding support for flowstates */
-      if (symbol.text) {
+      if (symbol.text)
         if (symbol.text.indexOf("|") >= 0) {
           const txtAndState = symbol.text.split("|");
 
           symbol.flowstate = txtAndState.pop()!.trim();
           symbol.text = txtAndState.join("|");
         }
-      }
+
       /* end of flowstate support */
 
       chart.symbols[symbol.key] = symbol;
@@ -348,6 +355,7 @@ export const parse = (input = ""): Chart => {
           let next = "next";
           const startIndex = line.indexOf("(") + 1;
           const endIndex = line.indexOf(")");
+
           if (startIndex >= 0 && endIndex >= 0) {
             next = flowSymbol.substring(startIndex, endIndex);
 
@@ -371,19 +379,14 @@ export const parse = (input = ""): Chart => {
         }
 
         if (annotation) {
-          if (realSymbol.symbolType === "condition") {
+          if (realSymbol.symbolType === "condition")
             if (next == "yes" || next == "true")
               realSymbol.yes_annotation = annotation;
             else realSymbol.no_annotation = annotation;
-          } else if (realSymbol.symbolType === "parallel") {
-            if (next === "path1") {
-              realSymbol.path1_annotation = annotation;
-            } else if (next === "path2") {
-              realSymbol.path2_annotation = annotation;
-            } else if (next === "path3") {
-              realSymbol.path3_annotation = annotation;
-            }
-          }
+          else if (realSymbol.symbolType === "parallel")
+            if (next === "path1") realSymbol.path1_annotation = annotation;
+            else if (next === "path2") realSymbol.path2_annotation = annotation;
+            else if (next === "path3") realSymbol.path3_annotation = annotation;
 
           annotation = null;
         }
@@ -404,7 +407,8 @@ export const parse = (input = ""): Chart => {
     } else if (line.indexOf("@>") >= 0) {
       // line style
       const lineStyleSymbols = line.split("@>");
-      for (let iSS = 0, lenSS = lineStyleSymbols.length; iSS < lenSS; iSS++) {
+
+      for (let iSS = 0, lenSS = lineStyleSymbols.length; iSS < lenSS; iSS++)
         if (iSS + 1 !== lenSS) {
           const currentSymbol = getSymbol(lineStyleSymbols[iSS], chart);
           const nextSymbol = getSymbol(lineStyleSymbols[iSS + 1], chart);
@@ -413,7 +417,6 @@ export const parse = (input = ""): Chart => {
             getStyle(lineStyleSymbols[iSS + 1])
           );
         }
-      }
     }
   }
 

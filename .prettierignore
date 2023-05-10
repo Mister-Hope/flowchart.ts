@@ -1,7 +1,4 @@
-example/
+dist/**
 node_modules/
-
-*.js
-*.d.ts
 
 pnpm-lock.yaml

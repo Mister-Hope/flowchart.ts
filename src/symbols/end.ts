@@ -1,7 +1,6 @@
 import FlowChartSymbol from "./symbol.js";
 import FlowChart from "../chart.js";
-
-import type { SymbolOptions } from "../options.js";
+import { type SymbolOptions } from "../options.js";
 
 class End extends FlowChartSymbol {
   constructor(chart: FlowChart, options: Partial<SymbolOptions> = {}) {
