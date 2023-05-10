@@ -1,12 +1,17 @@
-import Raphael from "raphael";
-import { defaultConfig } from "./config.js";
-import { Condition, FlowChartSymbol, Parallel } from "./symbol/index.js";
+import Raphael, {
+  type RaphaelPaper,
+  type RaphaelSet,
+  type RaphaelPath,
+} from "raphael";
+
+import { defaultOptions } from "./config.js";
+import Condition from "./symbols/condition";
+import Parallel from "./symbols/parallel";
+import FlowChartSymbol from "./symbols/symbol.js";
+import { type ParsedDrawOptions } from "./options.js";
 import { deepAssign } from "./utils.js";
 
-import type { RaphaelPaper, RaphaelSet, RaphaelPath } from "raphael";
-import type { ParsedDrawOptions } from "./options";
-
-export class FlowChart {
+class FlowChart {
   options: ParsedDrawOptions;
 
   symbols: FlowChartSymbol[] = [];
@@ -17,12 +22,16 @@ export class FlowChart {
   minXFromSymbols = 0;
   maxXFromLine = 0;
 
-  constructor(container: string | HTMLElement, options: ParsedDrawOptions) {
+  constructor(
+    container: string | HTMLElement,
+    // @ts-ignore
+    options: ParsedDrawOptions = {}
+  ) {
     // width and height are not required
     // @ts-ignore
-    this.paper = new Raphael(container);
+    this.paper = new Raphael(container, options.width, options.height);
 
-    this.options = deepAssign(options, defaultConfig);
+    this.options = deepAssign(options, defaultOptions);
   }
 
   handle(symbol: FlowChartSymbol): FlowChartSymbol {
@@ -85,18 +94,13 @@ export class FlowChart {
   }
 
   render(): void {
-    let maxWidth = 0,
-      maxHeight = 0,
-      maxX = 0,
-      maxY = 0,
-      minX = 0,
-      minY = 0;
-    let line;
+    const maxWidth = this.symbols.reduce((maxWidth, { width }) => {
+      return Math.max(maxWidth, width);
+    }, 0);
 
-    this.symbols.forEach((symbol) => {
-      if (symbol.width > maxWidth) maxWidth = symbol.width;
-      if (symbol.height > maxHeight) maxHeight = symbol.height;
-    });
+    const maxHeight = this.symbols.reduce((maxHeight, { height }) => {
+      return Math.max(maxHeight, height);
+    }, 0);
 
     this.symbols.forEach((symbol) => {
       symbol.shiftX(
@@ -118,40 +122,31 @@ export class FlowChart {
       symbol.renderLines();
     });
 
-    maxX = this.maxXFromLine;
-
-    let x: number;
-    let y: number;
+    let maxX = this.maxXFromLine;
+    let maxY = 0,
+      minX = 0,
+      minY = 0;
 
     this.symbols.forEach((symbol) => {
       const leftX = symbol.getX();
 
-      x = leftX + symbol.width;
-      y = symbol.getY() + symbol.height;
+      const x = leftX + symbol.width;
+      const y = symbol.getY() + symbol.height;
 
       if (leftX < minX) minX = leftX;
-
       if (x > maxX) maxX = x;
-
       if (y > maxY) maxY = y;
     });
 
-    for (let index = 0; index < this.lines.length; index++) {
-      line = this.lines[index].getBBox();
-      x = line.x;
-      y = line.y;
-
-      const x2 = line.x2;
-      const y2 = line.y2;
+    this.lines.forEach((line) => {
+      const boundingBox = line.getBBox();
+      const { x, y, x2, y2 } = boundingBox;
 
       if (x < minX) minX = x;
-
       if (y < minY) minY = y;
-
       if (x2 > maxX) maxX = x2;
-
       if (y2 > maxY) maxY = y2;
-    }
+    });
 
     const scale = this.options["scale"]!;
     const lineWidth = this.options["line-width"]!;
@@ -176,3 +171,5 @@ export class FlowChart {
     }
   }
 }
+
+export default FlowChart;

@@ -1,23 +1,28 @@
-import { FlowChartSymbol } from "./symbol.js";
-import { FlowChart } from "../chart.js";
+import FlowChartSymbol from "./symbol.js";
+import FlowChart from "../chart.js";
 
-import type { Direction, SymbolOptions } from "../options.js";
+import { type Direction, type SymbolOptions } from "../options.js";
 
-export class Parallel extends FlowChartSymbol {
+class Parallel extends FlowChartSymbol {
   path1_direction: Direction;
   path1_symbol?: FlowChartSymbol;
+  path1_annotation: string;
   path2_direction: Direction;
   path2_symbol?: FlowChartSymbol;
+  path2_annotation: string;
   path3_direction: Direction;
-
   path3_symbol?: FlowChartSymbol;
+  path3_annotation: string;
+
   top_symbol?: FlowChartSymbol;
   bottom_symbol?: FlowChartSymbol;
   left_symbol?: FlowChartSymbol;
   right_symbol?: FlowChartSymbol;
+
   path1?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
   path2?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
   path3?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
+
   textMargin?: number;
   params: Record<string, string>;
 
@@ -25,11 +30,13 @@ export class Parallel extends FlowChartSymbol {
     const symbol = chart.paper.rect(0, 0, 0, 0);
 
     super(chart, options, symbol);
+    this.path1_annotation = options.path1_annotation || "";
+    this.path2_annotation = options.path2_annotation || "";
+    this.path3_annotation = options.path3_annotation || "";
     this.textMargin = this.getAttr("text-margin");
     this.path1_direction = "bottom";
     this.path2_direction = "right";
     this.path3_direction = "top";
-    this.params = options.params || {};
     if (
       options.direction_next === "path1" &&
       !options[options.direction_next] &&
@@ -148,7 +155,7 @@ export class Parallel extends FlowChartSymbol {
       // @ts-ignore
       this[this.path3_direction + "_symbol"] = this.path3_symbol;
 
-    const lineLength = this.getAttr<number>("line-length") as number;
+    const lineLength = this.getAttr<number>("line-length")!;
 
     if (this.bottom_symbol) {
       const bottomPoint = this.getBottom();
@@ -273,12 +280,26 @@ export class Parallel extends FlowChartSymbol {
 
   renderLines(): void {
     if (this.path1_symbol)
-      this.drawLineTo(this.path1_symbol, "", this.path1_direction);
+      this.drawLineTo(
+        this.path1_symbol,
+        this.path1_annotation,
+        this.path1_direction
+      );
 
     if (this.path2_symbol)
-      this.drawLineTo(this.path2_symbol, "", this.path2_direction);
+      this.drawLineTo(
+        this.path2_symbol,
+        this.path2_annotation,
+        this.path2_direction
+      );
 
     if (this.path3_symbol)
-      this.drawLineTo(this.path3_symbol, "", this.path3_direction);
+      this.drawLineTo(
+        this.path3_symbol,
+        this.path3_annotation,
+        this.path3_direction
+      );
   }
 }
+
+export default Parallel;

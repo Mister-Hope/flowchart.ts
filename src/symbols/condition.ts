@@ -1,8 +1,7 @@
-import { FlowChartSymbol } from "./symbol.js";
+import FlowChartSymbol from "./symbol.js";
 import { drawPath } from "../action.js";
-import { FlowChart } from "../chart.js";
-
-import type { Direction, SymbolOptions } from "../options.js";
+import FlowChart from "../chart.js";
+import { type Direction, type SymbolOptions } from "../options.js";
 
 export interface ConditionSymbolOptions extends SymbolOptions {
   yes_annotation?: string;
@@ -11,7 +10,7 @@ export interface ConditionSymbolOptions extends SymbolOptions {
   direction_no?: Direction;
 }
 
-export class Condition extends FlowChartSymbol {
+class Condition extends FlowChartSymbol {
   /** Yes text */
   yes_annotation?: string;
   /** No text */
@@ -30,7 +29,7 @@ export class Condition extends FlowChartSymbol {
   bottom_symbol?: FlowChartSymbol;
   right_symbol?: FlowChartSymbol;
   left_symbol?: FlowChartSymbol;
-  params: Record<string, string>;
+  // params: Record<string, string>;
   yes?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
   no?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
 
@@ -38,8 +37,8 @@ export class Condition extends FlowChartSymbol {
     super(chart, options);
     this.yes_annotation = options.yes_annotation;
     this.no_annotation = options.no_annotation;
-    this.textMargin = this.getAttr("text-margin") as number;
-    this.params = options.params || {};
+    this.textMargin = this.getAttr<number>("text-margin")!;
+    // this.params = options.params || {};
 
     let { direction_yes: yesDirection, direction_no: noDirection } = options;
 
@@ -91,11 +90,9 @@ export class Condition extends FlowChartSymbol {
     if (options.target) symbol.attr("target", options.target);
     if (options.key) symbol.node.id = options.key;
 
-    symbol.node.setAttribute("class", this.getAttr("class") as string);
+    symbol.node.setAttribute("class", this.getAttr("class")!);
 
-    this.text.attr({
-      y: symbol.getBBox().height / 2,
-    });
+    this.text.attr({ y: symbol.getBBox().height / 2 });
 
     this.group.push(symbol);
     symbol.insertBefore(this.text);
@@ -114,7 +111,7 @@ export class Condition extends FlowChartSymbol {
       // @ts-ignore
       this[`${this.no_direction}_symbol`] = this.no_symbol;
 
-    const lineLength = this.getAttr<number>("line-length") as number;
+    const lineLength = this.getAttr<number>("line-length")!;
 
     if (this.bottom_symbol) {
       const bottomPoint = this.getBottom();
@@ -230,15 +227,17 @@ export class Condition extends FlowChartSymbol {
     if (this.yes_symbol)
       this.drawLineTo(
         this.yes_symbol,
-        this.yes_annotation || (this.getAttr("yes-text") as string),
+        this.yes_annotation || this.getAttr("yes-text")! || "Yes",
         this.yes_direction
       );
 
     if (this.no_symbol)
       this.drawLineTo(
         this.no_symbol,
-        this.no_annotation || (this.getAttr("no-text") as string),
+        this.no_annotation || this.getAttr("no-text")! || "No",
         this.no_direction
       );
   }
 }
+
+export default Condition;

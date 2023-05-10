@@ -1,7 +1,7 @@
-import { FlowChart } from "./chart";
+import { type RaphaelPath, type RaphaelTextAnchorType } from "raphael";
 
-import type { RaphaelPath, RaphaelTextAnchorType } from "raphael";
-import type { Position } from "./symbol/symbol";
+import type FlowChart from "./chart.js";
+import { type Position } from "./typings.js";
 
 export interface LineIntersectionResult {
   x: number | null;
@@ -73,11 +73,9 @@ export const drawPath = (
   for (let i = 2; i < 2 * points.length + 2; i += 2)
     path += ` L{${i}},{${i + 1}}`;
 
-  const pathValues = [location.x, location.y];
+  const pathValues = [location, ...points].map(({ x, y }) => [x, y]).flat();
 
-  for (let i = 0; i < points.length; i++)
-    pathValues.push(points[i].x, points[i].y);
-
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const symbol = chart.paper.path(path, pathValues);
 
@@ -103,12 +101,16 @@ export const drawLine = (
 ): RaphaelPath<"SVG" | "VML"> => {
   let path = "M{0},{1}";
 
+  // TODO: Remove
+  if (Object.prototype.toString.call(to) !== "[object Array]") {
+    to = [to];
+  }
+
   for (let i = 2; i < 2 * to.length + 2; i += 2) path += ` L{${i}},{${i + 1}}`;
 
-  const pathValues = [from.x, from.y];
+  const pathValues = [from, ...to].map(({ x, y }) => [x, y]).flat();
 
-  for (let i = 0; i < to.length; i++) pathValues.push(to[i].x, to[i].y);
-
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const line = chart.paper.path(path, pathValues);
 

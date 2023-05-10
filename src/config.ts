@@ -1,6 +1,6 @@
-import type { ParsedDrawOptions } from "./options";
+import type { ParsedDrawOptions } from "./options.js";
 
-export const defaultConfig: ParsedDrawOptions = {
+export const defaultOptions: ParsedDrawOptions = {
   x: 0,
   y: 0,
   "text-margin": 10,
@@ -29,6 +29,7 @@ export const defaultConfig: ParsedDrawOptions = {
   // 'font': 'normal',
   // 'font-family': 'calibri',
   // 'font-weight': 'normal',
+  // 'roundness': 0,
   // 'flowstate' : {
   //   'past' : { 'fill': '#CCCCCC', 'font-size': 12},
   //   'current' : {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},

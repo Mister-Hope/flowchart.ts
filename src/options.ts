@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { FlowChartSymbol } from "./symbol/index.js";
+import type FlowChartSymbol from "./symbols/symbol.js";
 
 export type SymbolType =
   | "start"
@@ -34,6 +34,8 @@ export interface SVGOptions {
 }
 
 export interface DrawOptions extends Partial<SVGOptions> {
+  width?: number;
+  height?: number;
   /** Symbol Styles */
   symbols?: Record<string, Partial<SVGOptions>>;
   /** FlowState config */
@@ -41,6 +43,8 @@ export interface DrawOptions extends Partial<SVGOptions> {
 }
 
 export interface ParsedDrawOptions extends Partial<SVGOptions> {
+  width?: number;
+  height?: number;
   /** Stymbol Styles */
   symbols: Record<string, Partial<SVGOptions>>;
   /** FlowState config */

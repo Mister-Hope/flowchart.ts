@@ -1,19 +1,28 @@
+import {
+  type RaphaelElement,
+  type RaphaelSet,
+  type RaphaelPath,
+} from "raphael";
+
 import { checkLineIntersection, drawLine } from "../action.js";
-import { FlowChart } from "../chart.js";
+import type FlowChart from "../chart.js";
+import {
+  type Direction,
+  type SymbolOptions,
+  type SymbolType,
+} from "../options.js";
+import { type Position } from "../typings.js";
 
-import type { RaphaelElement, RaphaelSet, RaphaelPath } from "raphael";
-import type { Direction, SymbolOptions, SymbolType } from "../options.js";
-
-export interface Position {
-  x: number;
-  y: number;
-}
-
-export class FlowChartSymbol {
+class FlowChartSymbol {
   chart: FlowChart;
   text: RaphaelElement<"SVG" | "VML", Element | SVGTextElement>;
+  params: Record<string, string>;
 
-  connectedTo: FlowChartSymbol[];
+  connectedTo: FlowChartSymbol[] = [];
+  leftLines: RaphaelPath<"SVG" | "VML">[] = [];
+  rightLines: RaphaelPath<"SVG" | "VML">[] = [];
+  topLines: RaphaelPath<"SVG" | "VML">[] = [];
+  bottomLines: RaphaelPath<"SVG" | "VML">[] = [];
 
   group: RaphaelSet<"SVG" | "VML">;
 
@@ -24,10 +33,7 @@ export class FlowChartSymbol {
   flowstate: string;
   key: string;
   lineStyle: Record<string, any>;
-  leftLines: RaphaelPath<"SVG" | "VML">[] = [];
-  rightLines: RaphaelPath<"SVG" | "VML">[] = [];
-  topLines: RaphaelPath<"SVG" | "VML">[] = [];
-  bottomLines: RaphaelPath<"SVG" | "VML">[] = [];
+
   bottomStart?: boolean;
   next?: FlowChartSymbol;
   next_direction: Direction | undefined;
@@ -49,11 +55,11 @@ export class FlowChartSymbol {
     this.chart = chart;
     this.group = this.chart.paper.set();
     this.symbol = symbol;
-    this.connectedTo = [];
     this.symbolType = options.symbolType;
     this.flowstate = options.flowstate || "future";
-    this.lineStyle = options.lineStyle ?? {};
-    this.key = options.key ?? "";
+    this.lineStyle = options.lineStyle || {};
+    this.key = options.key || "";
+    this.params = options.params || {};
 
     this.next_direction =
       options.next && options["direction_next"]
@@ -64,18 +70,18 @@ export class FlowChartSymbol {
     // Raphael does not support the svg group tag so setting the text node id to the symbol node id plus t
     if (options.key) this.text.node.id = `${options.key}t`;
 
-    this.text.node.setAttribute("class", `${this.getAttr("class") as string}t`);
+    this.text.node.setAttribute("class", `${this.getAttr<string>("class")}t`);
 
     this.text.attr({
       "text-anchor": "start",
-      x: this.getAttr("text-margin") as number,
-      fill: this.getAttr("font-color") as string,
-      "font-size": this.getAttr("font-size") as number,
+      x: this.getAttr<number>("text-margin"),
+      fill: this.getAttr<string>("font-color"),
+      "font-size": this.getAttr<number>("font-size"),
     });
 
     const font = this.getAttr("font") as string;
-    const fontFamily = this.getAttr("font-family") as string;
-    const fontWeight = this.getAttr("font-weight") as string;
+    const fontFamily = this.getAttr<string>("font-family");
+    const fontWeight = this.getAttr<string>("font-weight");
 
     if (font) this.text.attr({ font: font });
     if (fontFamily) this.text.attr({ "font-family": fontFamily });
@@ -107,45 +113,49 @@ export class FlowChartSymbol {
       const words = options.text!.split(" ");
       let tempText = "";
 
-      for (let index = 0; index < words.length; index++) {
-        const word = words[index];
-        this.text.attr("text", tempText + " " + word);
+      words.forEach((word) => {
+        this.text.attr("text", `${tempText} ${word}`);
 
         if (this.text.getBBox().width > maxWidth) tempText += `\n${word}`;
         else tempText += ` ${word}`;
-      }
+      });
+
       this.text.attr("text", tempText.substring(1));
     }
 
     this.group.push(this.text);
 
     if (symbol) {
-      const tmpMargin = this.getAttr<number>("text-margin") as number;
+      symbol.node.setAttribute("class", this.getAttr<string>("class")!);
+
+      const tempMargin = this.getAttr<number>("text-margin")!;
 
       symbol.attr({
         fill: this.getAttr<string>("fill"),
         stroke: this.getAttr<string>("element-color"),
         "stroke-width": this.getAttr<number>("line-width"),
-        width: this.text.getBBox().width + 2 * tmpMargin,
-        height: this.text.getBBox().height + 2 * tmpMargin,
+        width: this.text.getBBox().width + 2 * tempMargin,
+        height: this.text.getBBox().height + 2 * tempMargin,
       });
 
-      if (options.link) symbol.attr("href", options.link);
+      const roundness = this.getAttr<number>("roundness")!;
 
+      if (!isNaN(roundness)) {
+        symbol.node.setAttribute("ry", roundness.toString());
+        symbol.node.setAttribute("rx", roundness.toString());
+      }
+
+      if (options.link) symbol.attr("href", options.link);
       if (options.target) symbol.attr("target", options.target);
 
-      symbol.node.setAttribute(
-        "class",
-        this.getAttr<string>("class") as string
-      );
-
-      //ndrqu Add click function with event and options params
+      // Add click function with event and options params
       if (options.function) {
         symbol.node.addEventListener(
           "click",
           (event) => {
-            // @ts-ignore
-            window[options.function!](event, options);
+            (window as Window & Record<string, any>)[
+              options.function as string
+            ](event, options);
           },
           false
         );
@@ -165,12 +175,14 @@ export class FlowChartSymbol {
     }
   }
 
-  /* Gets the attribute based on Flowstate, Symbol-Name and default, first found wins */
+  /* Gets the attribute based on FlowState, Symbol Name and default, first found wins */
   getAttr<T>(attName: string): T | undefined {
     if (!this.chart) return undefined;
 
-    const opt3 = this.chart.options ? this.chart.options[attName] : undefined;
-    const opt2 = this.chart.options.symbols
+    const rootOption = this.chart.options
+      ? this.chart.options[attName]
+      : undefined;
+    const symbolOption = this.chart.options.symbols
       ? this.chart.options.symbols[this.symbolType!][attName]
       : undefined;
 
@@ -179,24 +191,27 @@ export class FlowChartSymbol {
       // @ts-ignore
       this.chart.options.flowstate[this.flowstate]
     ) {
-      const opt1: T | undefined =
+      const flowStateOption: T | undefined =
         // @ts-ignore
         this.chart.options.flowstate[this.flowstate][attName];
-      if (opt1) return opt1;
+
+      if (flowStateOption) return flowStateOption;
     }
 
-    return opt2 || opt3;
+    return symbolOption || rootOption;
   }
 
   initialize(): void {
     this.group.transform(
-      `t${this.getAttr<number>("line-width") as number},${
-        this.getAttr<number>("line-width") as number
-      }`
+      `t${this.getAttr<number>("line-width")!},${this.getAttr<number>(
+        "line-width"
+      )!}`
     );
 
-    this.width = this.group.getBBox().width;
-    this.height = this.group.getBBox().height;
+    const boundingBox = this.group.getBBox();
+
+    this.width = boundingBox.width;
+    this.height = boundingBox.height;
   }
 
   getCenter(): Position {
@@ -231,36 +246,27 @@ export class FlowChartSymbol {
   }
 
   getTop(): Position {
-    const y = this.getY();
-    const x = this.getX() + this.width / 2;
-
-    return { x: x, y: y };
+    return { x: this.getX() + this.width / 2, y: this.getY() };
   }
 
   getBottom(): Position {
-    const y = this.getY() + this.height;
-    const x = this.getX() + this.width / 2;
-
-    return { x: x, y: y };
+    return { x: this.getX() + this.width / 2, y: this.getY() + this.height };
   }
 
   getLeft(): Position {
-    const y = this.getY() + this.group.getBBox().height / 2;
-    const x = this.getX();
-
-    return { x: x, y: y };
+    return { x: this.getX(), y: this.getY() + this.group.getBBox().height / 2 };
   }
 
   getRight(): Position {
-    const y = this.getY() + this.group.getBBox().height / 2;
-    const x = this.getX() + this.group.getBBox().width;
-
-    return { x: x, y: y };
+    return {
+      x: this.getX() + this.group.getBBox().width,
+      y: this.getY() + this.group.getBBox().height / 2,
+    };
   }
 
   render(): void {
     if (this.next) {
-      const lineLength = this.getAttr<number>("line-length") as number;
+      const lineLength = this.getAttr<number>("line-length")!;
 
       if (this.next_direction === "right") {
         const rightPoint = this.getRight();
@@ -272,6 +278,7 @@ export class FlowChartSymbol {
           const shift = (): void => {
             let hasSymbolUnder = false;
             let symbol: FlowChartSymbol;
+
             for (let index = 0; index < this.chart.symbols.length; index++) {
               symbol = this.chart.symbols[index];
 
@@ -371,16 +378,14 @@ export class FlowChartSymbol {
   ): void {
     if (this.connectedTo.indexOf(symbol) < 0) this.connectedTo.push(symbol);
 
-    const x = this.getCenter().x,
-      y = this.getCenter().y,
-      right = this.getRight(),
+    const { x, y } = this.getCenter();
+    const right = this.getRight(),
       bottom = this.getBottom(),
       top = this.getTop(),
       left = this.getLeft();
 
-    const symbolX = symbol.getCenter().x,
-      symbolY = symbol.getCenter().y,
-      symbolTop = symbol.getTop(),
+    const { x: symbolX, y: symbolY } = symbol.getCenter();
+    const symbolTop = symbol.getTop(),
       symbolRight = symbol.getRight(),
       symbolLeft = symbol.getLeft();
 
@@ -393,8 +398,8 @@ export class FlowChartSymbol {
 
     let maxX = 0,
       line;
-    const lineLength = this.getAttr<number>("line-length") as number;
-    const lineWith = this.getAttr<number>("line-width") as number;
+    const lineLength = this.getAttr<number>("line-length")!;
+    const lineWith = this.getAttr<number>("line-width")!;
 
     if ((!direction || direction === "bottom") && isOnSameColumn && isUnder) {
       if (symbol.topLines.length === 0 && this.bottomLines.length === 0)
@@ -738,7 +743,7 @@ export class FlowChartSymbol {
       maxX = top.x;
     }
 
-    //update line style
+    // update line style
     if (this.lineStyle[symbol.key] && line)
       line.attr(this.lineStyle[symbol.key]);
 
@@ -867,3 +872,5 @@ export class FlowChartSymbol {
       this.chart.maxXFromLine = maxX;
   }
 }
+
+export default FlowChartSymbol;

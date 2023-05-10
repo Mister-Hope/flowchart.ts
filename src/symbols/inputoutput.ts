@@ -1,17 +1,16 @@
-import { FlowChartSymbol } from "./symbol.js";
+import FlowChartSymbol from "./symbol.js";
 import { drawPath } from "../action.js";
-import { FlowChart } from "../chart.js";
+import FlowChart from "../chart.js";
+import { type SymbolOptions } from "../options.js";
+import { type Position } from "../typings.js";
 
-import type { Position } from "./symbol.js";
-import type { SymbolOptions } from "../options.js";
-
-export class InputOutput extends FlowChartSymbol {
+class InputOutput extends FlowChartSymbol {
   then?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
   textMargin: number;
 
   constructor(chart: FlowChart, options: Partial<SymbolOptions> = {}) {
     super(chart, options);
-    this.textMargin = this.getAttr("text-margin") as number;
+    this.textMargin = this.getAttr<number>("text-margin")!;
 
     this.text.attr({ x: this.textMargin * 3 });
 
@@ -32,9 +31,9 @@ export class InputOutput extends FlowChartSymbol {
     const symbol = drawPath(chart, start, points);
 
     symbol.attr({
-      stroke: this.getAttr("element-color") as string,
-      "stroke-width": this.getAttr("line-width") as number,
-      fill: this.getAttr("fill") as string,
+      stroke: this.getAttr<string>("element-color")!,
+      "stroke-width": this.getAttr<number>("line-width")!,
+      fill: this.getAttr<string>("fill")!,
     });
 
     if (options.link) symbol.attr("href", options.link);
@@ -43,26 +42,30 @@ export class InputOutput extends FlowChartSymbol {
 
     if (options.key) symbol.node.id = options.key;
 
-    symbol.node.setAttribute("class", this.getAttr("class") as string);
+    symbol.node.setAttribute("class", this.getAttr("class")!);
 
     this.text.attr({ y: symbol.getBBox().height / 2 });
 
     this.group.push(symbol);
     symbol.insertBefore(this.text);
+    this.symbol = symbol;
 
     this.initialize();
   }
 
   getLeft(): Position {
-    const y = this.getY() + this.group.getBBox().height / 2;
-    const x = this.getX() + this.textMargin;
-
-    return { x: x, y: y };
+    return {
+      x: this.getX() + this.textMargin,
+      y: this.getY() + this.group.getBBox().height / 2,
+    };
   }
 
   getRight() {
-    const y = this.getY() + this.group.getBBox().height / 2;
-    const x = this.getX() + this.group.getBBox().width - this.textMargin;
-    return { x: x, y: y };
+    return {
+      x: this.getX() + this.group.getBBox().width - this.textMargin,
+      y: this.getY() + this.group.getBBox().height / 2,
+    };
   }
 }
+
+export default InputOutput;
