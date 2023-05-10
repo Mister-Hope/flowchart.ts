@@ -103,10 +103,9 @@ const getChart = (): Chart => ({
           // FIXME:
           // @ts-ignore
           if (prev.path3 === symbol) prevDisplay.path3(displaySymbol);
-        }
-        // FIXME:
-        // @ts-ignore
-        else {
+        } else {
+          // FIXME:
+          // @ts-ignore
           prevDisplay.then(displaySymbol);
         }
 
