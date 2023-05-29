@@ -1,6 +1,6 @@
 {
   "name": "flowchart.ts",
-  "version": "0.1.6",
+  "version": "1.0.0",
   "author": "Mister-Hope",
   "description": "Flowchart support",
   "main": "./dist/flowchart.js",
@@ -21,7 +21,7 @@
   "keywords": [
     "flowchart"
   ],
-  "homepage": "http://flowchart.js.org/",
+  "homepage": "https://github.com/Mister-Hope/flowchart",
   "license": "MIT",
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin esbuild",
@@ -32,8 +32,7 @@
     "prepublish": "pnpm clean && pnpm build"
   },
   "files": [
-    "dist",
-    "typings"
+    "dist"
   ],
   "dependencies": {
     "@types/raphael": "^2.3.3",
