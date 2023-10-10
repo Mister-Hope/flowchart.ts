@@ -29,7 +29,7 @@
     "strictPropertyInitialization": true,
     "lib": ["DOM"],
     "baseUrl": "./",
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ES2020",
     "outDir": "./lib",
