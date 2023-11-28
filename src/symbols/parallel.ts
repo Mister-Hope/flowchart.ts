@@ -172,7 +172,7 @@ class Parallel extends FlowChartSymbol {
 
       if (!this.top_symbol.isPositioned) {
         this.top_symbol.shiftY(
-          this.getY() - this.top_symbol.height - lineLength
+          this.getY() - this.top_symbol.height - lineLength,
         );
         this.top_symbol.setX(topPoint.x + this.top_symbol.width);
         this.top_symbol.isPositioned = true;
@@ -187,7 +187,7 @@ class Parallel extends FlowChartSymbol {
       if (!this.left_symbol.isPositioned) {
         this.left_symbol.setY(leftPoint.y - this.left_symbol.height / 2);
         this.left_symbol.shiftX(
-          -(this.group.getBBox().x + this.width + lineLength)
+          -(this.group.getBBox().x + this.width + lineLength),
         );
         const shift = (): void => {
           let hasSymbolUnder = false;
@@ -201,7 +201,7 @@ class Parallel extends FlowChartSymbol {
               this.params["align-next"] !== "no"
             ) {
               const diff = Math.abs(
-                symbol.getCenter().x - this.left_symbol!.getCenter().x
+                symbol.getCenter().x - this.left_symbol!.getCenter().x,
               );
 
               if (
@@ -235,7 +235,7 @@ class Parallel extends FlowChartSymbol {
       if (!this.right_symbol.isPositioned) {
         this.right_symbol.setY(rightPoint.y - this.right_symbol.height / 2);
         this.right_symbol.shiftX(
-          this.group.getBBox().x + this.width + lineLength
+          this.group.getBBox().x + this.width + lineLength,
         );
         const shift = (): void => {
           let hasSymbolUnder = false;
@@ -249,7 +249,7 @@ class Parallel extends FlowChartSymbol {
               this.params["align-next"] !== "no"
             ) {
               const diff = Math.abs(
-                symbol.getCenter().x - this.right_symbol!.getCenter().x
+                symbol.getCenter().x - this.right_symbol!.getCenter().x,
               );
 
               if (
@@ -265,7 +265,7 @@ class Parallel extends FlowChartSymbol {
           if (hasSymbolUnder) {
             if (this.right_symbol!.symbolType === "end") return;
             this.right_symbol!.setX(
-              symbol!.getX() + symbol!.width + lineLength
+              symbol!.getX() + symbol!.width + lineLength,
             );
             shift();
           }
@@ -285,21 +285,21 @@ class Parallel extends FlowChartSymbol {
       this.drawLineTo(
         this.path1_symbol,
         this.path1_annotation,
-        this.path1_direction
+        this.path1_direction,
       );
 
     if (this.path2_symbol)
       this.drawLineTo(
         this.path2_symbol,
         this.path2_annotation,
-        this.path2_direction
+        this.path2_direction,
       );
 
     if (this.path3_symbol)
       this.drawLineTo(
         this.path3_symbol,
         this.path3_annotation,
-        this.path3_direction
+        this.path3_direction,
       );
   }
 }

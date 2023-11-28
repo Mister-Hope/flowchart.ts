@@ -25,7 +25,7 @@ class FlowChart {
   constructor(
     container: string | HTMLElement,
     // @ts-ignore
-    options: ParsedDrawOptions = {}
+    options: ParsedDrawOptions = {},
   ) {
     // width and height are not required
     // @ts-ignore
@@ -107,13 +107,13 @@ class FlowChart {
       symbol.shiftX(
         this.options.x! +
           (maxWidth - symbol.width) / 2 +
-          this.options["line-width"]!
+          this.options["line-width"]!,
       );
 
       symbol.shiftY(
         this.options.y! +
           (maxHeight - symbol.height) / 2 +
-          this.options["line-width"]!
+          this.options["line-width"]!,
       );
     });
 

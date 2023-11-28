@@ -50,7 +50,7 @@ class FlowChartSymbol {
   constructor(
     chart: FlowChart,
     options: Partial<SymbolOptions>,
-    symbol?: RaphaelElement<"SVG" | "VML", Element | SVGRectElement>
+    symbol?: RaphaelElement<"SVG" | "VML", Element | SVGRectElement>,
   ) {
     this.chart = chart;
     this.group = this.chart.paper.set();
@@ -99,10 +99,10 @@ class FlowChartSymbol {
         (event) => {
           (window as Window & Record<string, any>)[options.function as string](
             event,
-            options
+            options,
           );
         },
-        false
+        false,
       );
     }
 
@@ -157,7 +157,7 @@ class FlowChartSymbol {
               options.function as string
             ](event, options);
           },
-          false
+          false,
         );
         symbol.attr({ cursor: "pointer" });
       }
@@ -204,8 +204,8 @@ class FlowChartSymbol {
   initialize(): void {
     this.group.transform(
       `t${this.getAttr<number>("line-width")!},${this.getAttr<number>(
-        "line-width"
-      )!}`
+        "line-width",
+      )!}`,
     );
 
     const boundingBox = this.group.getBBox();
@@ -283,7 +283,7 @@ class FlowChartSymbol {
               symbol = this.chart.symbols[index];
 
               const diff = Math.abs(
-                symbol.getCenter().x - this.next!.getCenter().x
+                symbol.getCenter().x - this.next!.getCenter().x,
               );
 
               if (
@@ -324,7 +324,7 @@ class FlowChartSymbol {
               symbol = this.chart.symbols[index];
 
               const diff = Math.abs(
-                symbol.getCenter().x - this.next!.getCenter().x
+                symbol.getCenter().x - this.next!.getCenter().x,
               );
 
               if (
@@ -369,7 +369,7 @@ class FlowChartSymbol {
         this.drawLineTo(
           this.next,
           this.getAttr("arrow-text") || "",
-          this.next_direction
+          this.next_direction,
         );
       else this.drawLineTo(this.next, this.getAttr<string>("arrow-text") || "");
   }
@@ -377,7 +377,7 @@ class FlowChartSymbol {
   drawLineTo(
     symbol: FlowChartSymbol,
     text: string,
-    direction?: Direction
+    direction?: Direction,
   ): void {
     if (this.connectedTo.indexOf(symbol) < 0) this.connectedTo.push(symbol);
 
@@ -418,7 +418,7 @@ class FlowChartSymbol {
             { x: symbolTop.x, y: symbolTop.y - yOffset },
             { x: symbolTop.x, y: symbolTop.y },
           ],
-          text
+          text,
         );
       }
       this.bottomLines.push(line);
@@ -446,7 +446,7 @@ class FlowChartSymbol {
             { x: symbolLeft.x, y: symbolLeft.y - yOffset },
             { x: symbolLeft.x, y: symbolLeft.y },
           ],
-          text
+          text,
         );
       }
       this.rightLines.push(line);
@@ -470,7 +470,7 @@ class FlowChartSymbol {
             { x: symbolRight.x, y: symbolRight.y - yOffset },
             { x: symbolRight.x, y: symbolRight.y },
           ],
-          text
+          text,
         );
       }
       this.leftLines.push(line);
@@ -498,7 +498,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
           { x: symbolTop.x, y: symbolTop.y },
         ],
-        text
+        text,
       );
       this.rightLines.push(line);
       symbol.topLines.push(line);
@@ -525,7 +525,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
           { x: symbolTop.x, y: symbolTop.y },
         ],
-        text
+        text,
       );
       this.rightLines.push(line);
       symbol.topLines.push(line);
@@ -553,7 +553,7 @@ class FlowChartSymbol {
             { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
             { x: symbolTop.x, y: symbolTop.y },
           ],
-          text
+          text,
         );
       else
         line = drawLine(
@@ -564,7 +564,7 @@ class FlowChartSymbol {
             { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
             { x: symbolTop.x, y: symbolTop.y },
           ],
-          text
+          text,
         );
 
       this.bottomLines.push(line);
@@ -584,7 +584,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
           { x: symbolTop.x, y: symbolTop.y },
         ],
-        text
+        text,
       );
       this.bottomLines.push(line);
       symbol.topLines.push(line);
@@ -612,7 +612,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
           { x: symbolTop.x, y: symbolTop.y },
         ],
-        text
+        text,
       );
       this.bottomLines.push(line);
       symbol.topLines.push(line);
@@ -635,7 +635,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
           { x: symbolTop.x, y: symbolTop.y },
         ],
-        text
+        text,
       );
       this.rightLines.push(line);
       symbol.topLines.push(line);
@@ -653,7 +653,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: right.y - yOffset },
           { x: symbolTop.x, y: symbolTop.y - yOffset },
         ],
-        text
+        text,
       );
       this.rightLines.push(line);
       symbol.topLines.push(line);
@@ -685,7 +685,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
           { x: symbolTop.x, y: symbolTop.y },
         ],
-        text
+        text,
       );
       this.bottomLines.push(line);
       symbol.topLines.push(line);
@@ -709,7 +709,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
           { x: symbolTop.x, y: symbolTop.y },
         ],
-        text
+        text,
       );
       this.leftLines.push(line);
       symbol.topLines.push(line);
@@ -732,7 +732,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
           { x: symbolTop.x, y: symbolTop.y },
         ],
-        text
+        text,
       );
       this.leftLines.push(line);
       symbol.topLines.push(line);
@@ -751,7 +751,7 @@ class FlowChartSymbol {
           { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
           { x: symbolTop.x, y: symbolTop.y },
         ],
-        text
+        text,
       );
       this.topLines.push(line);
       symbol.topLines.push(line);
@@ -770,7 +770,7 @@ class FlowChartSymbol {
 
         const ePath = otherLine.attr("path") as unknown as [
             string,
-            ...number[]
+            ...number[],
           ][],
           lPath = line.attr("path") as unknown as [string, ...number[]][];
 
@@ -804,7 +804,7 @@ class FlowChartSymbol {
               line2FromX,
               line2FromY,
               line2ToX,
-              line2ToY
+              line2ToY,
             );
 
             if (res.onLine1 && res.onLine2) {

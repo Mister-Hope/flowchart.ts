@@ -1,28 +1,35 @@
 {
   "name": "flowchart.ts",
-  "version": "1.0.1",
-  "author": "Mister-Hope",
+  "version": "2.0.0",
+  "type": "module",
   "description": "Flowchart support",
-  "main": "./dist/flowchart.js",
-  "module": "./dist/flowchart.mjs",
-  "types": "./dist/flowchart.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/flowchart.d.ts",
-      "import": "./dist/flowchart.mjs",
-      "require": "./dist/flowchart.js",
-      "default": "./dist/flowchart.js"
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Mister-Hope/flowchart.js.git"
-  },
   "keywords": [
     "flowchart"
   ],
   "homepage": "https://github.com/Mister-Hope/flowchart",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mister-Hope/flowchart.js.git"
+  },
   "license": "MIT",
+  "author": "Mister-Hope",
+  "exports": {
+    ".": {
+      "types": "./dist/flowchart.d.ts",
+      "import": "./dist/flowchart.mjs",
+      "require": "./dist/flowchart.cjs",
+      "default": "./dist/flowchart.mjs"
+    }
+  },
+  "main": "./dist/flowchart.cjs",
+  "module": "./dist/flowchart.mjs",
+  "types": "./dist/flowchart.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^18.0.0 || >= 20"
+  },
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin esbuild",
     "clean": "rimraf dist/",
@@ -31,32 +38,29 @@
     "lint:check": "prettier --check . && eslint . --ext .ts",
     "prepublish": "pnpm clean && pnpm build"
   },
-  "files": [
-    "dist"
-  ],
   "dependencies": {
-    "@types/raphael": "^2.3.5",
+    "@types/raphael": "^2.3.9",
     "raphael": "^2.3.0",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "25.0.5",
+    "@rollup/plugin-commonjs": "25.0.7",
     "@rollup/plugin-node-resolve": "15.2.3",
-    "@types/node": "20.8.4",
-    "@typescript-eslint/eslint-plugin": "6.7.5",
-    "@typescript-eslint/parser": "6.7.5",
-    "esbuild": "0.19.4",
-    "eslint": "8.51.0",
+    "@types/node": "20.10.0",
+    "@typescript-eslint/eslint-plugin": "6.13.0",
+    "@typescript-eslint/parser": "6.13.0",
+    "esbuild": "0.19.8",
+    "eslint": "8.54.0",
     "eslint-config-prettier": "9.0.0",
-    "eslint-plugin-import": "2.28.1",
-    "eslint-plugin-prettier": "5.0.0",
-    "prettier": "3.0.3",
+    "eslint-plugin-import": "2.29.0",
+    "eslint-plugin-prettier": "5.0.1",
+    "prettier": "3.1.0",
     "rimraf": "5.0.5",
-    "rollup": "4.0.2",
+    "rollup": "4.6.0",
     "rollup-plugin-dts": "6.1.0",
     "rollup-plugin-esbuild": "6.1.0",
-    "typescript": "5.2.2",
-    "vite": "4.4.11"
+    "typescript": "5.3.2",
+    "vite": "5.0.2"
   },
-  "packageManager": "pnpm@8.9.0"
+  "packageManager": "pnpm@8.11.0"
 }

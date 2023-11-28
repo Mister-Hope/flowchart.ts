@@ -77,7 +77,7 @@ const getChart = (): Chart => ({
     const constructChart = (
       symbol: SymbolOptions,
       prevDisplay?: FlowChartSymbol,
-      prev?: FlowChartSymbol
+      prev?: FlowChartSymbol,
     ): FlowChartSymbol => {
       const displaySymbol = getDisplaySymbol(symbol);
 
@@ -413,7 +413,7 @@ export const parse = (input = ""): Chart => {
           const nextSymbol = getSymbol(lineStyleSymbols[iSS + 1], chart);
 
           currentSymbol["lineStyle"][nextSymbol.key] = JSON.parse(
-            getStyle(lineStyleSymbols[iSS + 1])
+            getStyle(lineStyleSymbols[iSS + 1]),
           );
         }
     }

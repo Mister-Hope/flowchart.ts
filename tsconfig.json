@@ -1,39 +1,54 @@
 {
   "compilerOptions": {
-    "allowJs": false,
+    // types
     "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "alwaysStrict": false,
-    "declaration": true,
-    "diagnostics": false,
+    "noFallthroughCasesInSwitch": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true,
+
+    // Modules
+    "baseUrl": "./",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+
+    // Emit
     "downlevelIteration": false,
-    "experimentalDecorators": true,
+    "importHelpers": true,
+    "newLine": "lf",
+    "noEmitOnError": true,
+    "removeComments": false,
+    "inlineSources": true,
+    "inlineSourceMap": false,
+    "sourceMap": true,
+    "pretty": true,
+
+    // JavaScript
+    "allowJs": false,
+    "checkJs": false,
+
+    // Interop Constraints
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
-    "inlineSourceMap": false,
-    "inlineSources": false,
-    "listEmittedFiles": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedParameters": true,
-    "pretty": true,
-    "resolveJsonModule": true,
-    "removeComments": false,
-    "sourceMap": false,
-    "strict": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
-    "lib": ["DOM"],
-    "baseUrl": "./",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "ES2020",
-    "outDir": "./lib",
-    "declarationDir": "./types"
+
+    // lib
+    "lib": ["DOM", "ESNext"],
+    // minimal node 18 support
+    "target": "ES2022",
+
+    // Compiler Diagnostics
+    "diagnostics": false,
+    "listEmittedFiles": false,
+    "skipLibCheck": true
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "vite.config.mts"]
 }

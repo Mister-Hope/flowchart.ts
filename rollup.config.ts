@@ -8,7 +8,7 @@ export default [
     input: `./src/index.ts`,
     output: [
       {
-        file: `./dist/flowchart.js`,
+        file: `./dist/flowchart.cjs`,
         format: "cjs",
         sourcemap: true,
         exports: "named",
@@ -23,7 +23,7 @@ export default [
     plugins: [
       nodeResolve({ preferBuiltins: true }),
       commonjs(),
-      esbuild({ charset: "utf8", minify: true, target: "node14" }),
+      esbuild({ charset: "utf8", minify: true, target: "node18" }),
     ],
   },
   {
@@ -31,11 +31,6 @@ export default [
     output: [
       {
         file: `./dist/flowchart.d.ts`,
-        format: "esm",
-        exports: "named",
-      },
-      {
-        file: `./dist/flowchart.d.mts`,
         format: "esm",
         exports: "named",
       },

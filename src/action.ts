@@ -18,7 +18,7 @@ export const checkLineIntersection = (
   line2StartX: number,
   line2StartY: number,
   line2EndX: number,
-  line2EndY: number
+  line2EndY: number,
 ): LineIntersectionResult => {
   // if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
   const result: LineIntersectionResult = {
@@ -66,7 +66,7 @@ export const checkLineIntersection = (
 export const drawPath = (
   chart: FlowChart,
   location: Position,
-  points: Position[]
+  points: Position[],
 ): RaphaelPath<"SVG" | "VML"> => {
   let path = "M{0},{1}";
 
@@ -97,7 +97,7 @@ export const drawLine = (
   chart: FlowChart,
   from: Position,
   to: Position[],
-  text: string
+  text: string,
 ): RaphaelPath<"SVG" | "VML"> => {
   let path = "M{0},{1}";
 
