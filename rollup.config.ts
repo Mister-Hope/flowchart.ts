@@ -8,13 +8,7 @@ export default [
     input: `./src/index.ts`,
     output: [
       {
-        file: `./dist/flowchart.cjs`,
-        format: "cjs",
-        sourcemap: true,
-        exports: "named",
-      },
-      {
-        file: `./dist/flowchart.mjs`,
+        file: `./dist/flowchart.js`,
         format: "esm",
         sourcemap: true,
         exports: "named",
