@@ -1,7 +1,7 @@
 import FlowChartSymbol from "./symbol.js";
 import { drawPath } from "../action.js";
-import FlowChart from "../chart.js";
-import { type Direction, type SymbolOptions } from "../options.js";
+import type FlowChart from "../chart.js";
+import type { Direction, SymbolOptions } from "../options.js";
 
 export interface ConditionSymbolOptions extends SymbolOptions {
   yes_annotation?: string;
@@ -105,12 +105,12 @@ class Condition extends FlowChartSymbol {
   render(): void {
     if (this.yes_direction)
       // FIXME:
-      // @ts-ignore
+      // @ts-expect-error
       this[`${this.yes_direction}_symbol`] = this.yes_symbol;
 
     if (this.no_direction)
       // FIXME:
-      // @ts-ignore
+      // @ts-expect-error
       this[`${this.no_direction}_symbol`] = this.no_symbol;
 
     const lineLength = this.getAttr<number>("line-length")!;

@@ -1,6 +1,6 @@
 import FlowChartSymbol from "./symbol.js";
-import FlowChart from "../chart.js";
-import { type Direction, type SymbolOptions } from "../options.js";
+import type FlowChart from "../chart.js";
+import type { Direction, SymbolOptions } from "../options.js";
 
 class Parallel extends FlowChartSymbol {
   path1_direction: Direction;
@@ -140,17 +140,17 @@ class Parallel extends FlowChartSymbol {
   render() {
     if (this.path1_direction)
       // FIXME:
-      // @ts-ignore
+      // @ts-expect-error
       this[this.path1_direction + "_symbol"] = this.path1_symbol;
 
     if (this.path2_direction)
       // FIXME:
-      // @ts-ignore
+      // @ts-expect-error
       this[this.path2_direction + "_symbol"] = this.path2_symbol;
 
     if (this.path3_direction)
       // FIXME:
-      // @ts-ignore
+      // @ts-expect-error
       this[this.path3_direction + "_symbol"] = this.path3_symbol;
 
     const lineLength = this.getAttr<number>("line-length")!;

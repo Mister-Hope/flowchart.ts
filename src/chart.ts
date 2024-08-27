@@ -1,14 +1,11 @@
-import Raphael, {
-  type RaphaelPaper,
-  type RaphaelPath,
-  type RaphaelSet,
-} from "raphael";
+import type { RaphaelPaper, RaphaelPath, RaphaelSet } from "raphael";
+import Raphael from "raphael";
 
 import { defaultOptions } from "./config.js";
-import { type ParsedDrawOptions } from "./options.js";
+import type { ParsedDrawOptions } from "./options.js";
 import Condition from "./symbols/condition";
 import Parallel from "./symbols/parallel";
-import FlowChartSymbol from "./symbols/symbol.js";
+import type FlowChartSymbol from "./symbols/symbol.js";
 import { deepAssign } from "./utils.js";
 
 class FlowChart {
@@ -24,18 +21,18 @@ class FlowChart {
 
   constructor(
     container: string | HTMLElement,
-    // @ts-ignore
+    // @ts-expect-error
     options: ParsedDrawOptions = {},
   ) {
     // width and height are not required
-    // @ts-ignore
+    // @ts-expect-error
     this.paper = new Raphael(container, options.width, options.height);
 
     this.options = deepAssign(options, defaultOptions);
   }
 
   handle(symbol: FlowChartSymbol): FlowChartSymbol {
-    if (this.symbols.indexOf(symbol) <= -1) this.symbols.push(symbol);
+    if (!this.symbols.includes(symbol)) this.symbols.push(symbol);
 
     if (symbol instanceof Condition) {
       symbol.yes = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
@@ -76,7 +73,7 @@ class FlowChart {
       };
     } else {
       // FIXME:
-      // @ts-ignore
+      // @ts-expect-error
       symbol.then = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
         symbol.next = nextSymbol;
         symbol.pathOk = true;
@@ -149,7 +146,7 @@ class FlowChart {
       if (y2 > maxY) maxY = y2;
     });
 
-    const scale = this.options["scale"]!;
+    const scale = this.options.scale!;
     const lineWidth = this.options["line-width"]!;
 
     if (this.minXFromSymbols < minX) minX = this.minXFromSymbols;

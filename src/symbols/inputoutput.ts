@@ -1,8 +1,8 @@
 import FlowChartSymbol from "./symbol.js";
 import { drawPath } from "../action.js";
-import FlowChart from "../chart.js";
-import { type SymbolOptions } from "../options.js";
-import { type Position } from "../typings.js";
+import type FlowChart from "../chart.js";
+import type { SymbolOptions } from "../options.js";
+import type { Position } from "../typings.js";
 
 class InputOutput extends FlowChartSymbol {
   then?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;

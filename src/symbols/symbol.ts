@@ -1,17 +1,14 @@
-import {
-  type RaphaelElement,
-  type RaphaelPath,
-  type RaphaelSet,
+import type {
+  RaphaelAttributes,
+  RaphaelElement,
+  RaphaelPath,
+  RaphaelSet,
 } from "raphael";
 
 import { checkLineIntersection, drawLine } from "../action.js";
 import type FlowChart from "../chart.js";
-import {
-  type Direction,
-  type SymbolOptions,
-  type SymbolType,
-} from "../options.js";
-import { type Position } from "../typings.js";
+import type { Direction, SymbolOptions, SymbolType } from "../options.js";
+import type { Position } from "../typings.js";
 
 class FlowChartSymbol {
   chart: FlowChart;
@@ -32,11 +29,11 @@ class FlowChartSymbol {
 
   flowstate: string;
   key: string;
-  lineStyle: Record<string, any>;
+  lineStyle: Record<string, keyof RaphaelAttributes>;
 
   bottomStart?: boolean;
   next?: FlowChartSymbol;
-  next_direction: Direction | undefined;
+  direction_next: Direction | undefined;
   isPositioned?: boolean;
   width = 0;
   height = 0;
@@ -56,30 +53,30 @@ class FlowChartSymbol {
     this.group = this.chart.paper.set();
     this.symbol = symbol;
     this.symbolType = options.symbolType;
-    this.flowstate = options.flowstate || "future";
-    this.lineStyle = options.lineStyle || {};
-    this.key = options.key || "";
-    this.params = options.params || {};
+    this.flowstate = options.flowstate ?? "future";
+    this.lineStyle = options.lineStyle ?? {};
+    this.key = options.key ?? "";
+    this.params = options.params ?? {};
 
-    this.next_direction =
-      options.next && options["direction_next"]
-        ? options["direction_next"]
+    this.direction_next =
+      options.next && options.direction_next
+        ? options.direction_next
         : undefined;
 
-    this.text = this.chart.paper.text(0, 0, options.text || "");
+    this.text = this.chart.paper.text(0, 0, options.text ?? "");
     // Raphael does not support the svg group tag so setting the text node id to the symbol node id plus t
     if (options.key) this.text.node.id = `${options.key}t`;
 
     this.text.node.setAttribute("class", `${this.getAttr<string>("class")}t`);
 
     this.text.attr({
+      "font-size": this.getAttr<number>("font-size")!,
+      fill: this.getAttr<string>("font-color")!,
       "text-anchor": "start",
-      x: this.getAttr<number>("text-margin"),
-      fill: this.getAttr<string>("font-color"),
-      "font-size": this.getAttr<number>("font-size"),
+      x: this.getAttr<number>("text-margin")!,
     });
 
-    const font = this.getAttr("font") as string;
+    const font = this.getAttr<string>("font");
     const fontFamily = this.getAttr<string>("font-family");
     const fontWeight = this.getAttr<string>("font-weight");
 
@@ -92,15 +89,20 @@ class FlowChartSymbol {
 
     // Add click function with event and options params
     if (options.function) {
+      const { function: functionName } = options;
+
       this.text.attr({ cursor: "pointer" });
 
       this.text.node.addEventListener(
         "click",
         (event) => {
-          (window as Window & Record<string, any>)[options.function as string](
-            event,
-            options,
-          );
+          // prettier-ignore
+          (
+            // @ts-expect-error: a
+            window[functionName] as
+              | ((event: Event, options: Partial<SymbolOptions>) => void)
+              | undefined
+          )?.(event, options);
         },
         false,
       );
@@ -131,16 +133,16 @@ class FlowChartSymbol {
       const tempMargin = this.getAttr<number>("text-margin")!;
 
       symbol.attr({
-        fill: this.getAttr<string>("fill"),
-        stroke: this.getAttr<string>("element-color"),
-        "stroke-width": this.getAttr<number>("line-width"),
+        fill: this.getAttr<string>("fill")!,
+        stroke: this.getAttr<string>("element-color")!,
+        "stroke-width": this.getAttr<number>("line-width")!,
         width: this.text.getBBox().width + 2 * tempMargin,
         height: this.text.getBBox().height + 2 * tempMargin,
       });
 
       const roundness = this.getAttr<number>("roundness")!;
 
-      if (!isNaN(roundness)) {
+      if (typeof roundness === "number" && !isNaN(roundness)) {
         symbol.node.setAttribute("ry", roundness.toString());
         symbol.node.setAttribute("rx", roundness.toString());
       }
@@ -150,12 +152,19 @@ class FlowChartSymbol {
 
       // Add click function with event and options params
       if (options.function) {
+        const { function: functionName } = options;
+
         symbol.node.addEventListener(
           "click",
           (event) => {
-            (window as Window & Record<string, any>)[
-              options.function as string
-            ](event, options);
+            // prettier-ignore
+            (
+            // @ts-expect-error: a
+              window[functionName] as (
+                event: Event,
+                options: Partial<SymbolOptions>,
+              ) => void
+            )?.(event, options);
           },
           false,
         );
@@ -176,23 +185,18 @@ class FlowChartSymbol {
   }
 
   /* Gets the attribute based on FlowState, Symbol Name and default, first found wins */
-  getAttr<T>(attName: string): T | undefined {
-    if (!this.chart) return undefined;
+  getAttr<T>(attName: string): T | null {
+    if (!this.chart) return null;
 
-    const rootOption = this.chart.options
-      ? this.chart.options[attName]
-      : undefined;
-    const symbolOption = this.chart.options.symbols
-      ? this.chart.options.symbols[this.symbolType!][attName]
-      : undefined;
+    const rootOption = this.chart.options?.[attName] ?? null;
 
-    if (
-      this.chart.options.flowstate &&
-      // @ts-ignore
-      this.chart.options.flowstate[this.flowstate]
-    ) {
+    const symbolOption =
+      this.chart.options.symbols?.[this.symbolType!][attName] ?? null;
+
+    // @ts-expect-error: flowstate is not defined in the type
+    if (this.chart.options.flowstate?.[this.flowstate]) {
       const flowStateOption: T | undefined =
-        // @ts-ignore
+        // @ts-expect-error: flowstate is not defined in the type
         this.chart.options.flowstate[this.flowstate][attName];
 
       if (flowStateOption) return flowStateOption;
@@ -268,7 +272,7 @@ class FlowChartSymbol {
     if (this.next) {
       const lineLength = this.getAttr<number>("line-length")!;
 
-      if (this.next_direction === "right") {
+      if (this.direction_next === "right") {
         const rightPoint = this.getRight();
 
         if (!this.next.isPositioned) {
@@ -279,9 +283,7 @@ class FlowChartSymbol {
             let hasSymbolUnder = false;
             let symbol: FlowChartSymbol;
 
-            for (let index = 0; index < this.chart.symbols.length; index++) {
-              symbol = this.chart.symbols[index];
-
+            for (symbol of this.chart.symbols) {
               const diff = Math.abs(
                 symbol.getCenter().x - this.next!.getCenter().x,
               );
@@ -309,7 +311,7 @@ class FlowChartSymbol {
 
           this.next.render();
         }
-      } else if (this.next_direction === "left") {
+      } else if (this.direction_next === "left") {
         const leftPoint = this.getLeft();
 
         if (!this.next.isPositioned) {
@@ -320,9 +322,7 @@ class FlowChartSymbol {
             let hasSymbolUnder = false;
             let symbol: FlowChartSymbol;
 
-            for (let index = 0; index < this.chart.symbols.length; index++) {
-              symbol = this.chart.symbols[index];
-
+            for (symbol of this.chart.symbols) {
               const diff = Math.abs(
                 symbol.getCenter().x - this.next!.getCenter().x,
               );
@@ -365,13 +365,13 @@ class FlowChartSymbol {
 
   renderLines(): void {
     if (this.next)
-      if (this.next_direction)
+      if (this.direction_next)
         this.drawLineTo(
           this.next,
-          this.getAttr("arrow-text") || "",
-          this.next_direction,
+          this.getAttr("arrow-text") ?? "",
+          this.direction_next,
         );
-      else this.drawLineTo(this.next, this.getAttr<string>("arrow-text") || "");
+      else this.drawLineTo(this.next, this.getAttr<string>("arrow-text") ?? "");
   }
 
   drawLineTo(
@@ -379,7 +379,7 @@ class FlowChartSymbol {
     text: string,
     direction?: Direction,
   ): void {
-    if (this.connectedTo.indexOf(symbol) < 0) this.connectedTo.push(symbol);
+    if (!this.connectedTo.includes(symbol)) this.connectedTo.push(symbol);
 
     const { x, y } = this.getCenter();
     const right = this.getRight(),

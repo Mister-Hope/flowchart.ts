@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+import type { RaphaelAttributes } from "raphael";
+
 import type FlowChartSymbol from "./symbols/symbol.js";
 
 export type SymbolType =
@@ -69,7 +70,7 @@ export interface SymbolOptions extends ParsedDrawOptions {
   link: string | null;
   target: string | null;
   function: null | string;
-  lineStyle: Record<string, string>;
+  lineStyle: Record<string, keyof RaphaelAttributes>;
   params: Record<string, string>;
   direction_next?: Direction;
   next?: FlowChartSymbol;

@@ -1,7 +1,7 @@
-import { type RaphaelPath, type RaphaelTextAnchorType } from "raphael";
+import type { RaphaelPath, RaphaelTextAnchorType } from "raphael";
 
 import type FlowChart from "./chart.js";
-import { type Position } from "./typings.js";
+import type { Position } from "./typings.js";
 
 export interface LineIntersectionResult {
   x: number | null;
@@ -76,7 +76,7 @@ export const drawPath = (
   const pathValues = [location, ...points].map(({ x, y }) => [x, y]).flat();
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error
   const symbol = chart.paper.path(path, pathValues);
 
   symbol.attr("stroke", chart.options["element-color"]);
@@ -109,7 +109,7 @@ export const drawLine = (
   const pathValues = [from, ...to].map(({ x, y }) => [x, y]).flat();
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error
   const line = chart.paper.path(path, pathValues);
 
   line.attr({
