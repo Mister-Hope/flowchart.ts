@@ -68,6 +68,7 @@ const getChart = (): Chart => ({
           displaySymbols[key] = new Parallel(diagram, options);
           break;
         default:
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           throw new Error(`Unknown symbol type ${symbolType}!`);
       }
 
@@ -156,7 +157,7 @@ const getChart = (): Chart => ({
   },
 
   options(): ParsedDrawOptions | Record<string, never> {
-    return this.diagram?.options || {};
+    return this.diagram?.options ?? {};
   },
 });
 
@@ -286,7 +287,7 @@ export const parse = (input = ""): Chart => {
         symbol.text = sub.join(": ");
       }
 
-      if (symbol.text && symbol.text.includes(":$")) {
+      if (symbol.text?.includes(":$")) {
         sub = symbol.text.split(":$");
         symbol.text = sub.shift()!;
         symbol.function = sub.join(":$");
@@ -294,7 +295,7 @@ export const parse = (input = ""): Chart => {
         sub = symbol.symbolType.split(":$");
         symbol.symbolType = sub.shift() as SymbolType;
         symbol.function = sub.join(":$");
-      } else if (symbol.text && symbol.text.includes(":>")) {
+      } else if (symbol.text?.includes(":>")) {
         sub = symbol.text.split(":>");
         symbol.text = sub.shift()!;
         symbol.link = sub.join(":>");

@@ -53,14 +53,14 @@ class InputOutput extends FlowChartSymbol {
     this.initialize();
   }
 
-  getLeft(): Position {
+  override getLeft(): Position {
     return {
       x: this.getX() + this.textMargin,
       y: this.getY() + this.group.getBBox().height / 2,
     };
   }
 
-  getRight() {
+  override getRight(): Position {
     return {
       x: this.getX() + this.group.getBBox().width - this.textMargin,
       y: this.getY() + this.group.getBBox().height / 2,

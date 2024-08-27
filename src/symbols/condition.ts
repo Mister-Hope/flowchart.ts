@@ -45,8 +45,8 @@ class Condition extends FlowChartSymbol {
     if (!noDirection && yesDirection === "right") noDirection = "bottom";
     else if (!yesDirection && noDirection === "bottom") yesDirection = "right";
 
-    this.yes_direction = yesDirection || "bottom";
-    this.no_direction = noDirection || "right";
+    this.yes_direction = yesDirection ?? "bottom";
+    this.no_direction = noDirection ?? "right";
 
     this.text.attr({ x: this.textMargin * 2 });
 
@@ -105,12 +105,12 @@ class Condition extends FlowChartSymbol {
   render(): void {
     if (this.yes_direction)
       // FIXME:
-      // @ts-expect-error
+      // @ts-expect-error: the key is a string
       this[`${this.yes_direction}_symbol`] = this.yes_symbol;
 
     if (this.no_direction)
       // FIXME:
-      // @ts-expect-error
+      // @ts-expect-error: the key is a string
       this[`${this.no_direction}_symbol`] = this.no_symbol;
 
     const lineLength = this.getAttr<number>("line-length")!;
@@ -139,9 +139,7 @@ class Condition extends FlowChartSymbol {
           let hasSymbolUnder = false;
           let symbol: FlowChartSymbol;
 
-          for (let index = 0; index < this.chart.symbols.length; index++) {
-            symbol = this.chart.symbols[index];
-
+          for (symbol of this.chart.symbols) {
             if (
               !this.params["align-next"] ||
               this.params["align-next"] !== "no"
@@ -189,9 +187,7 @@ class Condition extends FlowChartSymbol {
           let hasSymbolUnder = false;
           let symbol: FlowChartSymbol;
 
-          for (let index = 0; index < this.chart.symbols.length; index++) {
-            symbol = this.chart.symbols[index];
-
+          for (symbol of this.chart.symbols) {
             if (
               !this.params["align-next"] ||
               this.params["align-next"] !== "no"
@@ -230,6 +226,7 @@ class Condition extends FlowChartSymbol {
     if (this.yes_symbol)
       this.drawLineTo(
         this.yes_symbol,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         this.yes_annotation || this.getAttr("yes-text")! || "Yes",
         this.yes_direction,
       );
@@ -237,6 +234,7 @@ class Condition extends FlowChartSymbol {
     if (this.no_symbol)
       this.drawLineTo(
         this.no_symbol,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         this.no_annotation || this.getAttr("no-text")! || "No",
         this.no_direction,
       );

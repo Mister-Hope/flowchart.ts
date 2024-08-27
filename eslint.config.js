@@ -1,3 +1,4 @@
+/* eslint-disable import-x/no-unresolved */
 import hopeConfig, { config, tsParser } from "eslint-config-mister-hope";
 
 export default config(

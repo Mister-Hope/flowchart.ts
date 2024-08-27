@@ -140,17 +140,17 @@ class Parallel extends FlowChartSymbol {
   render() {
     if (this.path1_direction)
       // FIXME:
-      // @ts-expect-error
+      // @ts-expect-error: the key is a string
       this[this.path1_direction + "_symbol"] = this.path1_symbol;
 
     if (this.path2_direction)
       // FIXME:
-      // @ts-expect-error
+      // @ts-expect-error: the key is a string
       this[this.path2_direction + "_symbol"] = this.path2_symbol;
 
     if (this.path3_direction)
       // FIXME:
-      // @ts-expect-error
+      // @ts-expect-error: the key is a string
       this[this.path3_direction + "_symbol"] = this.path3_symbol;
 
     const lineLength = this.getAttr<number>("line-length")!;
@@ -193,9 +193,7 @@ class Parallel extends FlowChartSymbol {
           let hasSymbolUnder = false;
           let symbol: FlowChartSymbol;
 
-          for (let index = 0; index < this.chart.symbols.length; index++) {
-            symbol = this.chart.symbols[index];
-
+          for (symbol of this.chart.symbols) {
             if (
               !this.params["align-next"] ||
               this.params["align-next"] !== "no"
@@ -241,9 +239,7 @@ class Parallel extends FlowChartSymbol {
           let hasSymbolUnder = false;
           let symbol: FlowChartSymbol;
 
-          for (let index = 0; index < this.chart.symbols.length; index++) {
-            symbol = this.chart.symbols[index];
-
+          for (symbol of this.chart.symbols) {
             if (
               !this.params["align-next"] ||
               this.params["align-next"] !== "no"
