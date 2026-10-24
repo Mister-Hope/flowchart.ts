@@ -1,8 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { parse } from "../src/index.js";
+import { CHART_FIXTURES } from "./fixtures/charts.js";
 
 const byId = (id: string): HTMLElement | null => document.querySelector<HTMLElement>(`#${id}`);
+
+const PARALLEL_BRANCH_DSL = CHART_FIXTURES["parallel-annotations"]?.dsl ?? "";
+
+const viewBoxDimensions = (): number[] =>
+  (document.querySelector("svg")?.getAttribute("viewBox") ?? "").split(" ").map(Number);
 
 const createContainer = (id = "chart"): HTMLElement => {
   document.body.innerHTML = "";
@@ -132,9 +138,10 @@ describe("draw: options", () => {
     parse(basicChart).draw(createContainer(), { scale: 2 });
 
     const svg = document.querySelector("svg");
+    const viewBox = viewBoxDimensions();
 
-    expect(Number(svg?.getAttribute("width"))).toBeGreaterThan(0);
-    expect(svg?.getAttribute("viewBox")).toMatch(/^0 0 /u);
+    expect(Number(svg?.getAttribute("width")) / viewBox[2]).toBeCloseTo(2);
+    expect(Number(svg?.getAttribute("height")) / viewBox[3]).toBeCloseTo(2);
   });
 
   it("exposes the merged options", () => {
@@ -259,5 +266,28 @@ describe("draw: lifecycle", () => {
     expect(st).toBeDefined();
     expect(op1).toBeDefined();
     expect(st!.bottom).toBeLessThanOrEqual(op1!.top + 1);
+  });
+});
+
+describe("draw: behaviour fixes over the original renderer", () => {
+  it("lets user options override package defaults", () => {
+    parse(basicChart).draw(createContainer(), { "line-width": 6, scale: 0.5 });
+
+    const svg = document.querySelector("svg");
+    const viewBox = viewBoxDimensions();
+
+    expect(Number(svg?.getAttribute("width")) / viewBox[2]).toBeCloseTo(0.5);
+    expect(byId("st")?.getAttribute("stroke-width")).toBe("6");
+  });
+
+  it("renders parallel branches that specify explicit directions", () => {
+    parse(PARALLEL_BRANCH_DSL).draw(createContainer());
+
+    const labels = [...document.querySelectorAll("text")].map((text) => text.textContent);
+
+    expect(labels).toContain("one");
+    expect(labels).toContain("two");
+    expect(labels).toContain("three");
+    expect(document.querySelectorAll("path[marker-end]").length).toBeGreaterThanOrEqual(6);
   });
 });

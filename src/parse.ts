@@ -220,7 +220,7 @@ const getAnnotation = (line: string): string => {
   return tempSplit.length > 1 ? (startIndex > 0 && endIndex > 0 ? (tempSplit[1] ?? "") : "") : "";
 };
 
-const DIRECTIONS = new Set<string>(["top", "right", "left", "bottom"]);
+const DIRECTIONS = new Set<string>(["top", "right", "left", "bottom", "path1", "path2", "path3"]);
 
 const BRANCH_NAMES = new Set<string>(["next", "yes", "no", "path1", "path2", "path3"]);
 
@@ -319,7 +319,7 @@ const parseDefinition = (line: string): SymbolOptions => {
       const [paramKey, paramValue] = entryParts;
 
       if (entryParts.length === 2 && paramKey != null && paramValue != null)
-        params[paramKey] = paramValue;
+        params[paramKey.trim()] = paramValue.trim();
     }
   }
 

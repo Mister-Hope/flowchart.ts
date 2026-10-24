@@ -134,3 +134,80 @@ describe("parse: errors", () => {
     expect(Object.keys(chartOf("").symbols)).toHaveLength(0);
   });
 });
+
+describe("parse: text, links and styles", () => {
+  it("parses several node params", () => {
+    const chart = chartOf("cond(a=1, b=2)=>condition: Q?");
+
+    expect(chart.symbols.cond?.params).toStrictEqual({ a: "1", b: "2" });
+  });
+
+  it("keeps an unclosed link target as part of the link", () => {
+    const chart = chartOf("st=>start: S:>https://example.com[blank");
+
+    expect(chart.symbols.st?.link).toBe("https://example.com[blank");
+    expect(chart.symbols.st?.target).toBeNull();
+  });
+
+  it("prefers callback syntax over links", () => {
+    const chart = chartOf("st=>start: S:>https://example.com:$run");
+
+    expect(chart.symbols.st?.function).toBe("run");
+    expect(chart.symbols.st?.link).toBeNull();
+    expect(chart.symbols.st?.text).toBe("S:>https://example.com");
+  });
+
+  it("keeps a plain colon inside the node text", () => {
+    const chart = chartOf("st=>start: Time: 10:30");
+
+    expect(chart.symbols.st?.text).toBe("Time: 10:30");
+  });
+
+  it("supports escaped line breaks", () => {
+    const chart = chartOf("st=>start: first\\\nsecond\ne=>end: End\nst->e");
+
+    expect(chart.symbols.st?.text).toBe("first\nsecond");
+    expect(chart.symbols.st?.next?.key).toBe("e");
+  });
+
+  it("handles CRLF input and blank lines", () => {
+    const chart = chartOf("\r\n\r\nst=>start: Start\r\ne=>end: End\r\n\r\nst->e\r\n");
+
+    expect(chart.symbols.st?.text).toBe("Start");
+    expect(chart.symbols.st?.next?.key).toBe("e");
+  });
+
+  it("lets the last duplicate definition win", () => {
+    const chart = chartOf("st=>start: First\nst=>start: Second\ne=>end: End\nst->e");
+
+    expect(chart.symbols.st?.text).toBe("Second");
+  });
+
+  it("applies several line styles from one line", () => {
+    const chart = chartOf(
+      'st=>start: S\na=>operation: A\nb=>operation: B\nst->a->b\nst@>a({"stroke":"red"})@>b({"stroke":"blue"})',
+    );
+
+    expect(chart.symbols.st?.lineStyle.a).toStrictEqual({ stroke: "red" });
+    expect(chart.symbols.a?.lineStyle.b).toStrictEqual({ stroke: "blue" });
+  });
+
+  it("keeps annotations from true/false branches", () => {
+    const chart = chartOf(
+      "st=>start: S\na=>operation: A\nb=>operation: B\ncond=>condition: C?\nst->cond\ncond(true@linear)->a\ncond(false@poly)->b",
+    );
+
+    expect(chart.symbols.cond?.yes?.key).toBe("a");
+    expect(chart.symbols.cond?.no?.key).toBe("b");
+    expect(chart.symbols.cond?.yes_annotation).toBe("linear");
+    expect(chart.symbols.cond?.no_annotation).toBe("poly");
+  });
+
+  it("throws on malformed line-style JSON", () => {
+    expect(() => parse("st=>start: S\ne=>end: E\nst->e\nst@>e({not json})")).toThrow(SyntaxError);
+  });
+
+  it("throws when a line style references an unknown node", () => {
+    expect(() => parse('st=>start: S\nst@>missing({"stroke":"red"})')).toThrow(/Unknown symbol/u);
+  });
+});
