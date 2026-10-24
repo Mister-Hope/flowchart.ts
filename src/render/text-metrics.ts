@@ -90,6 +90,11 @@ export const measureNativeBBox = (node: SVGGraphicsElement): BBox | null => {
 
     if (!Number.isFinite(box.width) || !Number.isFinite(box.height)) return null;
 
+    // Connected elements inside a `display: none` subtree have no layout, so browsers report an
+    // all-zero box. Treat that as unmeasurable and let callers fall back to the deterministic
+    // estimates instead of collapsing every node to its text margin.
+    if (box.width === 0 && box.height === 0) return null;
+
     return { x: box.x, y: box.y, width: box.width, height: box.height };
   } catch {
     return null;
