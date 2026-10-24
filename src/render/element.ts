@@ -1,3 +1,4 @@
+import { toSafeLink, toSafeTarget } from "../security.js";
 import type { AttributeValue, BBox } from "./types.js";
 import { SVG_NAMESPACE } from "./types.js";
 
@@ -74,6 +75,17 @@ export abstract class Renderable {
    * @param value Attribute value.
    */
   protected applyAttr(name: string, value: AttributeValue): void {
+    const normalizedName = name.toLowerCase();
+
+    // Defense in depth: never write inline event handlers, inline CSS or raw xlink links, no matter
+    // which code path tries to set them.
+    if (
+      normalizedName.startsWith("on") ||
+      normalizedName === "style" ||
+      normalizedName === "xlink:href"
+    )
+      return;
+
     switch (name) {
       case "href": {
         this.applyLink(String(value), this.linkTarget());
@@ -112,6 +124,10 @@ export abstract class Renderable {
    * @param target Optional link target attribute (`_blank`, ...).
    */
   protected applyLink(href: string, target?: string | null): void {
+    const safeHref = toSafeLink(href);
+
+    if (safeHref == null) return;
+
     if (this.linkWrapper == null) {
       const { ownerDocument } = this.node;
       const anchor = ownerDocument.createElementNS(SVG_NAMESPACE, "a");
@@ -124,19 +140,22 @@ export abstract class Renderable {
       this.linkWrapper = anchor;
     }
 
-    this.linkWrapper.setAttribute("href", href);
+    this.linkWrapper.setAttribute("href", safeHref);
 
     if (target != null) this.applyLinkTarget(target);
   }
 
   protected applyLinkTarget(target: string): void {
-    if (this.linkWrapper == null) return;
+    const safeTarget = toSafeTarget(target);
+
+    if (safeTarget == null || this.linkWrapper == null) return;
 
     // The DSL uses `[blank]`, which raphael mapped to `xlink:show="new"`; map it to `_blank`.
-    const resolvedTarget = target === "blank" ? "_blank" : target;
+    const resolvedTarget = safeTarget === "blank" ? "_blank" : safeTarget;
 
     this.linkWrapper.setAttribute("target", resolvedTarget);
 
     if (resolvedTarget === "_blank") this.linkWrapper.setAttribute("rel", "noopener noreferrer");
+    else this.linkWrapper.removeAttribute("rel");
   }
 }

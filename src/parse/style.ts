@@ -1,4 +1,4 @@
-import type { LineStyle } from "../options.js";
+import { sanitizeLineStyle } from "../security.js";
 import { getStyle, requireSymbol } from "./definition.js";
 import type { Chart } from "./types.js";
 
@@ -16,9 +16,9 @@ export const applyStyleLine = (line: string, chart: Chart): void => {
       const currentSymbol = requireSymbol(lineStyleSymbols[index] ?? "", chart);
       const nextSymbol = requireSymbol(lineStyleSymbols[index + 1] ?? "", chart);
 
-      currentSymbol.lineStyle[nextSymbol.key] = JSON.parse(
-        getStyle(lineStyleSymbols[index + 1] ?? ""),
-      ) as LineStyle;
+      const style = JSON.parse(getStyle(lineStyleSymbols[index + 1] ?? "")) as unknown;
+
+      currentSymbol.lineStyle[nextSymbol.key] = sanitizeLineStyle(style);
     }
   }
 };

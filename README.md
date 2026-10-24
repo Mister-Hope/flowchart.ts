@@ -262,7 +262,7 @@ parallelVar(path3, <direction>)->nextNode3
 
 ## Links
 
-A external link can be added to a node with the `:>` operator.
+An external link can be added to a node with the `:>` operator.
 
 The `st` node is linked to `http://www.google.com` and will open a new tab because `[blank]` is at the end of the URL.
 
@@ -272,6 +272,47 @@ The `e` node is linked to `http://www.yahoo.com` and will cause the page to navi
 st=>start: Start:>http://www.google.com[blank]
 e=>end: End:>http://www.yahoo.com
 ```
+
+## Security
+
+The DSL is data, not trusted code. If flowcharts can be authored by users or other systems, treat
+the DSL like any other untrusted input and keep the rendered SVG inside a trusted page.
+
+### Links
+
+Only `http:`, `https:`, `mailto:` and `tel:` URLs are rendered as links, together with relative
+URLs (`/path`, `#anchor`, `//host/path`, ...). Other protocols (`javascript:`, `data:`, `file:`,
+`blob:`, ...) throw a `FlowchartSecurityError` while parsing. `blank` / `_blank` targets are opened
+with `rel="noopener noreferrer"`.
+
+### Line styles
+
+`@>` styles are limited to presentation attributes: `stroke*`, `fill*`, `opacity`, `visibility`,
+`color`, `shape-rendering`, `pointer-events`, `cursor` keywords, `arrow-start`/`arrow-end` and font
+attributes. Event handlers (`on*`), `href`/`xlink:href`, `style`, `filter`, `clip-path`, `mask`,
+markers, SMIL animation and structural attributes (`path`, `transform`, `id`, ...) are rejected.
+
+### Callbacks
+
+`:$handler` resolves against the `callbacks` draw option first and then against `globalThis`; only
+functions are invoked. Pass handlers explicitly when the DSL is untrusted:
+
+```ts
+chart.draw("diagram", {
+  callbacks: {
+    handler: (event, options) => {
+      // ...
+    },
+  },
+});
+```
+
+### CSP and serialization
+
+The renderer never writes inline event handlers, so it works with a strict CSP such as
+`script-src 'self'`. Do not serialize a chart built from untrusted DSL and re-insert it as HTML:
+HTML entities can restore protocols that were rejected at the DOM level (for example
+`javascript&#58;`). Keep the rendered DOM or sanitize the serialized string.
 
 ## Advice
 
