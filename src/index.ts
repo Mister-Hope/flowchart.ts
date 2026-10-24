@@ -1,1 +1,1 @@
-export { type Chart, parse } from "./parse.js";
+export { type Chart, parse } from "./parse/index.js";
