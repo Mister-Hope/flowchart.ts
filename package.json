@@ -1,6 +1,6 @@
 {
   "name": "flowchart.ts",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "A flowchart DSL and SVG renderer written in TypeScript",
   "keywords": [
     "diagram",
