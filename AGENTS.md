@@ -72,6 +72,8 @@ pnpm deps:update   # ncu -u + pnpm install
   `pnpm test -u` when a layout change is intentional.
 - `render-more.spec.ts` covers options/lifecycle, multiple charts, marker isolation, callbacks and
   connection details; parser edge cases live in `parse.spec.ts`.
+- CI runs `pnpm test:coverage`; `TEST_REPORT=true` switches vitest to JUnit + Cobertura output for
+  Codecov, and `BUNDLE_ANALYSIS=true` enables Codecov bundle analysis during `pnpm build`.
 - The renderer was cross-checked against the legacy raphael implementation (screenshots + geometry
   for the template examples, plus a 33-fixture browser diff). If you touch text metrics, routing or
   placement, validate the rendered output against that baseline again; the ad-hoc Playwright

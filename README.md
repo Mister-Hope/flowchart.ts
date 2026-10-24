@@ -1,5 +1,7 @@
 # flowchart.ts
 
+[![codecov](https://codecov.io/gh/Mister-Hope/flowchart.ts/graph/badge.svg)](https://codecov.io/gh/Mister-Hope/flowchart.ts)
+
 flowchart.ts is a modern version of flowchart.js: a flowchart DSL and SVG renderer that runs in the browser.
 
 Nodes and connections are defined separately so that nodes can be reused and connections can be quickly changed.
