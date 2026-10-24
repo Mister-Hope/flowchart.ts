@@ -40,6 +40,34 @@ describe("deepAssign merging", () => {
   it("ignores undefined sources", () => {
     expect(deepAssign({ a: 1 }, undefined)).toStrictEqual({ a: 1 });
   });
+
+  it("keeps explicit undefined overrides", () => {
+    expect(deepAssign<{ a: number; b?: number }>({ a: 1, b: 2 }, { b: undefined })).toStrictEqual({
+      a: 1,
+      b: undefined,
+    });
+  });
+
+  it("copies nested objects instead of sharing them", () => {
+    const defaults = { nested: { a: 1 } };
+    const result = deepAssign<{ nested: { a: number }; other: boolean }>(defaults, { other: true });
+
+    expect(result.nested).toStrictEqual({ a: 1 });
+    expect(result.nested).not.toBe(defaults.nested);
+    expect(defaults.nested).toStrictEqual({ a: 1 });
+  });
+
+  it("ignores prototype-polluting keys", () => {
+    const result = deepAssign<Record<string, unknown>>(
+      { a: 1 },
+      JSON.parse(
+        '{"__proto__":{"polluted":true},"constructor":{"prototype":{"polluted":true}}}',
+      ) as Record<string, unknown>,
+    );
+
+    expect(result).toStrictEqual({ a: 1 });
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+  });
 });
 
 describe("text metrics", () => {
