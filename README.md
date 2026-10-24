@@ -55,6 +55,25 @@ pnpm lint:check   # oxlint + oxfmt
 pnpm type-check   # tsc --noEmit
 ```
 
+## Releasing
+
+Releases are published from CI with npm Trusted Publishing (OIDC), so no long-lived npm token is
+stored in the repository.
+
+1. On npmjs.com, add a trusted publisher for `flowchart.ts`:
+   - repository: `Mister-Hope/flowchart.ts`
+   - workflow: `publish.yml`
+   - environment: leave empty
+2. Run the **Publish** workflow manually (`workflow_dispatch`) from `main`:
+   - `bump`: `patch` / `minor` / `major`, a `pre*` bump, or `none` to only publish the current version
+   - `preid`: prerelease identifier (e.g. `beta`) for pre* bumps
+   - `dist_tag`: npm dist-tag, e.g. `next` for a prerelease
+   - `dryrun`: rehearse without committing, tagging, pushing or publishing
+3. The workflow lints, type-checks, tests and builds, bumps the version, commits and pushes the
+   release commit + tag, then publishes with provenance through the OIDC token.
+
+A failed publish can be retried without bumping again by running the workflow with `bump = none`.
+
 ## Architecture
 
 - `src/parse/` — DSL parsing: `lines.ts` splits/joins input lines, `definition.ts` parses node
