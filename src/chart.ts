@@ -6,6 +6,13 @@ import type { FlowChartSymbol } from "./symbols/index.js";
 import { Condition, Parallel } from "./symbols/index.js";
 import { deepAssign } from "./utils.js";
 
+interface Bounds {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
 class FlowChart {
   options: ParsedDrawOptions;
 
@@ -26,46 +33,25 @@ class FlowChart {
     this.options = deepAssign<ParsedDrawOptions>(defaultOptions, options);
   }
 
+  startWith(symbol: FlowChartSymbol): FlowChartSymbol {
+    this.start = symbol;
+
+    return this.handle(symbol);
+  }
+
+  /**
+   * Registers a symbol and binds the handler that links it to the next symbol(s).
+   *
+   * @param symbol Symbol to register.
+   * @returns The registered symbol.
+   */
   handle(symbol: FlowChartSymbol): FlowChartSymbol {
     if (!this.symbols.includes(symbol)) this.symbols.push(symbol);
 
     if (symbol instanceof Condition) {
-      symbol.yes = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
-        symbol.yes_symbol = nextSymbol;
-
-        if (symbol.no_symbol) symbol.pathOk = true;
-
-        return this.handle(nextSymbol);
-      };
-
-      symbol.no = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
-        symbol.no_symbol = nextSymbol;
-
-        if (symbol.yes_symbol) symbol.pathOk = true;
-
-        return this.handle(nextSymbol);
-      };
+      this.bindConditionHandlers(symbol);
     } else if (symbol instanceof Parallel) {
-      symbol.path1 = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
-        symbol.path1_symbol = nextSymbol;
-        if (symbol.path2_symbol) symbol.pathOk = true;
-
-        return this.handle(nextSymbol);
-      };
-      symbol.path2 = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
-        symbol.path2_symbol = nextSymbol;
-
-        if (symbol.path3_symbol) symbol.pathOk = true;
-
-        return this.handle(nextSymbol);
-      };
-      symbol.path3 = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
-        symbol.path3_symbol = nextSymbol;
-
-        if (symbol.path1_symbol) symbol.pathOk = true;
-
-        return this.handle(nextSymbol);
-      };
+      this.bindParallelHandlers(symbol);
     } else {
       symbol.thenHandler = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
         symbol.next = nextSymbol;
@@ -78,48 +64,109 @@ class FlowChart {
     return symbol;
   }
 
-  startWith(symbol: FlowChartSymbol): FlowChartSymbol {
-    this.start = symbol;
-
-    return this.handle(symbol);
-  }
-
   render(): void {
     if (this.start == null) return;
 
-    const maxWidth = this.symbols.reduce((max, { width }) => Math.max(max, width), 0);
-
-    const maxHeight = this.symbols.reduce((max, { height }) => Math.max(max, height), 0);
-
-    this.symbols.forEach((symbol) => {
-      symbol.shiftX(this.options.x + (maxWidth - symbol.width) / 2 + this.options["line-width"]);
-
-      symbol.shiftY(this.options.y + (maxHeight - symbol.height) / 2 + this.options["line-width"]);
-    });
-
+    this.positionSymbols();
     this.start.render();
+    this.renderLines();
+    this.updateCanvasSize();
+  }
 
-    this.symbols.forEach((symbol) => {
-      symbol.renderLines();
-    });
+  clean(): void {
+    this.paper.canvas.remove();
+  }
 
+  private bindConditionHandlers(symbol: Condition): void {
+    symbol.yes = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
+      symbol.yes_symbol = nextSymbol;
+
+      if (symbol.no_symbol) symbol.pathOk = true;
+
+      return this.handle(nextSymbol);
+    };
+
+    symbol.no = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
+      symbol.no_symbol = nextSymbol;
+
+      if (symbol.yes_symbol) symbol.pathOk = true;
+
+      return this.handle(nextSymbol);
+    };
+  }
+
+  private bindParallelHandlers(symbol: Parallel): void {
+    symbol.path1 = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
+      symbol.path1_symbol = nextSymbol;
+
+      if (symbol.path2_symbol) symbol.pathOk = true;
+
+      return this.handle(nextSymbol);
+    };
+
+    symbol.path2 = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
+      symbol.path2_symbol = nextSymbol;
+
+      if (symbol.path3_symbol) symbol.pathOk = true;
+
+      return this.handle(nextSymbol);
+    };
+
+    symbol.path3 = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
+      symbol.path3_symbol = nextSymbol;
+
+      if (symbol.path1_symbol) symbol.pathOk = true;
+
+      return this.handle(nextSymbol);
+    };
+  }
+
+  /** Aligns every symbol relative to the widest/tallest node and the configured x/y offsets. */
+  private positionSymbols(): void {
+    const maxWidth = this.symbols.reduce((max, { width }) => Math.max(max, width), 0);
+    const maxHeight = this.symbols.reduce((max, { height }) => Math.max(max, height), 0);
+    const { x, y } = this.options;
+    const lineWidth = this.options["line-width"];
+
+    for (const symbol of this.symbols) {
+      symbol.shiftX(x + (maxWidth - symbol.width) / 2 + lineWidth);
+      symbol.shiftY(y + (maxHeight - symbol.height) / 2 + lineWidth);
+    }
+  }
+
+  private renderLines(): void {
+    for (const symbol of this.symbols) symbol.renderLines();
+  }
+
+  /** Expands the SVG size/viewBox so every symbol and connection line is visible. */
+  private updateCanvasSize(): void {
+    const { minX, minY, maxX, maxY } = this.measureBounds();
+    const { scale } = this.options;
+    const lineWidth = this.options["line-width"];
+    const width = maxX + lineWidth - minX;
+    const height = maxY + lineWidth - minY;
+
+    this.paper.setSize(width * scale, height * scale);
+    this.paper.setViewBox({ x: minX, y: minY, width, height }, true);
+  }
+
+  private measureBounds(): Bounds {
     let maxX = this.maxXFromLine;
     let maxY = 0;
     let minX = 0;
     let minY = 0;
 
-    this.symbols.forEach((symbol) => {
+    for (const symbol of this.symbols) {
       const leftX = symbol.getX();
-
       const x = leftX + symbol.width;
       const y = symbol.getY() + symbol.height;
 
       if (leftX < minX) minX = leftX;
       if (x > maxX) maxX = x;
       if (y > maxY) maxY = y;
-    });
+    }
 
-    this.lines.forEach((line) => {
+    for (const line of this.lines) {
       const { x, y, width, height } = line.getBBox();
       const x2 = x + width;
       const y2 = y + height;
@@ -128,25 +175,15 @@ class FlowChart {
       if (y < minY) minY = y;
       if (x2 > maxX) maxX = x2;
       if (y2 > maxY) maxY = y2;
-    });
-
-    const { scale } = this.options;
-    const lineWidth = this.options["line-width"];
+    }
 
     if (this.minXFromSymbols < minX) minX = this.minXFromSymbols;
 
-    if (minX < 0) minX -= lineWidth;
-    if (minY < 0) minY -= lineWidth;
+    // Keep one line width of padding when symbols/lines extend past the origin.
+    if (minX < 0) minX -= this.options["line-width"];
+    if (minY < 0) minY -= this.options["line-width"];
 
-    const width = maxX + lineWidth - minX;
-    const height = maxY + lineWidth - minY;
-
-    this.paper.setSize(width * scale, height * scale);
-    this.paper.setViewBox({ x: minX, y: minY, width, height }, true);
-  }
-
-  clean(): void {
-    this.paper.canvas.remove();
+    return { minX, minY, maxX, maxY };
   }
 }
 
