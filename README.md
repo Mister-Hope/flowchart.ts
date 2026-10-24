@@ -127,6 +127,22 @@ Indicates that IO happens in a flow.
 io=>inputoutput: inputoutput
 ```
 
+### input
+
+Indicates that input happens in the flow. Rendered as an inverted trapezoid (wider at the top).
+
+```flowchart
+getInfo=>input: Input info
+```
+
+### output
+
+Indicates that output happens in the flow. Rendered as an upright trapezoid (wider at the bottom).
+
+```flowchart
+printInfo=>output: Print info
+```
+
 ### subroutine
 
 Indicates that a subroutine happens in the flow and that there should be another flowchart that documents this subroutine.

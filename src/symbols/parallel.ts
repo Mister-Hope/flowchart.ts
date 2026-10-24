@@ -16,6 +16,7 @@ const PATH1_DIRECTIONS: Partial<Record<Direction, Directions>> = {
 const PATH2_DIRECTIONS: Partial<Record<Direction, Directions>> = {
   left: ["bottom", "left", "right"],
   right: ["bottom", "right", "top"],
+  top: ["bottom", "top", "right"],
 };
 
 const PATH3_DIRECTIONS: Partial<Record<Direction, Directions>> = {

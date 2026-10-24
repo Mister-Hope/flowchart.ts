@@ -22,6 +22,8 @@ export const defaultOptions: ParsedDrawOptions = {
     end: {},
     condition: {},
     inputoutput: {},
+    input: {},
+    output: {},
     operation: {},
     subroutine: {},
     parallel: {},

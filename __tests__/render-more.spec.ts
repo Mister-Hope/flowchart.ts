@@ -5,6 +5,36 @@ import { CHART_FIXTURES } from "./fixtures/charts.js";
 
 const byId = (id: string): HTMLElement | null => document.querySelector<HTMLElement>(`#${id}`);
 
+const PARALLEL_PATH2_TOP_DSL = CHART_FIXTURES["parallel-path2-top"].dsl;
+const PARALLEL_PATH3_BOTTOM_DSL = CHART_FIXTURES["parallel-path3-bottom"].dsl;
+
+// Parses the point list of a `d` attribute into `[x, y]` pairs.
+const pathPoints = (id: string): [number, number][] => {
+  const d = document.querySelector(`#${id}`)?.getAttribute("d") ?? "";
+  const values = [...d.matchAll(/-?\d+(?:\.\d+)?/gu)].map(([value]) => Number(value));
+  const points: [number, number][] = [];
+
+  for (let index = 0; index + 1 < values.length; index += 2)
+    points.push([values[index] ?? 0, values[index + 1] ?? 0]);
+
+  return points;
+};
+
+const trapezoidWidths = (id: string): { top: number; bottom: number } => {
+  const points = pathPoints(id);
+
+  return {
+    top: (points[3]?.[0] ?? 0) - (points[4]?.[0] ?? 0),
+    bottom: (points[2]?.[0] ?? 0) - (points[1]?.[0] ?? 0),
+  };
+};
+
+const symbolCenterY = (chart: ReturnType<typeof parse>, key: string): number => {
+  const symbols = chart.diagram?.symbols ?? [];
+
+  return symbols.find((symbol) => symbol.key === key)?.getCenter().y ?? Number.NaN;
+};
+
 const render = (
   dsl: string,
   options: Parameters<ReturnType<typeof parse>["draw"]>[1] = {},
@@ -223,5 +253,36 @@ describe("render: connection details", () => {
 
     expect(texts).not.toContain("affirmative");
     expect(texts).not.toContain("negative");
+  });
+});
+
+describe("render: input / output nodes", () => {
+  it("renders input as an inverted trapezoid and output as an upright trapezoid", () => {
+    render(
+      "st=>start: Start\nread=>input: Read\nwrite=>output: Write\ne=>end: End\nst->read->write->e",
+    );
+
+    const inputWidths = trapezoidWidths("read");
+    const outputWidths = trapezoidWidths("write");
+
+    expect(inputWidths.top).toBeGreaterThan(inputWidths.bottom);
+    expect(inputWidths.top - inputWidths.bottom).toBeCloseTo(40);
+    expect(outputWidths.top).toBeLessThan(outputWidths.bottom);
+    expect(outputWidths.bottom - outputWidths.top).toBeCloseTo(40);
+    expect(byId("read")?.closest("a")).toBeNull();
+  });
+});
+
+describe("render: parallel directions", () => {
+  it("honors an explicit top direction for path2", () => {
+    const chart = render(PARALLEL_PATH2_TOP_DSL);
+
+    expect(symbolCenterY(chart, "b")).toBeLessThan(symbolCenterY(chart, "para"));
+  });
+
+  it("honors an explicit bottom direction for path3", () => {
+    const chart = render(PARALLEL_PATH3_BOTTOM_DSL);
+
+    expect(symbolCenterY(chart, "c")).toBeGreaterThan(symbolCenterY(chart, "para"));
   });
 });

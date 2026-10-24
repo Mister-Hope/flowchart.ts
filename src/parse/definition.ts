@@ -88,6 +88,8 @@ const SYMBOL_TYPES = new Set<string>([
   "end",
   "operation",
   "inputoutput",
+  "input",
+  "output",
   "subroutine",
   "condition",
   "parallel",

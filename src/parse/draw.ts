@@ -4,8 +4,10 @@ import type { FlowChartSymbol } from "../symbols/index.js";
 import {
   Condition,
   End,
+  Input,
   InputOutput,
   Operation,
+  Output,
   Parallel,
   Start,
   Subroutine,
@@ -45,6 +47,14 @@ const getDisplaySymbol = (
     }
     case "inputoutput": {
       displaySymbol = new InputOutput(diagram, symbolOptions);
+      break;
+    }
+    case "input": {
+      displaySymbol = new Input(diagram, symbolOptions);
+      break;
+    }
+    case "output": {
+      displaySymbol = new Output(diagram, symbolOptions);
       break;
     }
     case "subroutine": {

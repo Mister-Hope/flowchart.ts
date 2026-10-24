@@ -3,6 +3,8 @@ export type SymbolType =
   | "end"
   | "operation"
   | "inputoutput"
+  | "input"
+  | "output"
   | "subroutine"
   | "condition"
   | "parallel";

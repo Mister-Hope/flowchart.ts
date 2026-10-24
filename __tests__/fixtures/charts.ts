@@ -97,14 +97,16 @@ para(path3@an3, bottom)->e
 
 const ALL_NODE_TYPES = `\
 st=>start: Start
+in=>input: Input
 op=>operation: Operation
 io=>inputoutput: Input / Output
+out=>output: Output
 sub=>subroutine: Subroutine
 cond=>condition: Condition?
 para=>parallel: Parallel
 e=>end: End
 
-st->op->io->sub->cond
+st->in->op->io->out->sub->cond
 cond(yes)->para
 cond(no)->e
 para(path1)->e
@@ -319,6 +321,8 @@ st@>a({"stroke":"Red"})@>b({"stroke":"Red","stroke-width":6,"arrow-end":"classic
     options: {
       symbols: {
         start: { fill: "#ddeeff", "element-color": "#0055aa" },
+        input: { fill: "#e0f7fa", "element-color": "#006064" },
+        output: { fill: "#fff3e0", "element-color": "#e65100" },
         operation: { fill: "#ffeecc", roundness: 4 },
         condition: { fill: "#e6ffe6" },
         parallel: { fill: "#f0e0ff" },
@@ -385,6 +389,46 @@ st->e`,
   },
 
   "single-connection": { dsl: "st=>start: Start\ne=>end: End\nst->e" },
+
+  "input-output-trapezoids": {
+    dsl: `st=>start: Start
+read=>input: Read data:>https://example.com
+write=>output: Write data|past
+e=>end: End
+st->read->write->e`,
+  },
+
+  "parallel-path2-top": {
+    dsl: `st=>start: Start
+para=>parallel: Parallel
+a=>operation: A
+b=>operation: B
+c=>operation: C
+e=>end: End
+st->para
+para(path1)->a
+para(path2, top)->b
+para(path3)->c
+a->e
+b->e
+c->e`,
+  },
+
+  "parallel-path3-bottom": {
+    dsl: `st=>start: Start
+para=>parallel: Parallel
+a=>operation: A
+b=>operation: B
+c=>operation: C
+e=>end: End
+st->para
+para(path1)->a
+para(path2)->b
+para(path3, bottom)->c
+a->e
+b->e
+c->e`,
+  },
 
   "subroutine-and-io": {
     dsl: `st=>start: Start:>https://example.com[blank]

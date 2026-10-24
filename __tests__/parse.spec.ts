@@ -135,6 +135,15 @@ describe("parse: errors", () => {
   });
 });
 
+describe("parse: input / output node types", () => {
+  it("accepts input and output definitions", () => {
+    const chart = chartOf("in=>input: Input\nout=>output: Output");
+
+    expect(chart.symbols.in?.symbolType).toBe("input");
+    expect(chart.symbols.out?.symbolType).toBe("output");
+  });
+});
+
 describe("parse: text, links and styles", () => {
   it("parses several node params", () => {
     const chart = chartOf("cond(a=1, b=2)=>condition: Q?");
