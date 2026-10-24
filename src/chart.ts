@@ -67,10 +67,15 @@ class FlowChart {
   render(): void {
     if (this.start == null) return;
 
-    this.positionSymbols();
-    this.start.render();
-    this.renderLines();
-    this.updateCanvasSize();
+    try {
+      this.positionSymbols();
+      this.start.render();
+      this.renderLines();
+      this.updateCanvasSize();
+    } finally {
+      // Move the SVG from the offscreen measurement host into a detached container, if any.
+      this.paper.attach();
+    }
   }
 
   clean(): void {

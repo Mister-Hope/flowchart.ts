@@ -20,14 +20,19 @@ export class Paper {
 
   readonly defs: SVGDefsElement;
 
+  private readonly container: HTMLElement;
+
   private readonly markers: MarkerRegistry;
 
   private readonly document: Document;
 
+  /** Offscreen host used to measure charts rendered into a detached container. */
+  private measurementHost: HTMLElement | null = null;
+
   constructor(container: string | HTMLElement, width?: number, height?: number) {
     const element =
       typeof container === "string"
-        ? document.querySelector(`#${CSS.escape(container)}`)
+        ? document.querySelector<HTMLElement>(`#${CSS.escape(container)}`)
         : container;
 
     if (element == null) {
@@ -36,6 +41,7 @@ export class Paper {
       );
     }
 
+    this.container = element;
     this.document = element.ownerDocument;
 
     const canvas = this.document.createElementNS(SVG_NAMESPACE, "svg");
@@ -49,13 +55,60 @@ export class Paper {
     canvas.style.position = "relative";
     canvas.append(defs);
 
-    element.prepend(canvas);
+    if (element.isConnected) {
+      element.prepend(canvas);
+    } else {
+      const host = this.createMeasurementHost();
+
+      if (host == null) {
+        element.prepend(canvas);
+      } else {
+        host.append(canvas);
+        this.measurementHost = host;
+      }
+    }
 
     paperSequence += 1;
 
     this.canvas = canvas;
     this.defs = defs;
     this.markers = new MarkerRegistry(defs, `flowchart-${paperSequence}`);
+  }
+
+  /**
+   * Creates a temporary offscreen host so a detached container can still use native text metrics.
+   *
+   * @returns The host appended to the document body, or `null` when no body is available.
+   */
+  private createMeasurementHost(): HTMLElement | null {
+    const { body } = this.document;
+
+    if (body == null) return null;
+
+    const host = this.document.createElement("div");
+
+    host.dataset.flowchartMeasure = "";
+    host.style.position = "absolute";
+    host.style.top = "-100000px";
+    host.style.left = "0";
+    host.style.pointerEvents = "none";
+    body.append(host);
+
+    return host;
+  }
+
+  /**
+   * Moves the finished canvas into the target container after layout measurements are done.
+   *
+   * Detached containers are rendered inside an offscreen host first, so native `getBBox()` values
+   * are used for layout; this moves the result into the real container and removes the host.
+   */
+  attach(): void {
+    if (this.measurementHost == null) return;
+
+    this.container.prepend(this.canvas);
+    this.measurementHost.remove();
+    this.measurementHost = null;
   }
 
   path(segments: PathSegment[]): PathElement {
