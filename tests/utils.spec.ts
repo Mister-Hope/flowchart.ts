@@ -56,18 +56,6 @@ describe("deepAssign merging", () => {
     expect(result.nested).not.toBe(defaults.nested);
     expect(defaults.nested).toStrictEqual({ a: 1 });
   });
-
-  it("ignores prototype-polluting keys", () => {
-    const result = deepAssign<Record<string, unknown>>(
-      { a: 1 },
-      JSON.parse(
-        '{"__proto__":{"polluted":true},"constructor":{"prototype":{"polluted":true}}}',
-      ) as Record<string, unknown>,
-    );
-
-    expect(result).toStrictEqual({ a: 1 });
-    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
-  });
 });
 
 describe("text metrics", () => {

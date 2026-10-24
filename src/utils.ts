@@ -1,13 +1,29 @@
-import { merge } from "ts-deepmerge";
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value != null && !Array.isArray(value);
 
-/** Arrays are replaced (not concatenated) and `undefined` still overrides, as before. */
-const MERGE_OPTIONS = { mergeArrays: false, uniqueArrayItems: false };
+/**
+ * Deep-copies arrays and plain objects; every other value is returned as-is.
+ *
+ * @param value Value to copy.
+ * @returns The copied value.
+ */
+const cloneValue = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map((item) => cloneValue(item));
+
+  if (isPlainObject(value)) {
+    const result: Record<string, unknown> = {};
+
+    for (const [key, item] of Object.entries(value)) result[key] = cloneValue(item);
+
+    return result;
+  }
+
+  return value;
+};
 
 /**
  * Recursively merges plain objects without mutating any of the sources. Later sources win; arrays
- * are replaced (not merged).
- *
- * Uses `ts-deepmerge`, which also skips prototype-polluting keys (`__proto__`, `constructor`, ...).
+ * are copied (not merged).
  *
  * @param sources Objects to merge, in priority order.
  * @returns The merged object.
@@ -15,8 +31,20 @@ const MERGE_OPTIONS = { mergeArrays: false, uniqueArrayItems: false };
 export const deepAssign = <T extends Record<string, unknown>>(
   ...sources: (Partial<T> | undefined)[]
 ): T => {
-  const definedSources = sources.filter((source): source is Partial<T> => source != null);
+  const result: Record<string, unknown> = {};
 
-  // The package generic cannot express our index-signature based option types.
-  return merge.withOptions(MERGE_OPTIONS, ...definedSources) as T;
+  for (const source of sources) {
+    if (source == null) continue;
+
+    for (const [key, value] of Object.entries(source)) {
+      const existing = result[key];
+
+      result[key] =
+        isPlainObject(existing) && isPlainObject(value)
+          ? deepAssign(existing, value)
+          : cloneValue(value);
+    }
+  }
+
+  return result as T;
 };
