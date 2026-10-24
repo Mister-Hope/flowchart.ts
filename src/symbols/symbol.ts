@@ -1,4 +1,4 @@
-import { checkLineIntersection, drawLine } from "../action.js";
+import { checkLineIntersection } from "../action.js";
 import type FlowChart from "../chart.js";
 import type { Direction, LineStyle, SymbolOptions, SymbolType } from "../options.js";
 import type {
@@ -11,6 +11,7 @@ import type {
   TextElement,
 } from "../render/index.js";
 import type { Position } from "../typings.js";
+import { routeConnection } from "./line-routing.js";
 
 interface PathLocation {
   path: PathSegment[];
@@ -541,341 +542,24 @@ export class FlowChartSymbol {
   }
 
   drawLineTo(symbol: FlowChartSymbol, text: string, direction?: Direction): void {
-    const { x, y } = this.getCenter();
-    const right = this.getRight();
-    const bottom = this.getBottom();
-    const top = this.getTop();
     const left = this.getLeft();
+    const routed = routeConnection(this, symbol, {
+      text,
+      direction,
+      lineLength: this.getAttrOr<number>("line-length", 50),
+    });
 
-    const { x: symbolX, y: symbolY } = symbol.getCenter();
-    const symbolTop = symbol.getTop();
-    const symbolRight = symbol.getRight();
-    const symbolLeft = symbol.getLeft();
+    if (routed == null) return;
 
-    const isOnSameColumn = x === symbolX;
-    const isOnSameLine = y === symbolY;
-    const isUnder = y < symbolY;
-    const isUpper = y > symbolY || this === symbol;
-    const isLeft = x > symbolX;
-    const isRight = x < symbolX;
+    const { line, maxX } = routed;
+    const style = this.lineStyle[symbol.key];
 
-    let maxX = 0;
-    let line: PathElement | null = null;
+    if (style != null) line.setAttrs(style);
 
-    const lineLength = this.getAttrOr<number>("line-length", 50);
-    const lineWidth = this.getAttrOr<number>("line-width", 3);
+    this.adjustCrossingLines(line, this.getAttrOr<number>("line-width", 3));
+    this.chart.lines.push(line);
 
-    if ((direction == null || direction === "bottom") && isOnSameColumn && isUnder) {
-      if (symbol.topLines.length === 0 && this.bottomLines.length === 0) {
-        line = drawLine(this.chart, bottom, [symbolTop], text);
-      } else {
-        const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
-
-        line = drawLine(
-          this.chart,
-          bottom,
-          [
-            { x: symbolTop.x, y: symbolTop.y - yOffset },
-            { x: symbolTop.x, y: symbolTop.y },
-          ],
-          text,
-        );
-      }
-      this.bottomLines.push(line);
-      symbol.topLines.push(line);
-      maxX = bottom.x;
-    } else if ((direction == null || direction === "right") && isOnSameLine && isRight) {
-      if (symbol.leftLines.length === 0 && this.rightLines.length === 0) {
-        line = drawLine(this.chart, right, [symbolLeft], text);
-      } else {
-        const yOffset = Math.max(symbol.leftLines.length, this.rightLines.length) * 10;
-
-        line = drawLine(
-          this.chart,
-          right,
-          [
-            { x: right.x, y: right.y - yOffset },
-            { x: right.x, y: symbolLeft.y - yOffset },
-            { x: symbolLeft.x, y: symbolLeft.y - yOffset },
-            { x: symbolLeft.x, y: symbolLeft.y },
-          ],
-          text,
-        );
-      }
-      this.rightLines.push(line);
-      symbol.leftLines.push(line);
-      symbol.leftEnd = true;
-      maxX = symbolLeft.x;
-    } else if ((direction == null || direction === "left") && isOnSameLine && isLeft) {
-      if (symbol.rightLines.length === 0 && this.leftLines.length === 0) {
-        line = drawLine(this.chart, left, [symbolRight], text);
-      } else {
-        const yOffset = Math.max(symbol.rightLines.length, this.leftLines.length) * 10;
-
-        line = drawLine(
-          this.chart,
-          right,
-          [
-            { x: right.x, y: right.y - yOffset },
-            { x: right.x, y: symbolRight.y - yOffset },
-            { x: symbolRight.x, y: symbolRight.y - yOffset },
-            { x: symbolRight.x, y: symbolRight.y },
-          ],
-          text,
-        );
-      }
-      this.leftLines.push(line);
-      symbol.rightLines.push(line);
-      maxX = symbolRight.x;
-    } else if ((direction == null || direction === "right") && isOnSameColumn && isUpper) {
-      const yOffset = Math.max(symbol.topLines.length, this.rightLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        right,
-        [
-          { x: right.x + lineLength / 2, y: right.y - yOffset },
-          {
-            x: right.x + lineLength / 2,
-            y: symbolTop.y - lineLength / 2 - yOffset,
-          },
-          { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y },
-        ],
-        text,
-      );
-      this.rightLines.push(line);
-      symbol.topLines.push(line);
-      maxX = right.x + lineLength / 2;
-    } else if ((direction == null || direction === "right") && isOnSameColumn && isUnder) {
-      const yOffset = Math.max(symbol.topLines.length, this.rightLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        right,
-        [
-          { x: right.x + lineLength / 2, y: right.y - yOffset },
-          {
-            x: right.x + lineLength / 2,
-            y: symbolTop.y - lineLength / 2 - yOffset,
-          },
-          { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y },
-        ],
-        text,
-      );
-      this.rightLines.push(line);
-      symbol.topLines.push(line);
-      maxX = right.x + lineLength / 2;
-    } else if ((direction == null || direction === "bottom") && isLeft) {
-      const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
-
-      if (this.leftEnd && isUpper) {
-        line = drawLine(
-          this.chart,
-          bottom,
-          [
-            { x: bottom.x, y: bottom.y + lineLength / 2 - yOffset },
-            {
-              x: bottom.x + (bottom.x - symbolTop.x) / 2,
-              y: bottom.y + lineLength / 2 - yOffset,
-            },
-            {
-              x: bottom.x + (bottom.x - symbolTop.x) / 2,
-              y: symbolTop.y - lineLength / 2 - yOffset,
-            },
-            { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-            { x: symbolTop.x, y: symbolTop.y },
-          ],
-          text,
-        );
-      } else {
-        line = drawLine(
-          this.chart,
-          bottom,
-          [
-            { x: bottom.x, y: symbolTop.y - lineLength / 2 - yOffset },
-            { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-            { x: symbolTop.x, y: symbolTop.y },
-          ],
-          text,
-        );
-      }
-
-      this.bottomLines.push(line);
-      symbol.topLines.push(line);
-      maxX = bottom.x + (bottom.x - symbolTop.x) / 2;
-    } else if ((direction == null || direction === "bottom") && isRight && isUnder) {
-      const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        bottom,
-        [
-          { x: bottom.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y },
-        ],
-        text,
-      );
-      this.bottomLines.push(line);
-      symbol.topLines.push(line);
-      maxX = bottom.x;
-      if (symbolTop.x > maxX) maxX = symbolTop.x;
-    } else if ((direction == null || direction === "bottom") && isRight) {
-      const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        bottom,
-        [
-          { x: bottom.x, y: bottom.y + lineLength / 2 - yOffset },
-          {
-            x: bottom.x + (bottom.x - symbolTop.x) / 2,
-            y: bottom.y + lineLength / 2 - yOffset,
-          },
-          {
-            x: bottom.x + (bottom.x - symbolTop.x) / 2,
-            y: symbolTop.y - lineLength / 2 - yOffset,
-          },
-          { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y },
-        ],
-        text,
-      );
-      this.bottomLines.push(line);
-      symbol.topLines.push(line);
-      maxX = bottom.x + (bottom.x - symbolTop.x) / 2;
-    } else if (direction === "right" && isLeft) {
-      const yOffset = Math.max(symbol.topLines.length, this.rightLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        right,
-        [
-          { x: right.x + lineLength / 2, y: right.y },
-          {
-            x: right.x + lineLength / 2,
-            y: symbolTop.y - lineLength / 2 - yOffset,
-          },
-          { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y },
-        ],
-        text,
-      );
-      this.rightLines.push(line);
-      symbol.topLines.push(line);
-      maxX = right.x + lineLength / 2;
-    } else if (direction === "right" && isRight) {
-      const yOffset = Math.max(symbol.topLines.length, this.rightLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        right,
-        [
-          { x: symbolTop.x, y: right.y - yOffset },
-          { x: symbolTop.x, y: symbolTop.y - yOffset },
-        ],
-        text,
-      );
-      this.rightLines.push(line);
-      symbol.topLines.push(line);
-      maxX = right.x + lineLength / 2;
-    } else if (direction === "bottom" && isOnSameColumn && isUpper) {
-      const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        bottom,
-        [
-          { x: bottom.x, y: bottom.y + lineLength / 2 - yOffset },
-          {
-            x: right.x + lineLength / 2,
-            y: bottom.y + lineLength / 2 - yOffset,
-          },
-          {
-            x: right.x + lineLength / 2,
-            y: symbolTop.y - lineLength / 2 - yOffset,
-          },
-          { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y },
-        ],
-        text,
-      );
-      this.bottomLines.push(line);
-      symbol.topLines.push(line);
-      maxX = bottom.x + lineLength / 2;
-    } else if (direction === "left" && isOnSameColumn && isUpper) {
-      let diffX = left.x - lineLength / 2;
-
-      if (symbolLeft.x < left.x) diffX = symbolLeft.x - lineLength / 2;
-
-      const yOffset = Math.max(symbol.topLines.length, this.leftLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        left,
-        [
-          { x: diffX, y: left.y - yOffset },
-          { x: diffX, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y },
-        ],
-        text,
-      );
-      this.leftLines.push(line);
-      symbol.topLines.push(line);
-      maxX = left.x;
-    } else if (direction === "left") {
-      const yOffset = Math.max(symbol.topLines.length, this.leftLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        left,
-        [
-          { x: symbolTop.x + (left.x - symbolTop.x) / 2, y: left.y },
-          {
-            x: symbolTop.x + (left.x - symbolTop.x) / 2,
-            y: symbolTop.y - lineLength / 2 - yOffset,
-          },
-          { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y },
-        ],
-        text,
-      );
-      this.leftLines.push(line);
-      symbol.topLines.push(line);
-      maxX = left.x;
-    } else if (direction === "top") {
-      const yOffset = Math.max(symbol.topLines.length, this.topLines.length) * 10;
-
-      line = drawLine(
-        this.chart,
-        top,
-        [
-          { x: top.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y - lineLength / 2 - yOffset },
-          { x: symbolTop.x, y: symbolTop.y },
-        ],
-        text,
-      );
-      this.topLines.push(line);
-      symbol.topLines.push(line);
-      maxX = top.x;
-    }
-
-    // update line style
-    if (line != null) {
-      const style = this.lineStyle[symbol.key];
-
-      if (style != null) line.setAttrs(style);
-
-      this.adjustCrossingLines(line, lineWidth);
-
-      this.chart.lines.push(line);
-      if (this.chart.minXFromSymbols > left.x) this.chart.minXFromSymbols = left.x;
-    }
-
+    if (this.chart.minXFromSymbols > left.x) this.chart.minXFromSymbols = left.x;
     if (maxX > this.chart.maxXFromLine) this.chart.maxXFromLine = maxX;
   }
 
