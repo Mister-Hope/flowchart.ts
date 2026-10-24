@@ -1,6 +1,6 @@
 # flowchart.ts
 
-flowchart.ts is modern version of flowchart.js, a flowchart DSL and SVG render that runs in the browser.
+flowchart.ts is a modern version of flowchart.js: a flowchart DSL and SVG renderer that runs in the browser.
 
 Nodes and connections are defined separately so that nodes can be reused and connections can be quickly changed.
 Fine grain changes to node and connection style can also be made right in the DSL.
@@ -41,55 +41,8 @@ Styles can be passed per call (colors, fonts, line width, ...), per symbol type,
 ## Requirements
 
 - **ESM-only**: the package ships ES modules (`"type": "module"`, no CommonJS entry); use it with a bundler or an ESM-capable runtime
-- Node.js `^22.23.0 || ^24.21.0 || ^26.10.0` (current LTS lines) for development
+- Node.js `>= 22`
 - any modern browser (SVG + ES2022) at runtime
-
-## Development
-
-```bash
-pnpm install      # install dependencies
-pnpm dev          # demo page of the examples in `template/`
-pnpm build        # build `dist/flowchart.js` and `dist/flowchart.d.ts` with tsdown + publint
-pnpm test         # run the vitest suite (happy-dom)
-pnpm lint:check   # oxlint + oxfmt
-pnpm type-check   # tsc --noEmit
-```
-
-## Releasing
-
-Releases are published from CI with npm Trusted Publishing (OIDC), so no long-lived npm token is
-stored in the repository.
-
-1. On npmjs.com, add a trusted publisher for `flowchart.ts`:
-   - repository: `Mister-Hope/flowchart.ts`
-   - workflow: `publish.yml`
-   - environment: leave empty
-2. Run the **Publish** workflow manually (`workflow_dispatch`) from `main`:
-   - `bump`: `patch` / `minor` / `major`, a `pre*` bump, or `none` to only publish the current version
-   - `preid`: prerelease identifier (e.g. `beta`) for pre* bumps
-   - `dist_tag`: npm dist-tag, e.g. `next` for a prerelease
-   - `dryrun`: rehearse without committing, tagging, pushing or publishing
-3. The workflow lints, type-checks, tests and builds, bumps the version, commits and pushes the
-   release commit + tag, then publishes with provenance through the OIDC token.
-
-A failed publish can be retried without bumping again by running the workflow with `bump = none`.
-
-## Architecture
-
-- `src/parse/` — DSL parsing: `lines.ts` splits/joins input lines, `definition.ts` parses node
-  definitions, `flow.ts` applies connections, `style.ts` applies per-line style overrides,
-  `draw.ts` builds the display-symbol tree, and `index.ts` exposes `parse()`
-- `src/symbols/` — rendered node classes (`start`, `end`, `condition`, `parallel`, ...) and their
-  shared helpers: `symbol.ts` holds shape setup and measurement, `line-routing.ts` chooses
-  connection paths, `placement.ts` positions child nodes, `crossing.ts` bends lines around
-  intersections, and `node-links.ts` binds links/callbacks. `index.ts` is the barrel
-- `src/render/` — the in-house SVG renderer: elements, paths, text metrics, arrow markers and the
-  paper/set abstractions; no runtime dependencies
-- `src/chart.ts` — layout orchestration (symbol alignment, rendering order, viewBox sizing)
-- `src/action.ts` — path/line drawing primitives shared by symbols
-- `__tests__/` — unit + regression tests. `fixtures/charts.ts` is the DSL corpus and
-  `snapshots.spec.ts` snapshots the full rendered DOM and geometry, so layout refactors have to
-  keep the output stable; update snapshots with `pnpm test -u` after a deliberate layout change
 
 ## Example
 
