@@ -1,4 +1,5 @@
-import { Renderable, toNumber } from "./element.js";
+import { toNumber } from "../utils.js";
+import { Renderable } from "./element.js";
 import type { BBox } from "./types.js";
 
 /** A rectangle, optionally rounded (`r`). */
@@ -7,8 +8,8 @@ export class RectElement extends Renderable {
     super(node);
 
     if (radius > 0) {
-      this.setAttribute("rx", radius);
-      this.setAttribute("ry", radius);
+      this.setAttr("rx", radius);
+      this.setAttr("ry", radius);
     }
   }
 

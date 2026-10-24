@@ -1,4 +1,5 @@
-import { Renderable, toNumber } from "./element.js";
+import { toNumber } from "../utils.js";
+import { Renderable } from "./element.js";
 import {
   estimateTextHeight,
   estimateTextWidth,
@@ -55,9 +56,7 @@ export class TextElement extends Renderable {
     };
   }
 
-  protected override setAttribute(name: string, value: AttributeValue): void {
-    this.attributes[name] = value;
-
+  protected override applyAttr(name: string, value: AttributeValue): void {
     switch (name) {
       case "text":
       case "x":
@@ -90,7 +89,7 @@ export class TextElement extends Renderable {
         break;
       }
       default: {
-        super.setAttribute(name, value);
+        super.applyAttr(name, value);
         break;
       }
     }

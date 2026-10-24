@@ -1,4 +1,4 @@
-export { Renderable, toNumber } from "./element.js";
+export { Renderable } from "./element.js";
 export { MarkerRegistry } from "./markers.js";
 export { Paper } from "./paper.js";
 export { PathElement, parsePath, serializePath } from "./path.js";

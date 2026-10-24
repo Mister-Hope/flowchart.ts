@@ -69,14 +69,6 @@ export class Parallel extends FlowChartSymbol {
 
   path3_annotation: string;
 
-  top_symbol?: FlowChartSymbol;
-
-  bottom_symbol?: FlowChartSymbol;
-
-  left_symbol?: FlowChartSymbol;
-
-  right_symbol?: FlowChartSymbol;
-
   path1?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
 
   path2?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
@@ -131,23 +123,15 @@ export class Parallel extends FlowChartSymbol {
     this.placeRight(lineLength);
   }
 
-  /**
-   * Positions the `bottom` branch symbol under this node.
-   *
-   * @param lineLength Minimum distance between the node and the branch symbol.
-   */
-  private placeBottom(lineLength: number): void {
-    const bottomSymbol = this.bottom_symbol;
+  override renderLines(): void {
+    if (this.path1_symbol != null)
+      this.drawLineTo(this.path1_symbol, this.path1_annotation, this.path1_direction);
 
-    if (bottomSymbol == null || bottomSymbol.isPositioned) return;
+    if (this.path2_symbol != null)
+      this.drawLineTo(this.path2_symbol, this.path2_annotation, this.path2_direction);
 
-    const bottomPoint = this.getBottom();
-
-    bottomSymbol.shiftY(this.getY() + this.height + lineLength);
-    bottomSymbol.setX(bottomPoint.x - bottomSymbol.width / 2);
-    bottomSymbol.isPositioned = true;
-
-    bottomSymbol.render();
+    if (this.path3_symbol != null)
+      this.drawLineTo(this.path3_symbol, this.path3_annotation, this.path3_direction);
   }
 
   /**
@@ -167,106 +151,5 @@ export class Parallel extends FlowChartSymbol {
     topSymbol.isPositioned = true;
 
     topSymbol.render();
-  }
-
-  /**
-   * Positions the `left` branch symbol next to this node.
-   *
-   * @param lineLength Minimum distance between the node and the branch symbol.
-   */
-  private placeLeft(lineLength: number): void {
-    const leftSymbol = this.left_symbol;
-
-    if (leftSymbol == null || leftSymbol.isPositioned) return;
-
-    const leftPoint = this.getLeft();
-
-    leftSymbol.setY(leftPoint.y - leftSymbol.height / 2);
-    leftSymbol.shiftX(-(this.getX() + this.width + lineLength));
-
-    this.shiftBeside(leftSymbol, lineLength);
-
-    leftSymbol.isPositioned = true;
-
-    leftSymbol.render();
-  }
-
-  /**
-   * Positions the `right` branch symbol next to this node.
-   *
-   * @param lineLength Minimum distance between the node and the branch symbol.
-   */
-  private placeRight(lineLength: number): void {
-    const rightSymbol = this.right_symbol;
-
-    if (rightSymbol == null || rightSymbol.isPositioned) return;
-
-    const rightPoint = this.getRight();
-
-    rightSymbol.setY(rightPoint.y - rightSymbol.height / 2);
-    rightSymbol.shiftX(this.getX() + this.width + lineLength);
-
-    this.shiftBeside(rightSymbol, lineLength);
-
-    rightSymbol.isPositioned = true;
-
-    rightSymbol.render();
-  }
-  override renderLines(): void {
-    if (this.path1_symbol != null)
-      this.drawLineTo(this.path1_symbol, this.path1_annotation, this.path1_direction);
-
-    if (this.path2_symbol != null)
-      this.drawLineTo(this.path2_symbol, this.path2_annotation, this.path2_direction);
-
-    if (this.path3_symbol != null)
-      this.drawLineTo(this.path3_symbol, this.path3_annotation, this.path3_direction);
-  }
-
-  private assignDirectionalSymbol(direction: Direction, symbol: FlowChartSymbol | undefined): void {
-    switch (direction) {
-      case "top": {
-        this.top_symbol = symbol;
-        break;
-      }
-      case "bottom": {
-        this.bottom_symbol = symbol;
-        break;
-      }
-      case "left": {
-        this.left_symbol = symbol;
-        break;
-      }
-      case "right": {
-        this.right_symbol = symbol;
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-  }
-
-  private shiftBeside(symbol: FlowChartSymbol, lineLength: number): void {
-    const shift = (): void => {
-      let symbolUnder: FlowChartSymbol | undefined;
-
-      if (this.params["align-next"] !== "no") {
-        for (const otherSymbol of this.chart.symbols) {
-          const diff = Math.abs(otherSymbol.getCenter().x - symbol.getCenter().x);
-          if (otherSymbol.getCenter().y > symbol.getCenter().y && diff <= symbol.width / 2) {
-            symbolUnder = otherSymbol;
-            break;
-          }
-        }
-      }
-
-      if (symbolUnder == null || symbol.symbolType === "end") return;
-
-      symbol.setX(symbolUnder.getX() + symbolUnder.width + lineLength);
-      shift();
-    };
-
-    shift();
   }
 }

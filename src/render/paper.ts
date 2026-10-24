@@ -72,7 +72,7 @@ export class Paper {
     const node = this.document.createElementNS(SVG_NAMESPACE, "rect");
     const element = new RectElement(node, radius);
 
-    element.attr({
+    element.setAttrs({
       x,
       y,
       width,

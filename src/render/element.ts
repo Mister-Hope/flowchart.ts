@@ -1,41 +1,10 @@
 import type { AttributeValue, BBox } from "./types.js";
 import { SVG_NAMESPACE } from "./types.js";
 
-/** Matches the leading number of a CSS length, e.g. `-1.5`, `.5` or `14` in `14px`. */
-const LEADING_NUMBER_REGEXP = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/iu;
-
-/**
- * Parses the leading number of a string, so CSS lengths such as `14px` become `14`.
- *
- * @param value Text to parse.
- * @returns The leading number, or `NaN` when the text does not start with a number.
- */
-const parseLeadingNumber = (value: string): number => {
-  const [match] = LEADING_NUMBER_REGEXP.exec(value.trim()) ?? [];
-
-  return match == null ? Number.NaN : Number(match);
-};
-
-/**
- * Parses a numeric attribute value.
- *
- * @param value Raw attribute value (numbers or CSS lengths such as `14px`).
- * @param fallback Value returned when the input cannot be parsed as a finite number.
- * @returns The parsed number, or `fallback`.
- */
-export const toNumber = (value: unknown, fallback = 0): number => {
-  if (typeof value === "number") return Number.isFinite(value) ? value : fallback;
-  if (typeof value !== "string") return fallback;
-
-  const result = parseLeadingNumber(value);
-
-  return Number.isFinite(result) ? result : fallback;
-};
-
 /**
  * Base wrapper around a single SVG node.
  *
- * It reproduces the small part of the raphael element API the chart layout relies on: `attr()`,
+ * It reproduces the small part of the raphael element API the chart layout relies on: attributes,
  * `node`, `getBBox()`, `insertBefore()` and links (`href`/`target`).
  */
 export abstract class Renderable {
@@ -51,23 +20,38 @@ export abstract class Renderable {
     return this.linkWrapper ?? this.node;
   }
 
-  attr(name: string): AttributeValue | undefined;
-  attr(attributes: Record<string, AttributeValue>): this;
-  attr(name: string, value: AttributeValue): this;
-  attr(
-    nameOrAttributes: string | Record<string, AttributeValue>,
-    value?: AttributeValue,
-  ): this | AttributeValue | undefined {
-    if (typeof nameOrAttributes === "string") {
-      if (value == null) return this.attributes[nameOrAttributes];
+  /**
+   * Reads back an attribute value that was set through {@link setAttr}.
+   *
+   * @param name Attribute name.
+   * @returns The stored value, or `undefined` when it was never set.
+   */
+  getAttr(name: string): AttributeValue | undefined {
+    return this.attributes[name];
+  }
 
-      this.setAttribute(nameOrAttributes, value);
+  /**
+   * Sets a single attribute.
+   *
+   * @param name Attribute name.
+   * @param value Attribute value.
+   * @returns This element, for chaining.
+   */
+  setAttr(name: string, value: AttributeValue): this {
+    this.attributes[name] = value;
+    this.applyAttr(name, value);
 
-      return this;
-    }
+    return this;
+  }
 
-    for (const [name, attributeValue] of Object.entries(nameOrAttributes))
-      this.setAttribute(name, attributeValue);
+  /**
+   * Sets multiple attributes at once. Prefer {@link setAttr} for a single attribute.
+   *
+   * @param attributes Attribute name/value pairs.
+   * @returns This element, for chaining.
+   */
+  setAttrs(attributes: Record<string, AttributeValue>): this {
+    for (const [name, value] of Object.entries(attributes)) this.setAttr(name, value);
 
     return this;
   }
@@ -82,9 +66,14 @@ export abstract class Renderable {
     this.domNode.remove();
   }
 
-  protected setAttribute(name: string, value: AttributeValue): void {
-    this.attributes[name] = value;
-
+  /**
+   * Applies one attribute to the DOM. Subclasses override this for attributes that need special
+   * handling (text layout, paths, markers, ...).
+   *
+   * @param name Attribute name.
+   * @param value Attribute value.
+   */
+  protected applyAttr(name: string, value: AttributeValue): void {
     switch (name) {
       case "href": {
         this.applyLink(String(value), this.linkTarget());
@@ -124,8 +113,8 @@ export abstract class Renderable {
    */
   protected applyLink(href: string, target?: string | null): void {
     if (this.linkWrapper == null) {
-      const document = this.node.ownerDocument;
-      const anchor = document.createElementNS(SVG_NAMESPACE, "a");
+      const { ownerDocument } = this.node;
+      const anchor = ownerDocument.createElementNS(SVG_NAMESPACE, "a");
       const parent = this.node.parentNode;
 
       if (parent == null) return;

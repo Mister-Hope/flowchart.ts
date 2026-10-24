@@ -63,15 +63,15 @@ const applyFont = (chart: FlowChart, element: Renderable): void => {
   const fontFamily = chart.options["font-family"];
   const fontWeight = chart.options["font-weight"];
 
-  if (font != null) element.attr("font", font);
-  if (fontFamily != null) element.attr("font-family", fontFamily);
-  if (fontWeight != null) element.attr("font-weight", fontWeight);
+  if (font != null) element.setAttr("font", font);
+  if (fontFamily != null) element.setAttr("font-family", fontFamily);
+  if (fontWeight != null) element.setAttr("font-weight", fontWeight);
 };
 
 export const drawPath = (chart: FlowChart, location: Position, points: Position[]): PathElement => {
   const symbol = chart.paper.path(buildPath([location, ...points]));
 
-  symbol.attr({
+  symbol.setAttrs({
     stroke: chart.options["element-color"],
     "stroke-width": chart.options["line-width"],
   });
@@ -89,7 +89,7 @@ export const drawLine = (
 ): PathElement => {
   const line = chart.paper.path(buildPath([from, ...to]));
 
-  line.attr({
+  line.setAttrs({
     stroke: chart.options["line-color"],
     "stroke-width": chart.options["line-width"],
     "arrow-end": chart.options["arrow-end"],
@@ -122,7 +122,7 @@ export const drawLine = (
       if (firstTo != null && from.y > firstTo.y) y -= chart.options["text-margin"] * 2;
     }
 
-    textPath.attr({
+    textPath.setAttrs({
       "text-anchor": textAnchor,
       "font-size": chart.options["font-size"],
       fill: chart.options["font-color"],

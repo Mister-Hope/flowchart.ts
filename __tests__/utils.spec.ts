@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { checkLineIntersection } from "../src/action.js";
 import { parsePath, serializePath } from "../src/render/index.js";
 import { estimateTextWidth, textLineHeight } from "../src/render/text-metrics.js";
-import { deepAssign } from "../src/utils.js";
+import { deepAssign, toNumber } from "../src/utils.js";
 
 describe("path helpers", () => {
   it("parses and serializes path segments", () => {
@@ -55,6 +55,19 @@ describe("deepAssign merging", () => {
     expect(result.nested).toStrictEqual({ a: 1 });
     expect(result.nested).not.toBe(defaults.nested);
     expect(defaults.nested).toStrictEqual({ a: 1 });
+  });
+});
+
+describe("number parsing", () => {
+  it("parses numbers, CSS lengths and falls back safely", () => {
+    expect(toNumber(14)).toBe(14);
+    expect(toNumber("14px")).toBe(14);
+    expect(toNumber(" .5em ")).toBe(0.5);
+    expect(toNumber("-1.5rem")).toBe(-1.5);
+    expect(toNumber("1e3")).toBe(1000);
+    expect(toNumber(undefined, 3)).toBe(3);
+    expect(toNumber("nope", 2)).toBe(2);
+    expect(toNumber(Number.NaN, 4)).toBe(4);
   });
 });
 

@@ -11,10 +11,10 @@ export interface ConditionSymbolOptions extends SymbolOptions {
 }
 
 export class Condition extends FlowChartSymbol {
-  /** Yes text */
+  /** Label of the "yes" branch ("yes" by default). */
   yes_annotation?: string | null;
 
-  /** No text */
+  /** Label of the "no" branch ("no" by default). */
   no_annotation?: string | null;
 
   yes_direction: Direction;
@@ -26,14 +26,6 @@ export class Condition extends FlowChartSymbol {
   yes_symbol?: FlowChartSymbol;
 
   no_symbol?: FlowChartSymbol;
-
-  top_symbol?: FlowChartSymbol;
-
-  bottom_symbol?: FlowChartSymbol;
-
-  right_symbol?: FlowChartSymbol;
-
-  left_symbol?: FlowChartSymbol;
 
   yes?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
 
@@ -55,7 +47,7 @@ export class Condition extends FlowChartSymbol {
     this.yes_direction = yesDirection ?? "bottom";
     this.no_direction = noDirection ?? "right";
 
-    this.text.attr({ x: this.textMargin * 2 });
+    this.text.setAttr("x", this.textMargin * 2);
 
     let width = this.text.getBBox().width + 3 * this.textMargin;
 
@@ -69,38 +61,32 @@ export class Condition extends FlowChartSymbol {
     const startX = width / 4;
     const startY = height / 4;
 
-    this.text.attr({ x: startX + this.textMargin / 2 });
+    this.text.setAttr("x", startX + this.textMargin / 2);
 
     const start = { x: startX, y: startY };
     const points = [
       { x: startX - width / 4, y: startY + height / 4 },
-      {
-        x: startX - width / 4 + width / 2,
-        y: startY + height / 4 + height / 2,
-      },
+      { x: startX - width / 4 + width / 2, y: startY + height / 4 + height / 2 },
       { x: startX - width / 4 + width, y: startY + height / 4 },
-      {
-        x: startX - width / 4 + width / 2,
-        y: startY + height / 4 - height / 2,
-      },
+      { x: startX - width / 4 + width / 2, y: startY + height / 4 - height / 2 },
       { x: startX - width / 4, y: startY + height / 4 },
     ];
 
     const symbol = drawPath(chart, start, points);
 
-    symbol.attr({
+    symbol.setAttrs({
       stroke: this.getAttrOr<string>("element-color", "black"),
       "stroke-width": this.getAttrOr<number>("line-width", 3),
       fill: this.getAttrOr<string>("fill", "white"),
     });
 
-    if (options.link != null) symbol.attr("href", options.link);
-    if (options.target != null) symbol.attr("target", options.target);
+    if (options.link != null) symbol.setAttr("href", options.link);
+    if (options.target != null) symbol.setAttr("target", options.target);
     if (options.key != null) symbol.node.id = options.key;
 
     symbol.node.setAttribute("class", this.getAttrOr<string>("class", "flowchart"));
 
-    this.text.attr({ y: symbol.getBBox().height / 2 });
+    this.text.setAttr("y", symbol.getBBox().height / 2);
 
     this.group.push(symbol);
     symbol.insertBefore(this.text);
@@ -113,44 +99,10 @@ export class Condition extends FlowChartSymbol {
     this.assignDirectionalSymbol(this.no_direction, this.no_symbol);
 
     const lineLength = this.getAttrOr<number>("line-length", 50);
-    const bottomSymbol = this.bottom_symbol;
 
-    if (bottomSymbol != null && !bottomSymbol.isPositioned) {
-      const bottomPoint = this.getBottom();
-
-      bottomSymbol.shiftY(this.getY() + this.height + lineLength);
-      bottomSymbol.setX(bottomPoint.x - bottomSymbol.width / 2);
-      bottomSymbol.isPositioned = true;
-      bottomSymbol.render();
-    }
-
-    const rightSymbol = this.right_symbol;
-
-    if (rightSymbol != null && !rightSymbol.isPositioned) {
-      const rightPoint = this.getRight();
-
-      rightSymbol.setY(rightPoint.y - rightSymbol.height / 2);
-      rightSymbol.shiftX(this.getX() + this.width + lineLength);
-
-      this.shiftBeside(rightSymbol, lineLength);
-
-      rightSymbol.isPositioned = true;
-      rightSymbol.render();
-    }
-
-    const leftSymbol = this.left_symbol;
-
-    if (leftSymbol != null && !leftSymbol.isPositioned) {
-      const leftPoint = this.getLeft();
-
-      leftSymbol.setY(leftPoint.y - leftSymbol.height / 2);
-      leftSymbol.shiftX(-(this.getX() + this.width + lineLength));
-
-      this.shiftBeside(leftSymbol, lineLength);
-
-      leftSymbol.isPositioned = true;
-      leftSymbol.render();
-    }
+    this.placeBottom(lineLength);
+    this.placeRight(lineLength);
+    this.placeLeft(lineLength);
   }
 
   override renderLines(): void {
@@ -173,53 +125,5 @@ export class Condition extends FlowChartSymbol {
         this.no_direction,
       );
     }
-  }
-
-  private assignDirectionalSymbol(direction: Direction, symbol: FlowChartSymbol | undefined): void {
-    switch (direction) {
-      case "top": {
-        this.top_symbol = symbol;
-        break;
-      }
-      case "bottom": {
-        this.bottom_symbol = symbol;
-        break;
-      }
-      case "left": {
-        this.left_symbol = symbol;
-        break;
-      }
-      case "right": {
-        this.right_symbol = symbol;
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-  }
-
-  private shiftBeside(symbol: FlowChartSymbol, lineLength: number): void {
-    const shift = (): void => {
-      let symbolUnder: FlowChartSymbol | undefined;
-
-      if (this.params["align-next"] !== "no") {
-        for (const otherSymbol of this.chart.symbols) {
-          const diff = Math.abs(otherSymbol.getCenter().x - symbol.getCenter().x);
-
-          if (otherSymbol.getCenter().y > symbol.getCenter().y && diff <= symbol.width / 2) {
-            symbolUnder = otherSymbol;
-            break;
-          }
-        }
-      }
-
-      if (symbolUnder == null || symbol.symbolType === "end") return;
-
-      symbol.setX(symbolUnder.getX() + symbolUnder.width + lineLength);
-      shift();
-    };
-
-    shift();
   }
 }

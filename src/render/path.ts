@@ -1,4 +1,5 @@
-import { Renderable, toNumber } from "./element.js";
+import { toNumber } from "../utils.js";
+import { Renderable } from "./element.js";
 import type { MarkerRegistry } from "./markers.js";
 import { measureNativeBBox } from "./text-metrics.js";
 import type { AttributeValue, BBox, PathSegment } from "./types.js";
@@ -138,9 +139,7 @@ export class PathElement extends Renderable {
     return measureNativeBBox(this.node as unknown as SVGGraphicsElement) ?? pathBBox(this.segments);
   }
 
-  protected override setAttribute(name: string, value: AttributeValue): void {
-    this.attributes[name] = value;
-
+  protected override applyAttr(name: string, value: AttributeValue): void {
     switch (name) {
       case "path": {
         this.setPath(parsePath(String(value)));
@@ -156,7 +155,7 @@ export class PathElement extends Renderable {
         break;
       }
       default: {
-        super.setAttribute(name, value);
+        super.applyAttr(name, value);
         break;
       }
     }

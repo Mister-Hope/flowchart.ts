@@ -12,7 +12,7 @@ export class InputOutput extends FlowChartSymbol {
 
     this.textMargin = this.getAttrOr<number>("text-margin", 10);
 
-    this.text.attr({ x: this.textMargin * 3 });
+    this.text.setAttr("x", this.textMargin * 3);
 
     const textBox = this.text.getBBox();
     const width = textBox.width + 4 * this.textMargin;
@@ -31,23 +31,22 @@ export class InputOutput extends FlowChartSymbol {
 
     const symbol = drawPath(chart, start, points);
 
-    symbol.attr({
+    symbol.setAttrs({
       stroke: this.getAttrOr<string>("element-color", "black"),
       "stroke-width": this.getAttrOr<number>("line-width", 3),
       fill: this.getAttrOr<string>("fill", "white"),
     });
 
-    if (options.link != null) symbol.attr("href", options.link);
-    if (options.target != null) symbol.attr("target", options.target);
+    if (options.link != null) symbol.setAttr("href", options.link);
+    if (options.target != null) symbol.setAttr("target", options.target);
     if (options.key != null) symbol.node.id = options.key;
 
     symbol.node.setAttribute("class", this.getAttrOr<string>("class", "flowchart"));
 
-    this.text.attr({ y: symbol.getBBox().height / 2 });
+    this.text.setAttr("y", symbol.getBBox().height / 2);
 
     this.group.push(symbol);
     symbol.insertBefore(this.text);
-    this.symbol = symbol;
 
     this.initialize();
   }

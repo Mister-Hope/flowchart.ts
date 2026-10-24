@@ -11,13 +11,13 @@ export class Subroutine extends FlowChartSymbol {
     const textMargin = this.getAttrOr<number>("text-margin", 10);
     const textBox = this.text.getBBox();
 
-    symbol.attr({ width: textBox.width + 4 * textMargin });
+    symbol.setAttr("width", textBox.width + 4 * textMargin);
 
-    this.text.attr({ x: 2 * textMargin });
+    this.text.setAttr("x", 2 * textMargin);
 
     const innerWrapper = chart.paper.rect({ x: 0, y: 0, width: 0, height: 0 });
 
-    innerWrapper.attr({
+    innerWrapper.setAttrs({
       x: textMargin,
       stroke: this.getAttrOr<string>("element-color", "black"),
       "stroke-width": this.getAttrOr<number>("line-width", 3),
@@ -32,12 +32,12 @@ export class Subroutine extends FlowChartSymbol {
     const fontFamily = this.getAttr("font-family") as string | null;
     const fontWeight = this.getAttr("font-weight");
 
-    if (font != null) innerWrapper.attr("font", font);
-    if (fontFamily != null) innerWrapper.attr("font-family", fontFamily);
-    if (fontWeight != null) innerWrapper.attr("font-weight", fontWeight);
+    if (font != null) innerWrapper.setAttr("font", font);
+    if (fontFamily != null) innerWrapper.setAttr("font-family", fontFamily);
+    if (fontWeight != null) innerWrapper.setAttr("font-weight", fontWeight);
 
-    if (options.link != null) innerWrapper.attr("href", options.link);
-    if (options.target != null) innerWrapper.attr("target", options.target);
+    if (options.link != null) innerWrapper.setAttr("href", options.link);
+    if (options.target != null) innerWrapper.setAttr("target", options.target);
 
     this.group.push(innerWrapper);
     innerWrapper.insertBefore(this.text);
