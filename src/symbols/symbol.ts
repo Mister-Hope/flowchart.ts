@@ -124,7 +124,7 @@ const bindClick = (element: Renderable, options: Partial<SymbolOptions>): void =
   );
 };
 
-class FlowChartSymbol {
+export class FlowChartSymbol {
   text: TextElement;
 
   params: Record<string, string>;
@@ -851,5 +851,3 @@ class FlowChartSymbol {
     }
   }
 }
-
-export default FlowChartSymbol;

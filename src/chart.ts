@@ -2,9 +2,8 @@ import { defaultOptions } from "./config.js";
 import type { DrawOptions, ParsedDrawOptions } from "./options.js";
 import { Paper } from "./render/index.js";
 import type { PathElement } from "./render/index.js";
-import Condition from "./symbols/condition.js";
-import Parallel from "./symbols/parallel.js";
-import type FlowChartSymbol from "./symbols/symbol.js";
+import type { FlowChartSymbol } from "./symbols/index.js";
+import { Condition, Parallel } from "./symbols/index.js";
 import { deepAssign } from "./utils.js";
 
 class FlowChart {

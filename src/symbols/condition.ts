@@ -1,7 +1,7 @@
 import { drawPath } from "../action.js";
 import type FlowChart from "../chart.js";
 import type { Direction, SymbolOptions } from "../options.js";
-import FlowChartSymbol from "./symbol.js";
+import { FlowChartSymbol } from "./symbol.js";
 
 export interface ConditionSymbolOptions extends SymbolOptions {
   yes_annotation?: string | null;
@@ -10,7 +10,7 @@ export interface ConditionSymbolOptions extends SymbolOptions {
   direction_no?: Direction | null;
 }
 
-class Condition extends FlowChartSymbol {
+export class Condition extends FlowChartSymbol {
   /** Yes text */
   yes_annotation?: string | null;
 
@@ -223,5 +223,3 @@ class Condition extends FlowChartSymbol {
     shift();
   }
 }
-
-export default Condition;

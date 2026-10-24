@@ -7,14 +7,16 @@ import type {
   SymbolOptions,
   SymbolType,
 } from "./options.js";
-import Condition from "./symbols/condition.js";
-import End from "./symbols/end.js";
-import InputOutput from "./symbols/input-output.js";
-import Operation from "./symbols/operation.js";
-import Parallel from "./symbols/parallel.js";
-import Start from "./symbols/start.js";
-import Subroutine from "./symbols/subroutine.js";
-import type FlowChartSymbol from "./symbols/symbol.js";
+import type { FlowChartSymbol } from "./symbols/index.js";
+import {
+  Condition,
+  End,
+  InputOutput,
+  Operation,
+  Parallel,
+  Start,
+  Subroutine,
+} from "./symbols/index.js";
 
 export interface Chart {
   symbols: Record<string, SymbolOptions>;

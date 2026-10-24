@@ -1,6 +1,6 @@
 import type FlowChart from "../chart.js";
 import type { Direction, SymbolOptions } from "../options.js";
-import FlowChartSymbol from "./symbol.js";
+import { FlowChartSymbol } from "./symbol.js";
 
 type Directions = [path1: Direction, path2: Direction, path3: Direction];
 
@@ -50,7 +50,7 @@ const resolveDirections = (
   return [direction1 ?? "bottom", direction2 ?? "right", direction3 ?? "top"];
 };
 
-class Parallel extends FlowChartSymbol {
+export class Parallel extends FlowChartSymbol {
   path1_direction: Direction = "bottom";
 
   path1_symbol?: FlowChartSymbol;
@@ -270,5 +270,3 @@ class Parallel extends FlowChartSymbol {
     shift();
   }
 }
-
-export default Parallel;

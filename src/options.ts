@@ -1,5 +1,3 @@
-export type { default as FlowChartSymbol } from "./symbols/symbol.js";
-
 export type SymbolType =
   | "start"
   | "end"

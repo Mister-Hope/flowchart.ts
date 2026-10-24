@@ -2,9 +2,9 @@ import { drawPath } from "../action.js";
 import type FlowChart from "../chart.js";
 import type { SymbolOptions } from "../options.js";
 import type { Position } from "../typings.js";
-import FlowChartSymbol from "./symbol.js";
+import { FlowChartSymbol } from "./symbol.js";
 
-class InputOutput extends FlowChartSymbol {
+export class InputOutput extends FlowChartSymbol {
   textMargin: number;
 
   constructor(chart: FlowChart, options: Partial<SymbolOptions> = {}) {
@@ -66,5 +66,3 @@ class InputOutput extends FlowChartSymbol {
     };
   }
 }
-
-export default InputOutput;
