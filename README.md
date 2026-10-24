@@ -40,6 +40,7 @@ Styles can be passed per call (colors, fonts, line width, ...), per symbol type,
 
 ## Requirements
 
+- **ESM-only**: the package ships ES modules (`"type": "module"`, no CommonJS entry); use it with a bundler or an ESM-capable runtime
 - Node.js `^22.23.0 || ^24.21.0 || ^26.10.0` (current LTS lines) for development
 - any modern browser (SVG + ES2022) at runtime
 
