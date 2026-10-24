@@ -9,17 +9,17 @@ export interface LineIntersectionResult {
   onLine2: boolean;
 }
 
-// eslint-disable-next-line max-params -- the 8 positional coordinates are part of the existing call signature
 export const checkLineIntersection = (
-  line1StartX: number,
-  line1StartY: number,
-  line1EndX: number,
-  line1EndY: number,
-  line2StartX: number,
-  line2StartY: number,
-  line2EndX: number,
-  line2EndY: number,
+  line1Start: Position,
+  line1End: Position,
+  line2Start: Position,
+  line2End: Position,
 ): LineIntersectionResult => {
+  const { x: line1StartX, y: line1StartY } = line1Start;
+  const { x: line1EndX, y: line1EndY } = line1End;
+  const { x: line2StartX, y: line2StartY } = line2Start;
+  const { x: line2EndX, y: line2EndY } = line2End;
+
   // if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
   const result: LineIntersectionResult = {
     x: null,

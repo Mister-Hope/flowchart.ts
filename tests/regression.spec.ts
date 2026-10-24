@@ -91,9 +91,7 @@ para(path3@an3, bottom)->e
 const README_EXAMPLE = EXAMPLES.readme ?? "";
 const FLOWSTATE_EXAMPLE = EXAMPLES.flowstatesAndDirections ?? "";
 
-const byId = (id: string): Element | null =>
-  // oxlint-disable-next-line unicorn/prefer-query-selector -- id lookups are the clearest API in DOM tests
-  document.getElementById(id);
+const byId = (id: string): Element | null => document.querySelector(`#${id}`);
 
 const createContainer = (): HTMLElement => {
   document.body.innerHTML = "";

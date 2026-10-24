@@ -58,7 +58,12 @@ describe("text metrics", () => {
 
 describe("line intersection detection", () => {
   it("detects crossing segments", () => {
-    const result = checkLineIntersection(0, 0, 10, 10, 0, 10, 10, 0);
+    const result = checkLineIntersection(
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+      { x: 0, y: 10 },
+      { x: 10, y: 0 },
+    );
 
     expect(result.onLine1).toBe(true);
     expect(result.onLine2).toBe(true);
@@ -67,7 +72,12 @@ describe("line intersection detection", () => {
   });
 
   it("ignores parallel segments", () => {
-    const result = checkLineIntersection(0, 0, 10, 0, 0, 5, 10, 5);
+    const result = checkLineIntersection(
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 0, y: 5 },
+      { x: 10, y: 5 },
+    );
 
     expect(result.x).toBeNull();
     expect(result.onLine1).toBe(false);

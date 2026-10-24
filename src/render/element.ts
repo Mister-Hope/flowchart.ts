@@ -1,19 +1,33 @@
 import type { AttributeValue, BBox } from "./types.js";
 import { SVG_NAMESPACE } from "./types.js";
 
+/** Matches the leading number of a CSS length, e.g. `-1.5`, `.5` or `14` in `14px`. */
+const LEADING_NUMBER_REGEXP = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/iu;
+
 /**
- * Parses a numeric attribute value. CSS lengths such as `14px` are intentionally read with
- * `parseFloat`, which stops at the unit instead of returning `NaN` like `Number()` would.
+ * Parses the leading number of a string, so CSS lengths such as `14px` become `14`.
  *
- * @param value Raw attribute value.
+ * @param value Text to parse.
+ * @returns The leading number, or `NaN` when the text does not start with a number.
+ */
+const parseLeadingNumber = (value: string): number => {
+  const [match] = LEADING_NUMBER_REGEXP.exec(value.trim()) ?? [];
+
+  return match == null ? Number.NaN : Number(match);
+};
+
+/**
+ * Parses a numeric attribute value.
+ *
+ * @param value Raw attribute value (numbers or CSS lengths such as `14px`).
  * @param fallback Value returned when the input cannot be parsed as a finite number.
  * @returns The parsed number, or `fallback`.
  */
 export const toNumber = (value: unknown, fallback = 0): number => {
   if (typeof value === "number") return Number.isFinite(value) ? value : fallback;
+  if (typeof value !== "string") return fallback;
 
-  // eslint-disable-next-line unicorn/prefer-number-coercion -- parseFloat parses CSS lengths such as 14px
-  const result = Number.parseFloat(typeof value === "string" ? value : "");
+  const result = parseLeadingNumber(value);
 
   return Number.isFinite(result) ? result : fallback;
 };

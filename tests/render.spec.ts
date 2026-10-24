@@ -2,9 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { parse } from "../src/index.js";
 
-const byId = (id: string): HTMLElement | null =>
-  // oxlint-disable-next-line unicorn/prefer-query-selector -- id lookups are the clearest API in DOM tests
-  document.getElementById(id);
+const byId = (id: string): HTMLElement | null => document.querySelector<HTMLElement>(`#${id}`);
 
 const createContainer = (id = "chart"): HTMLElement => {
   document.body.innerHTML = "";
@@ -220,6 +218,22 @@ describe("draw: lifecycle", () => {
     chart.draw(createContainer("second"));
 
     expect(document.querySelectorAll("svg")).toHaveLength(1);
+  });
+
+  it("accepts a container id", () => {
+    const container = createContainer("by-id");
+
+    parse(basicChart).draw(container.id);
+
+    expect(document.querySelector("#by-id svg")).not.toBeNull();
+  });
+
+  it("accepts container ids that need CSS escaping", () => {
+    const container = createContainer("chart:1");
+
+    parse(basicChart).draw(container.id);
+
+    expect(document.querySelector(String.raw`#chart\:1 svg`)).not.toBeNull();
   });
 
   it("cleans the diagram", () => {

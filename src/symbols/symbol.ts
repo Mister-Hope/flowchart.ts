@@ -40,14 +40,10 @@ const bendCrossing = (
   const otherEnd = otherPath[otherIndex + 1];
 
   const res = checkLineIntersection(
-    otherStart[1],
-    otherStart[2],
-    otherEnd[1],
-    otherEnd[2],
-    start[1],
-    start[2],
-    end[1],
-    end[2],
+    { x: otherStart[1], y: otherStart[2] },
+    { x: otherEnd[1], y: otherEnd[2] },
+    { x: start[1], y: start[2] },
+    { x: end[1], y: end[2] },
   );
 
   if (!res.onLine1 || !res.onLine2 || res.x == null || res.y == null) return false;

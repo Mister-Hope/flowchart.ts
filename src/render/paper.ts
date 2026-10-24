@@ -27,10 +27,7 @@ export class Paper {
   constructor(container: string | HTMLElement, width?: number, height?: number) {
     const element =
       typeof container === "string"
-        ? // Oxc prefers querySelector, but container ids come from users and are not
-          // guaranteed to be valid CSS selectors; getElementById handles every id.
-          // oxlint-disable-next-line unicorn/prefer-query-selector
-          document.getElementById(container)
+        ? document.querySelector(`#${CSS.escape(container)}`)
         : container;
 
     if (element == null) {
