@@ -1,5 +1,6 @@
 import type FlowChart from "../chart.js";
 import type { SymbolOptions } from "../options.js";
+import { applyNodeLink } from "./node-links.js";
 import { FlowChartSymbol } from "./symbol.js";
 
 export class Subroutine extends FlowChartSymbol {
@@ -28,16 +29,8 @@ export class Subroutine extends FlowChartSymbol {
 
     if (options.key != null) innerWrapper.node.id = `${options.key}i`;
 
-    const font = this.getAttr("font") as string | null;
-    const fontFamily = this.getAttr("font-family") as string | null;
-    const fontWeight = this.getAttr("font-weight");
-
-    if (font != null) innerWrapper.setAttr("font", font);
-    if (fontFamily != null) innerWrapper.setAttr("font-family", fontFamily);
-    if (fontWeight != null) innerWrapper.setAttr("font-weight", fontWeight);
-
-    if (options.link != null) innerWrapper.setAttr("href", options.link);
-    if (options.target != null) innerWrapper.setAttr("target", options.target);
+    this.applyFont(innerWrapper);
+    applyNodeLink(innerWrapper, options);
 
     this.group.push(innerWrapper);
     innerWrapper.insertBefore(this.text);

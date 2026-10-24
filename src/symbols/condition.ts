@@ -1,4 +1,3 @@
-import { drawPath } from "../action.js";
 import type FlowChart from "../chart.js";
 import type { Direction, SymbolOptions } from "../options.js";
 import { FlowChartSymbol } from "./symbol.js";
@@ -72,26 +71,7 @@ export class Condition extends FlowChartSymbol {
       { x: startX - width / 4, y: startY + height / 4 },
     ];
 
-    const symbol = drawPath(chart, start, points);
-
-    symbol.setAttrs({
-      stroke: this.getAttrOr<string>("element-color", "black"),
-      "stroke-width": this.getAttrOr<number>("line-width", 3),
-      fill: this.getAttrOr<string>("fill", "white"),
-    });
-
-    if (options.link != null) symbol.setAttr("href", options.link);
-    if (options.target != null) symbol.setAttr("target", options.target);
-    if (options.key != null) symbol.node.id = options.key;
-
-    symbol.node.setAttribute("class", this.getAttrOr<string>("class", "flowchart"));
-
-    this.text.setAttr("y", symbol.getBBox().height / 2);
-
-    this.group.push(symbol);
-    symbol.insertBefore(this.text);
-
-    this.initialize();
+    this.createPathShape(start, points, options);
   }
 
   override render(): void {

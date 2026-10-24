@@ -1,4 +1,4 @@
-import { checkLineIntersection } from "../action.js";
+import { checkLineIntersection, drawPath } from "../action.js";
 import type FlowChart from "../chart.js";
 import type { Direction, LineStyle, SymbolOptions, SymbolType } from "../options.js";
 import type {
@@ -12,6 +12,7 @@ import type {
 } from "../render/index.js";
 import type { Position } from "../typings.js";
 import { routeConnection } from "./line-routing.js";
+import { applyNodeCallback, applyNodeLink } from "./node-links.js";
 
 interface PathLocation {
   path: PathSegment[];
@@ -96,33 +97,6 @@ const bendCrossing = (
   line.setPath(path);
 
   return true;
-};
-
-/**
- * Binds the `options.function` click callback to a rendered element.
- *
- * @param element Element that should react to clicks.
- * @param options Parsed symbol options containing the callback name.
- */
-const bindClick = (element: Renderable, options: Partial<SymbolOptions>): void => {
-  const { function: functionName } = options;
-
-  if (functionName == null) return;
-
-  element.node.addEventListener(
-    "click",
-    (event) => {
-      const handler = (
-        globalThis as unknown as Record<
-          string,
-          ((event: Event, options: Partial<SymbolOptions>) => void) | undefined
-        >
-      )[functionName];
-
-      handler?.(event, options);
-    },
-    false,
-  );
 };
 
 export class FlowChartSymbol {
@@ -213,14 +187,8 @@ export class FlowChartSymbol {
     });
 
     this.applyFont(this.text);
-
-    if (options.link != null) this.text.setAttr("href", options.link);
-    if (options.target != null) this.text.setAttr("target", options.target);
-
-    if (options.function != null) {
-      this.text.setAttr("cursor", "pointer");
-      bindClick(this.text, options);
-    }
+    applyNodeLink(this.text, options);
+    applyNodeCallback(this.text, options);
 
     const maxWidth = this.getAttr("maxWidth") as number | null;
 
@@ -239,6 +207,58 @@ export class FlowChartSymbol {
     }
 
     this.group.push(this.text);
+  }
+
+  /**
+   * Applies the configured fill/stroke/line-width and CSS class to a node shape.
+   *
+   * @param symbol Shape element.
+   */
+  protected styleShape(symbol: Renderable): void {
+    symbol.setAttrs({
+      stroke: this.getAttrOr<string>("element-color", "black"),
+      "stroke-width": this.getAttrOr<number>("line-width", 3),
+      fill: this.getAttrOr<string>("fill", "white"),
+    });
+
+    symbol.node.setAttribute("class", this.getAttrOr<string>("class", "flowchart"));
+  }
+
+  /**
+   * Adds a finished shape before the text, centres the text and measures the node.
+   *
+   * @param symbol Shape element.
+   */
+  protected finishShape(symbol: Renderable): void {
+    this.group.push(symbol);
+    symbol.insertBefore(this.text);
+    this.text.setAttr("y", symbol.getBBox().height / 2);
+    this.initialize();
+  }
+
+  /**
+   * Creates the custom path shape of condition / inputoutput nodes.
+   *
+   * @param start Path start point.
+   * @param points Path points.
+   * @param options Symbol options parsed from the flowchart.
+   * @returns The created shape.
+   */
+  protected createPathShape(
+    start: Position,
+    points: Position[],
+    options: Partial<SymbolOptions>,
+  ): PathElement {
+    const symbol = drawPath(this.chart, start, points);
+
+    this.styleShape(symbol);
+    applyNodeLink(symbol, options);
+
+    if (options.key != null) symbol.node.id = options.key;
+
+    this.finishShape(symbol);
+
+    return symbol;
   }
 
   /**
@@ -268,22 +288,12 @@ export class FlowChartSymbol {
       symbol.node.setAttribute("rx", roundness.toString());
     }
 
-    if (options.link != null) symbol.setAttr("href", options.link);
-    if (options.target != null) symbol.setAttr("target", options.target);
-
-    if (options.function != null) {
-      bindClick(symbol, options);
-      symbol.setAttr("cursor", "pointer");
-    }
+    applyNodeLink(symbol, options);
+    applyNodeCallback(symbol, options);
 
     if (options.key != null) symbol.node.id = options.key;
 
-    this.group.push(symbol);
-    symbol.insertBefore(this.text);
-
-    this.text.setAttr("y", symbol.getBBox().height / 2);
-
-    this.initialize();
+    this.finishShape(symbol);
   }
 
   /**
