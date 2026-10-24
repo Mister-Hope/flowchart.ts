@@ -5,6 +5,55 @@ flowchart.ts is modern version of flowchart.js, a flowchart DSL and SVG render t
 Nodes and connections are defined separately so that nodes can be reused and connections can be quickly changed.
 Fine grain changes to node and connection style can also be made right in the DSL.
 
+The SVG renderer is implemented in this package, so flowchart.ts has **no runtime dependencies** and targets modern browsers.
+
+## Installation
+
+```bash
+pnpm add flowchart.ts
+# npm install flowchart.ts
+# yarn add flowchart.ts
+```
+
+## Usage
+
+```ts
+import { parse } from "flowchart.ts";
+
+const chart = parse(`\
+st=>start: Start
+op1=>operation: My Operation
+e=>end: End
+
+st->op1->e
+`);
+
+// draw into an element or an element id
+chart.draw("diagram");
+
+// remove the rendered SVG again
+chart.clean();
+```
+
+`parse` accepts the DSL below and returns a `Chart`; `draw(container, options)` renders it as SVG.
+Styles can be passed per call (colors, fonts, line width, ...), per symbol type, or per flowstate.
+
+## Requirements
+
+- Node.js `^22.23.0 || ^24.21.0 || ^26.10.0` (current LTS lines) for development
+- any modern browser (SVG + ES2022) at runtime
+
+## Development
+
+```bash
+pnpm install      # install dependencies
+pnpm dev          # demo page of the examples in `template/`
+pnpm build        # build `dist/flowchart.js` and `dist/flowchart.d.ts` with tsdown
+pnpm test         # run the vitest suite (happy-dom)
+pnpm lint:check   # oxlint + oxfmt
+pnpm type-check   # tsc --noEmit
+```
+
 ## Example
 
 ```flowchart
@@ -247,9 +296,9 @@ para(path3@an3, bottom)->e
 ```
 
 <details>
-  
+
   <summary>Demonstration</summary>
-  
- ![img](https://user-images.githubusercontent.com/1086194/137810516-0d7d7307-fc55-466f-b06d-a6ca9f6b8785.png)
- 
+
+![img](https://user-images.githubusercontent.com/1086194/137810516-0d7d7307-fc55-466f-b06d-a6ca9f6b8785.png)
+
 </details>

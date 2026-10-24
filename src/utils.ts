@@ -1,36 +1,50 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type IAnyObject = Record<string, any>;
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value != null && !Array.isArray(value);
 
-export const deepAssign = <T extends IAnyObject, U extends IAnyObject = T>(
-  originObject: T,
-  ...assignObjects: U[]
-): T & U => {
-  if (assignObjects.length === 0) return originObject as T & U;
+/**
+ * Deep-copies arrays and plain objects; every other value is returned as-is.
+ *
+ * @param value Value to copy.
+ * @returns The copied value.
+ */
+const cloneValue = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map((item) => cloneValue(item));
 
-  const assignObject = assignObjects.shift() as IAnyObject;
+  if (isPlainObject(value)) {
+    const result: Record<string, unknown> = {};
 
-  Object.keys(assignObject).forEach((property) => {
-    if (
-      typeof originObject[property] === "object" &&
-      !Array.isArray(originObject[property]) &&
-      typeof assignObject[property] === "object" &&
-      !Array.isArray(assignObject[property])
-    )
-      deepAssign(originObject[property], assignObject[property]);
-    else if (typeof assignObject[property] === "object")
-      if (Array.isArray(assignObject[property]))
-        (originObject as IAnyObject)[property] = [
-          ...(assignObject[property] as unknown[]),
-        ];
-      else
-        (originObject as IAnyObject)[property] = {
-          ...(assignObject[property] as Record<string, unknown>),
-        };
-    else
-      (originObject as IAnyObject)[property] = assignObject[
-        property
-      ] as unknown;
-  });
+    for (const [key, item] of Object.entries(value)) result[key] = cloneValue(item);
 
-  return deepAssign(originObject, ...assignObjects);
+    return result;
+  }
+
+  return value;
+};
+
+/**
+ * Recursively merges plain objects without mutating any of the sources. Later sources win; arrays
+ * are copied (not merged).
+ *
+ * @param sources Objects to merge, in priority order.
+ * @returns The merged object.
+ */
+export const deepAssign = <T extends Record<string, unknown>>(
+  ...sources: (Partial<T> | undefined)[]
+): T => {
+  const result: Record<string, unknown> = {};
+
+  for (const source of sources) {
+    if (source == null) continue;
+
+    for (const [key, value] of Object.entries(source)) {
+      const existing = result[key];
+
+      result[key] =
+        isPlainObject(existing) && isPlainObject(value)
+          ? deepAssign(existing, value)
+          : cloneValue(value);
+    }
+  }
+
+  return result as T;
 };

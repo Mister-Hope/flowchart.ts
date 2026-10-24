@@ -1,302 +1,273 @@
-import FlowChartSymbol from "./symbol.js";
 import type FlowChart from "../chart.js";
 import type { Direction, SymbolOptions } from "../options.js";
+import FlowChartSymbol from "./symbol.js";
+
+type Directions = [path1: Direction, path2: Direction, path3: Direction];
+
+const DEFAULT_DIRECTIONS: Directions = ["bottom", "right", "top"];
+
+const PATH1_DIRECTIONS: Partial<Record<Direction, Directions>> = {
+  left: ["left", "right", "bottom"],
+  right: ["right", "bottom", "top"],
+  top: ["top", "right", "bottom"],
+};
+
+const PATH2_DIRECTIONS: Partial<Record<Direction, Directions>> = {
+  left: ["bottom", "left", "right"],
+  right: ["bottom", "right", "top"],
+};
+
+const PATH3_DIRECTIONS: Partial<Record<Direction, Directions>> = {
+  bottom: ["top", "right", "bottom"],
+  left: ["bottom", "right", "left"],
+  right: ["bottom", "top", "right"],
+};
+
+/**
+ * Resolves the per-path directions, mirroring the defaults of the original renderer.
+ *
+ * @param direction1 Explicit direction for the first path.
+ * @param direction2 Explicit direction for the second path.
+ * @param direction3 Explicit direction for the third path.
+ * @param hasAllPaths Whether all three paths are connected.
+ * @returns The resolved directions for the three paths.
+ */
+const resolveDirections = (
+  direction1: Direction | null,
+  direction2: Direction | null,
+  direction3: Direction | null,
+  hasAllPaths: boolean,
+): Directions => {
+  if (hasAllPaths) {
+    if (direction1 != null && direction2 == null && direction3 == null)
+      return PATH1_DIRECTIONS[direction1] ?? DEFAULT_DIRECTIONS;
+    if (direction1 == null && direction2 != null && direction3 == null)
+      return PATH2_DIRECTIONS[direction2] ?? ["right", "bottom", "top"];
+    if (direction1 == null && direction2 == null && direction3 != null)
+      return PATH3_DIRECTIONS[direction3] ?? DEFAULT_DIRECTIONS;
+  }
+
+  return [direction1 ?? "bottom", direction2 ?? "right", direction3 ?? "top"];
+};
 
 class Parallel extends FlowChartSymbol {
-  path1_direction: Direction;
+  path1_direction: Direction = "bottom";
+
   path1_symbol?: FlowChartSymbol;
+
   path1_annotation: string;
-  path2_direction: Direction;
+
+  path2_direction: Direction = "right";
+
   path2_symbol?: FlowChartSymbol;
+
   path2_annotation: string;
-  path3_direction: Direction;
+
+  path3_direction: Direction = "top";
+
   path3_symbol?: FlowChartSymbol;
+
   path3_annotation: string;
 
   top_symbol?: FlowChartSymbol;
+
   bottom_symbol?: FlowChartSymbol;
+
   left_symbol?: FlowChartSymbol;
+
   right_symbol?: FlowChartSymbol;
 
   path1?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
+
   path2?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
+
   path3?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
 
   textMargin?: number;
-  params: Record<string, string>;
 
   constructor(chart: FlowChart, options: Partial<SymbolOptions> = {}) {
-    const symbol = chart.paper.rect(0, 0, 0, 0);
+    const symbol = chart.paper.rect({ x: 0, y: 0, width: 0, height: 0 });
 
     super(chart, options, symbol);
-    this.path1_annotation = options.path1_annotation || "";
-    this.path2_annotation = options.path2_annotation || "";
-    this.path3_annotation = options.path3_annotation || "";
-    this.textMargin = this.getAttr("text-margin");
-    this.path1_direction = "bottom";
-    this.path2_direction = "right";
-    this.path3_direction = "top";
-    if (
-      options.direction_next === "path1" &&
-      !options[options.direction_next] &&
-      options.next
-    )
-      options[options.direction_next] = options.next;
 
-    if (
-      options.direction_next === "path2" &&
-      !options[options.direction_next] &&
-      options.next
-    )
-      options[options.direction_next] = options.next;
+    this.path1_annotation = options.path1_annotation ?? "";
+    this.path2_annotation = options.path2_annotation ?? "";
+    this.path3_annotation = options.path3_annotation ?? "";
+    this.textMargin = this.getAttrOr<number>("text-margin", 10);
 
-    if (
-      options.direction_next === "path3" &&
-      !options[options.direction_next] &&
-      options.next
-    )
-      options[options.direction_next] = options.next;
+    const { next, direction_next } = options;
 
-    if (
-      options.path1 &&
-      options.direction_path1 &&
-      options.path2 &&
-      !options.direction_path2 &&
-      options.path3 &&
-      !options.direction_path3
-    ) {
-      if (options.direction_path1 === "right") {
-        this.path2_direction = "bottom";
-        this.path1_direction = "right";
-        this.path3_direction = "top";
-      } else if (options.direction_path1 === "top") {
-        this.path2_direction = "right";
-        this.path1_direction = "top";
-        this.path3_direction = "bottom";
-      } else if (options.direction_path1 === "left") {
-        this.path2_direction = "right";
-        this.path1_direction = "left";
-        this.path3_direction = "bottom";
-      } else {
-        this.path2_direction = "right";
-        this.path1_direction = "bottom";
-        this.path3_direction = "top";
-      }
-    } else if (
-      options.path1 &&
-      !options.direction_path1 &&
-      options.path2 &&
-      options.direction_path2 &&
-      options.path3 &&
-      !options.direction_path3
-    ) {
-      if (options.direction_path2 === "right") {
-        this.path1_direction = "bottom";
-        this.path2_direction = "right";
-        this.path3_direction = "top";
-      } else if (options.direction_path2 === "left") {
-        this.path1_direction = "bottom";
-        this.path2_direction = "left";
-        this.path3_direction = "right";
-      } else {
-        this.path1_direction = "right";
-        this.path2_direction = "bottom";
-        this.path3_direction = "top";
-      }
-    } else if (
-      options.path1 &&
-      !options.direction_path1 &&
-      options.path2 &&
-      !options.direction_path2 &&
-      options.path3 &&
-      options.direction_path3
-    ) {
-      if (options.direction_path2 === "right") {
-        this.path1_direction = "bottom";
-        this.path2_direction = "top";
-        this.path3_direction = "right";
-      } else if (options.direction_path2 === "left") {
-        this.path1_direction = "bottom";
-        this.path2_direction = "right";
-        this.path3_direction = "left";
-      } else {
-        this.path1_direction = "right";
-        this.path2_direction = "bottom";
-        this.path3_direction = "top";
-      }
-    } else {
-      this.path1_direction = options.direction_path1!;
-      this.path2_direction = options.direction_path2!;
-      this.path3_direction = options.direction_path3!;
+    if (next != null) {
+      if (direction_next === "path1" && options.path1 == null) options.path1 = next;
+      else if (direction_next === "path2" && options.path2 == null) options.path2 = next;
+      else if (direction_next === "path3" && options.path3 == null) options.path3 = next;
     }
 
-    this.path1_direction = this.path1_direction || "bottom";
-    this.path2_direction = this.path2_direction || "right";
-    this.path3_direction = this.path3_direction || "top";
+    const direction1 = options.direction_path1 ?? null;
+    const direction2 = options.direction_path2 ?? null;
+    const direction3 = options.direction_path3 ?? null;
+    const hasAllPaths = options.path1 != null && options.path2 != null && options.path3 != null;
+
+    [this.path1_direction, this.path2_direction, this.path3_direction] = resolveDirections(
+      direction1,
+      direction2,
+      direction3,
+      hasAllPaths,
+    );
 
     this.initialize();
   }
 
-  render() {
-    if (this.path1_direction)
-      // FIXME:
-      // @ts-expect-error: the key is a string
-      this[this.path1_direction + "_symbol"] = this.path1_symbol;
+  override render(): void {
+    this.assignDirectionalSymbol(this.path1_direction, this.path1_symbol);
+    this.assignDirectionalSymbol(this.path2_direction, this.path2_symbol);
+    this.assignDirectionalSymbol(this.path3_direction, this.path3_symbol);
 
-    if (this.path2_direction)
-      // FIXME:
-      // @ts-expect-error: the key is a string
-      this[this.path2_direction + "_symbol"] = this.path2_symbol;
+    const lineLength = this.getAttrOr<number>("line-length", 50);
 
-    if (this.path3_direction)
-      // FIXME:
-      // @ts-expect-error: the key is a string
-      this[this.path3_direction + "_symbol"] = this.path3_symbol;
+    this.placeBottom(lineLength);
+    this.placeTop(lineLength);
+    this.placeLeft(lineLength);
+    this.placeRight(lineLength);
+  }
 
-    const lineLength = this.getAttr<number>("line-length")!;
+  /**
+   * Positions the `bottom` branch symbol under this node.
+   *
+   * @param lineLength Minimum distance between the node and the branch symbol.
+   */
+  private placeBottom(lineLength: number): void {
+    const bottomSymbol = this.bottom_symbol;
 
-    if (this.bottom_symbol) {
-      const bottomPoint = this.getBottom();
+    if (bottomSymbol == null || bottomSymbol.isPositioned) return;
 
-      if (!this.bottom_symbol.isPositioned) {
-        this.bottom_symbol.shiftY(this.getY() + this.height + lineLength);
-        this.bottom_symbol.setX(bottomPoint.x - this.bottom_symbol.width / 2);
-        this.bottom_symbol.isPositioned = true;
+    const bottomPoint = this.getBottom();
 
-        this.bottom_symbol.render();
+    bottomSymbol.shiftY(this.getY() + this.height + lineLength);
+    bottomSymbol.setX(bottomPoint.x - bottomSymbol.width / 2);
+    bottomSymbol.isPositioned = true;
+
+    bottomSymbol.render();
+  }
+
+  /**
+   * Positions the `top` branch symbol above this node.
+   *
+   * @param lineLength Minimum distance between the node and the branch symbol.
+   */
+  private placeTop(lineLength: number): void {
+    const topSymbol = this.top_symbol;
+
+    if (topSymbol == null || topSymbol.isPositioned) return;
+
+    const topPoint = this.getTop();
+
+    topSymbol.shiftY(this.getY() - topSymbol.height - lineLength);
+    topSymbol.setX(topPoint.x + topSymbol.width);
+    topSymbol.isPositioned = true;
+
+    topSymbol.render();
+  }
+
+  /**
+   * Positions the `left` branch symbol next to this node.
+   *
+   * @param lineLength Minimum distance between the node and the branch symbol.
+   */
+  private placeLeft(lineLength: number): void {
+    const leftSymbol = this.left_symbol;
+
+    if (leftSymbol == null || leftSymbol.isPositioned) return;
+
+    const leftPoint = this.getLeft();
+
+    leftSymbol.setY(leftPoint.y - leftSymbol.height / 2);
+    leftSymbol.shiftX(-(this.getX() + this.width + lineLength));
+
+    this.shiftBeside(leftSymbol, lineLength);
+
+    leftSymbol.isPositioned = true;
+
+    leftSymbol.render();
+  }
+
+  /**
+   * Positions the `right` branch symbol next to this node.
+   *
+   * @param lineLength Minimum distance between the node and the branch symbol.
+   */
+  private placeRight(lineLength: number): void {
+    const rightSymbol = this.right_symbol;
+
+    if (rightSymbol == null || rightSymbol.isPositioned) return;
+
+    const rightPoint = this.getRight();
+
+    rightSymbol.setY(rightPoint.y - rightSymbol.height / 2);
+    rightSymbol.shiftX(this.getX() + this.width + lineLength);
+
+    this.shiftBeside(rightSymbol, lineLength);
+
+    rightSymbol.isPositioned = true;
+
+    rightSymbol.render();
+  }
+  override renderLines(): void {
+    if (this.path1_symbol != null)
+      this.drawLineTo(this.path1_symbol, this.path1_annotation, this.path1_direction);
+
+    if (this.path2_symbol != null)
+      this.drawLineTo(this.path2_symbol, this.path2_annotation, this.path2_direction);
+
+    if (this.path3_symbol != null)
+      this.drawLineTo(this.path3_symbol, this.path3_annotation, this.path3_direction);
+  }
+
+  private assignDirectionalSymbol(direction: Direction, symbol: FlowChartSymbol | undefined): void {
+    switch (direction) {
+      case "top": {
+        this.top_symbol = symbol;
+        break;
       }
-    }
-
-    if (this.top_symbol) {
-      const topPoint = this.getTop();
-
-      if (!this.top_symbol.isPositioned) {
-        this.top_symbol.shiftY(
-          this.getY() - this.top_symbol.height - lineLength,
-        );
-        this.top_symbol.setX(topPoint.x + this.top_symbol.width);
-        this.top_symbol.isPositioned = true;
-
-        this.top_symbol.render();
+      case "bottom": {
+        this.bottom_symbol = symbol;
+        break;
       }
-    }
-
-    if (this.left_symbol) {
-      const leftPoint = this.getLeft();
-
-      if (!this.left_symbol.isPositioned) {
-        this.left_symbol.setY(leftPoint.y - this.left_symbol.height / 2);
-        this.left_symbol.shiftX(
-          -(this.group.getBBox().x + this.width + lineLength),
-        );
-        const shift = (): void => {
-          let hasSymbolUnder = false;
-          let symbol: FlowChartSymbol;
-
-          for (symbol of this.chart.symbols) {
-            if (
-              !this.params["align-next"] ||
-              this.params["align-next"] !== "no"
-            ) {
-              const diff = Math.abs(
-                symbol.getCenter().x - this.left_symbol!.getCenter().x,
-              );
-
-              if (
-                symbol.getCenter().y > this.left_symbol!.getCenter().y &&
-                diff <= this.left_symbol!.width / 2
-              ) {
-                hasSymbolUnder = true;
-                break;
-              }
-            }
-          }
-
-          if (hasSymbolUnder) {
-            if (this.left_symbol!.symbolType === "end") return;
-            this.left_symbol!.setX(symbol!.getX() + symbol!.width + lineLength);
-            shift();
-          }
-        };
-
-        shift();
-
-        this.left_symbol.isPositioned = true;
-
-        this.left_symbol.render();
+      case "left": {
+        this.left_symbol = symbol;
+        break;
       }
-    }
-
-    if (this.right_symbol) {
-      const rightPoint = this.getRight();
-
-      if (!this.right_symbol.isPositioned) {
-        this.right_symbol.setY(rightPoint.y - this.right_symbol.height / 2);
-        this.right_symbol.shiftX(
-          this.group.getBBox().x + this.width + lineLength,
-        );
-        const shift = (): void => {
-          let hasSymbolUnder = false;
-          let symbol: FlowChartSymbol;
-
-          for (symbol of this.chart.symbols) {
-            if (
-              !this.params["align-next"] ||
-              this.params["align-next"] !== "no"
-            ) {
-              const diff = Math.abs(
-                symbol.getCenter().x - this.right_symbol!.getCenter().x,
-              );
-
-              if (
-                symbol.getCenter().y > this.right_symbol!.getCenter().y &&
-                diff <= this.right_symbol!.width / 2
-              ) {
-                hasSymbolUnder = true;
-                break;
-              }
-            }
-          }
-
-          if (hasSymbolUnder) {
-            if (this.right_symbol!.symbolType === "end") return;
-            this.right_symbol!.setX(
-              symbol!.getX() + symbol!.width + lineLength,
-            );
-            shift();
-          }
-        };
-
-        shift();
-
-        this.right_symbol.isPositioned = true;
-
-        this.right_symbol.render();
+      case "right": {
+        this.right_symbol = symbol;
+        break;
+      }
+      default: {
+        break;
       }
     }
   }
 
-  renderLines(): void {
-    if (this.path1_symbol)
-      this.drawLineTo(
-        this.path1_symbol,
-        this.path1_annotation,
-        this.path1_direction,
-      );
+  private shiftBeside(symbol: FlowChartSymbol, lineLength: number): void {
+    const shift = (): void => {
+      let symbolUnder: FlowChartSymbol | undefined;
 
-    if (this.path2_symbol)
-      this.drawLineTo(
-        this.path2_symbol,
-        this.path2_annotation,
-        this.path2_direction,
-      );
+      if (this.params["align-next"] !== "no") {
+        for (const otherSymbol of this.chart.symbols) {
+          const diff = Math.abs(otherSymbol.getCenter().x - symbol.getCenter().x);
+          if (otherSymbol.getCenter().y > symbol.getCenter().y && diff <= symbol.width / 2) {
+            symbolUnder = otherSymbol;
+            break;
+          }
+        }
+      }
 
-    if (this.path3_symbol)
-      this.drawLineTo(
-        this.path3_symbol,
-        this.path3_annotation,
-        this.path3_direction,
-      );
+      if (symbolUnder == null || symbol.symbolType === "end") return;
+
+      symbol.setX(symbolUnder.getX() + symbolUnder.width + lineLength);
+      shift();
+    };
+
+    shift();
   }
 }
 

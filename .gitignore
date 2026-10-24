@@ -3,5 +3,9 @@ node_modules/**
 dist/
 lib/
 types/
+coverage/
+.vitest/
+*.tsbuildinfo
+.DS_Store
 
 .npmrc

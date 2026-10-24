@@ -1,10 +1,9 @@
-import type { RaphaelPaper, RaphaelPath, RaphaelSet } from "raphael";
-import Raphael from "raphael";
-
 import { defaultOptions } from "./config.js";
-import type { ParsedDrawOptions } from "./options.js";
-import Condition from "./symbols/condition";
-import Parallel from "./symbols/parallel";
+import type { DrawOptions, ParsedDrawOptions } from "./options.js";
+import { Paper } from "./render/index.js";
+import type { PathElement } from "./render/index.js";
+import Condition from "./symbols/condition.js";
+import Parallel from "./symbols/parallel.js";
 import type FlowChartSymbol from "./symbols/symbol.js";
 import { deepAssign } from "./utils.js";
 
@@ -12,23 +11,20 @@ class FlowChart {
   options: ParsedDrawOptions;
 
   symbols: FlowChartSymbol[] = [];
-  lines: RaphaelPath<"SVG" | "VML">[] = [];
+
+  lines: PathElement[] = [];
+
   start: null | FlowChartSymbol = null;
 
-  paper: RaphaelPaper<"SVG" | "VML"> & RaphaelSet<"SVG" | "VML">;
+  paper: Paper;
+
   minXFromSymbols = 0;
+
   maxXFromLine = 0;
 
-  constructor(
-    container: string | HTMLElement,
-    // @ts-expect-error
-    options: ParsedDrawOptions = {},
-  ) {
-    // width and height are not required
-    // @ts-expect-error
-    this.paper = new Raphael(container, options.width, options.height);
-
-    this.options = deepAssign(options, defaultOptions);
+  constructor(container: string | HTMLElement, options: DrawOptions = {}) {
+    this.paper = new Paper(container, options.width, options.height);
+    this.options = deepAssign<ParsedDrawOptions>(defaultOptions, options);
   }
 
   handle(symbol: FlowChartSymbol): FlowChartSymbol {
@@ -72,9 +68,7 @@ class FlowChart {
         return this.handle(nextSymbol);
       };
     } else {
-      // FIXME:
-      // @ts-expect-error
-      symbol.then = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
+      symbol.thenHandler = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
         symbol.next = nextSymbol;
         symbol.pathOk = true;
 
@@ -92,38 +86,28 @@ class FlowChart {
   }
 
   render(): void {
-    const maxWidth = this.symbols.reduce((maxWidth, { width }) => {
-      return Math.max(maxWidth, width);
-    }, 0);
+    if (this.start == null) return;
 
-    const maxHeight = this.symbols.reduce((maxHeight, { height }) => {
-      return Math.max(maxHeight, height);
-    }, 0);
+    const maxWidth = this.symbols.reduce((max, { width }) => Math.max(max, width), 0);
+
+    const maxHeight = this.symbols.reduce((max, { height }) => Math.max(max, height), 0);
 
     this.symbols.forEach((symbol) => {
-      symbol.shiftX(
-        this.options.x! +
-          (maxWidth - symbol.width) / 2 +
-          this.options["line-width"]!,
-      );
+      symbol.shiftX(this.options.x + (maxWidth - symbol.width) / 2 + this.options["line-width"]);
 
-      symbol.shiftY(
-        this.options.y! +
-          (maxHeight - symbol.height) / 2 +
-          this.options["line-width"]!,
-      );
+      symbol.shiftY(this.options.y + (maxHeight - symbol.height) / 2 + this.options["line-width"]);
     });
 
-    this.start!.render();
+    this.start.render();
 
     this.symbols.forEach((symbol) => {
       symbol.renderLines();
     });
 
     let maxX = this.maxXFromLine;
-    let maxY = 0,
-      minX = 0,
-      minY = 0;
+    let maxY = 0;
+    let minX = 0;
+    let minY = 0;
 
     this.symbols.forEach((symbol) => {
       const leftX = symbol.getX();
@@ -137,8 +121,9 @@ class FlowChart {
     });
 
     this.lines.forEach((line) => {
-      const boundingBox = line.getBBox();
-      const { x, y, x2, y2 } = boundingBox;
+      const { x, y, width, height } = line.getBBox();
+      const x2 = x + width;
+      const y2 = y + height;
 
       if (x < minX) minX = x;
       if (y < minY) minY = y;
@@ -146,8 +131,8 @@ class FlowChart {
       if (y2 > maxY) maxY = y2;
     });
 
-    const scale = this.options.scale!;
-    const lineWidth = this.options["line-width"]!;
+    const { scale } = this.options;
+    const lineWidth = this.options["line-width"];
 
     if (this.minXFromSymbols < minX) minX = this.minXFromSymbols;
 
@@ -158,15 +143,11 @@ class FlowChart {
     const height = maxY + lineWidth - minY;
 
     this.paper.setSize(width * scale, height * scale);
-    this.paper.setViewBox(minX, minY, width, height, true);
+    this.paper.setViewBox({ x: minX, y: minY, width, height }, true);
   }
 
   clean(): void {
-    if (this.paper) {
-      const paperDom = this.paper.canvas;
-
-      if (paperDom.parentNode) paperDom.parentNode.removeChild(paperDom);
-    }
+    this.paper.canvas.remove();
   }
 }
 

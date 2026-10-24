@@ -1,48 +1,43 @@
-import FlowChartSymbol from "./symbol.js";
 import type FlowChart from "../chart.js";
 import type { SymbolOptions } from "../options.js";
+import FlowChartSymbol from "./symbol.js";
 
 class Subroutine extends FlowChartSymbol {
-  then?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
   constructor(chart: FlowChart, options: Partial<SymbolOptions> = {}) {
-    const symbol = chart.paper.rect(0, 0, 0, 0);
+    const symbol = chart.paper.rect({ x: 0, y: 0, width: 0, height: 0 });
 
     super(chart, options, symbol);
 
-    symbol.attr({
-      width:
-        this.text.getBBox().width + 4 * this.getAttr<number>("text-margin")!,
-    });
+    const textMargin = this.getAttrOr<number>("text-margin", 10);
+    const textBox = this.text.getBBox();
 
-    this.text.attr({
-      x: 2 * this.getAttr<number>("text-margin")!,
-    });
+    symbol.attr({ width: textBox.width + 4 * textMargin });
 
-    const innerWrapper = chart.paper.rect(0, 0, 0, 0);
+    this.text.attr({ x: 2 * textMargin });
+
+    const innerWrapper = chart.paper.rect({ x: 0, y: 0, width: 0, height: 0 });
 
     innerWrapper.attr({
-      x: this.getAttr<number>("text-margin"),
-      stroke: this.getAttr<string>("element-color"),
-      "stroke-width": this.getAttr<number>("line-width"),
-      width:
-        this.text.getBBox().width + 2 * this.getAttr<number>("text-margin")!,
-      height:
-        this.text.getBBox().height + 2 * this.getAttr<number>("text-margin")!,
-      fill: this.getAttr<string>("fill"),
+      x: textMargin,
+      stroke: this.getAttrOr<string>("element-color", "black"),
+      "stroke-width": this.getAttrOr<number>("line-width", 3),
+      width: textBox.width + 2 * textMargin,
+      height: textBox.height + 2 * textMargin,
+      fill: this.getAttrOr<string>("fill", "white"),
     });
 
-    if (options.key) innerWrapper.node.id = `${options.key}i`;
+    if (options.key != null) innerWrapper.node.id = `${options.key}i`;
 
-    const font = this.getAttr<string>("font");
-    const fontF = this.getAttr<string>("font-family");
-    const fontW = this.getAttr<string>("font-weight");
+    const font = this.getAttr("font") as string | null;
+    const fontFamily = this.getAttr("font-family") as string | null;
+    const fontWeight = this.getAttr("font-weight");
 
-    if (font) innerWrapper.attr({ font: font });
-    if (fontF) innerWrapper.attr({ "font-family": fontF });
-    if (fontW) innerWrapper.attr({ "font-weight": fontW });
+    if (font != null) innerWrapper.attr("font", font);
+    if (fontFamily != null) innerWrapper.attr("font-family", fontFamily);
+    if (fontWeight != null) innerWrapper.attr("font-weight", fontWeight);
 
-    if (options.link) innerWrapper.attr("href", options.link);
-    if (options.target) innerWrapper.attr("target", options.target);
+    if (options.link != null) innerWrapper.attr("href", options.link);
+    if (options.target != null) innerWrapper.attr("target", options.target);
 
     this.group.push(innerWrapper);
     innerWrapper.insertBefore(this.text);

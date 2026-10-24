@@ -1,6 +1,5 @@
-import type { RaphaelPath, RaphaelTextAnchorType } from "raphael";
-
 import type FlowChart from "./chart.js";
+import type { PathElement, PathSegment, Renderable, TextAnchor } from "./render/index.js";
 import type { Position } from "./typings.js";
 
 export interface LineIntersectionResult {
@@ -10,6 +9,7 @@ export interface LineIntersectionResult {
   onLine2: boolean;
 }
 
+// eslint-disable-next-line max-params -- the 8 positional coordinates are part of the existing call signature
 export const checkLineIntersection = (
   line1StartX: number,
   line1StartY: number,
@@ -35,12 +35,8 @@ export const checkLineIntersection = (
 
   const yDistance = line1StartY - line2StartY;
   const xDistance = line1StartX - line2StartX;
-  const numerator1 =
-    (line2EndX - line2StartX) * yDistance -
-    (line2EndY - line2StartY) * xDistance;
-  const numerator2 =
-    (line1EndX - line1StartX) * yDistance -
-    (line1EndY - line1StartY) * xDistance;
+  const numerator1 = (line2EndX - line2StartX) * yDistance - (line2EndY - line2StartY) * xDistance;
+  const numerator2 = (line1EndX - line1StartX) * yDistance - (line1EndY - line1StartY) * xDistance;
 
   const a = numerator1 / denominator;
   const b = numerator2 / denominator;
@@ -48,11 +44,7 @@ export const checkLineIntersection = (
   // if we cast these lines infinitely in both directions, they intersect here:
   result.x = line1StartX + a * (line1EndX - line1StartX);
   result.y = line1StartY + a * (line1EndY - line1StartY);
-  /*
-  // it is worth noting that this should be the same as:
-  x = line2StartX + (b * (line2EndX - line2StartX));
-  y = line2StartX + (b * (line2EndY - line2StartY));
-  */
+
   // if line1 is a segment and line2 is infinite, they intersect if:
   if (a > 0 && a < 1) result.onLine1 = true;
 
@@ -63,32 +55,28 @@ export const checkLineIntersection = (
   return result;
 };
 
-export const drawPath = (
-  chart: FlowChart,
-  location: Position,
-  points: Position[],
-): RaphaelPath<"SVG" | "VML"> => {
-  let path = "M{0},{1}";
+const buildPath = (points: Position[]): PathSegment[] =>
+  points.map(({ x, y }, index): PathSegment => (index === 0 ? ["M", x, y] : ["L", x, y]));
 
-  for (let i = 2; i < 2 * points.length + 2; i += 2)
-    path += ` L{${i}},{${i + 1}}`;
-
-  const pathValues = [location, ...points].map(({ x, y }) => [x, y]).flat();
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const symbol = chart.paper.path(path, pathValues);
-
-  symbol.attr("stroke", chart.options["element-color"]);
-  symbol.attr("stroke-width", chart.options["line-width"]);
-
-  const font = chart.options.font;
+const applyFont = (chart: FlowChart, element: Renderable): void => {
+  const { font } = chart.options;
   const fontFamily = chart.options["font-family"];
   const fontWeight = chart.options["font-weight"];
 
-  if (font) symbol.attr({ font: font });
-  if (fontFamily) symbol.attr({ "font-family": fontFamily });
-  if (fontWeight) symbol.attr({ "font-weight": fontWeight });
+  if (font != null) element.attr("font", font);
+  if (fontFamily != null) element.attr("font-family", fontFamily);
+  if (fontWeight != null) element.attr("font-weight", fontWeight);
+};
+
+export const drawPath = (chart: FlowChart, location: Position, points: Position[]): PathElement => {
+  const symbol = chart.paper.path(buildPath([location, ...points]));
+
+  symbol.attr({
+    stroke: chart.options["element-color"],
+    "stroke-width": chart.options["line-width"],
+  });
+
+  applyFont(chart, symbol);
 
   return symbol;
 };
@@ -98,19 +86,8 @@ export const drawLine = (
   from: Position,
   to: Position[],
   text: string,
-): RaphaelPath<"SVG" | "VML"> => {
-  let path = "M{0},{1}";
-
-  // TODO: Remove
-  if (Object.prototype.toString.call(to) !== "[object Array]") to = [to];
-
-  for (let i = 2; i < 2 * to.length + 2; i += 2) path += ` L{${i}},{${i + 1}}`;
-
-  const pathValues = [from, ...to].map(({ x, y }) => [x, y]).flat();
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const line = chart.paper.path(path, pathValues);
+): PathElement => {
+  const line = chart.paper.path(buildPath([from, ...to]));
 
   line.attr({
     stroke: chart.options["line-color"],
@@ -118,60 +95,31 @@ export const drawLine = (
     "arrow-end": chart.options["arrow-end"],
   });
 
-  const font = chart.options.font;
-  const fontFamily = chart.options["font-family"];
-  const fontWeight = chart.options["font-weight"];
+  applyFont(chart, line);
 
-  if (font) line.attr({ font: font });
-  if (fontFamily) line.attr({ "font-family": fontFamily });
-  if (fontWeight) line.attr({ "font-weight": fontWeight });
-
-  if (text) {
-    const centerText = false;
-
+  if (text !== "") {
     const textPath = chart.paper.text(0, 0, text);
-    let textAnchor: RaphaelTextAnchorType = "start";
+    let textAnchor: TextAnchor = "start";
 
-    let isHorizontal = false;
-    const firstTo = to[0];
+    const [firstTo] = to;
+    const isHorizontal = firstTo != null && from.y === firstTo.y;
 
-    if (from.y === firstTo.y) isHorizontal = true;
+    let { x } = from;
+    let { y } = from;
 
-    let x = 0,
-      y = 0;
-
-    if (centerText) {
-      if (from.x > firstTo.x) x = from.x - (from.x - firstTo.x) / 2;
-      else x = firstTo.x - (firstTo.x - from.x) / 2;
-
-      if (from.y > firstTo.y) y = from.y - (from.y - firstTo.y) / 2;
-      else y = firstTo.y - (firstTo.y - from.y) / 2;
-
-      if (isHorizontal) {
-        x -= textPath.getBBox().width / 2;
-        y -= chart.options["text-margin"];
-      } else {
-        x += chart.options["text-margin"];
-        y -= textPath.getBBox().height / 2;
-      }
-    } else {
-      x = from.x;
-      y = from.y;
-
-      if (isHorizontal) {
-        if (from.x > firstTo.x) {
-          x -= chart.options["text-margin"] / 2;
-          textAnchor = "end";
-        } else {
-          x += chart.options["text-margin"] / 2;
-        }
-
-        y -= chart.options["text-margin"];
+    if (isHorizontal) {
+      if (firstTo != null && from.x > firstTo.x) {
+        x -= chart.options["text-margin"] / 2;
+        textAnchor = "end";
       } else {
         x += chart.options["text-margin"] / 2;
-        y += chart.options["text-margin"];
-        if (from.y > firstTo.y) y -= chart.options["text-margin"] * 2;
       }
+
+      y -= chart.options["text-margin"];
+    } else {
+      x += chart.options["text-margin"] / 2;
+      y += chart.options["text-margin"];
+      if (firstTo != null && from.y > firstTo.y) y -= chart.options["text-margin"] * 2;
     }
 
     textPath.attr({
@@ -182,9 +130,7 @@ export const drawLine = (
       y,
     });
 
-    if (font) textPath.attr({ font: font });
-    if (fontFamily) textPath.attr({ "font-family": fontFamily });
-    if (fontWeight) textPath.attr({ "font-weight": fontWeight });
+    applyFont(chart, textPath);
   }
 
   return line;

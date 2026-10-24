@@ -1,56 +1,194 @@
-import type {
-  RaphaelAttributes,
-  RaphaelElement,
-  RaphaelPath,
-  RaphaelSet,
-} from "raphael";
-
 import { checkLineIntersection, drawLine } from "../action.js";
 import type FlowChart from "../chart.js";
-import type { Direction, SymbolOptions, SymbolType } from "../options.js";
+import type { Direction, LineStyle, SymbolOptions, SymbolType } from "../options.js";
+import type {
+  AttributeValue,
+  PathElement,
+  PathSegment,
+  RectElement,
+  Renderable,
+  SetElement,
+  TextElement,
+} from "../render/index.js";
 import type { Position } from "../typings.js";
 
+interface PathLocation {
+  path: PathSegment[];
+  index: number;
+}
+
+/**
+ * Bends the segment at `index` around an intersection with another path, if they cross.
+ *
+ * @param line Line element whose path is being modified.
+ * @param location Path and segment index being checked.
+ * @param other Previously drawn path and segment index to check against.
+ * @param lineWidth Stroke width used for the bend size.
+ * @returns Whether a bend was inserted.
+ */
+const bendCrossing = (
+  line: PathElement,
+  location: PathLocation,
+  other: PathLocation,
+  lineWidth: number,
+): boolean => {
+  const { path, index } = location;
+  const { path: otherPath, index: otherIndex } = other;
+  const start = path[index];
+  const end = path[index + 1];
+  const otherStart = otherPath[otherIndex];
+  const otherEnd = otherPath[otherIndex + 1];
+
+  const res = checkLineIntersection(
+    otherStart[1],
+    otherStart[2],
+    otherEnd[1],
+    otherEnd[2],
+    start[1],
+    start[2],
+    end[1],
+    end[2],
+  );
+
+  if (!res.onLine1 || !res.onLine2 || res.x == null || res.y == null) return false;
+
+  const intersectionX = res.x;
+  const intersectionY = res.y;
+  let firstSegment: PathSegment, secondSegment: PathSegment;
+
+  if (start[2] === end[2]) {
+    const direction = start[1] > end[1] ? 1 : -1;
+    const x = intersectionX + direction * lineWidth * 2;
+
+    firstSegment = ["L", x, start[2]];
+    secondSegment = [
+      "C",
+      x,
+      start[2],
+      intersectionX,
+      start[2] - lineWidth * 4,
+      intersectionX - direction * lineWidth * 2,
+      start[2],
+    ];
+  } else if (start[2] > end[2]) {
+    firstSegment = ["L", start[1], intersectionY + lineWidth * 2];
+    secondSegment = [
+      "C",
+      start[1],
+      intersectionY + lineWidth * 2,
+      start[1] + lineWidth * 4,
+      intersectionY,
+      start[1],
+      intersectionY - lineWidth * 2,
+    ];
+  } else {
+    firstSegment = ["L", start[1], intersectionY - lineWidth * 2];
+    secondSegment = [
+      "C",
+      start[1],
+      intersectionY - lineWidth * 2,
+      start[1] + lineWidth * 4,
+      intersectionY,
+      start[1],
+      intersectionY + lineWidth * 2,
+    ];
+  }
+
+  path.splice(index + 1, 0, firstSegment);
+  path.splice(index + 2, 0, secondSegment);
+  line.setPath(path);
+
+  return true;
+};
+
+/**
+ * Binds the `options.function` click callback to a rendered element.
+ *
+ * @param element Element that should react to clicks.
+ * @param options Parsed symbol options containing the callback name.
+ */
+const bindClick = (element: Renderable, options: Partial<SymbolOptions>): void => {
+  const { function: functionName } = options;
+
+  if (functionName == null) return;
+
+  element.node.addEventListener(
+    "click",
+    (event) => {
+      const handler = (
+        globalThis as unknown as Record<
+          string,
+          ((event: Event, options: Partial<SymbolOptions>) => void) | undefined
+        >
+      )[functionName];
+
+      handler?.(event, options);
+    },
+    false,
+  );
+};
+
 class FlowChartSymbol {
-  chart: FlowChart;
-  text: RaphaelElement<"SVG" | "VML", Element | SVGTextElement>;
+  text: TextElement;
+
   params: Record<string, string>;
 
   connectedTo: FlowChartSymbol[] = [];
-  leftLines: RaphaelPath<"SVG" | "VML">[] = [];
-  rightLines: RaphaelPath<"SVG" | "VML">[] = [];
-  topLines: RaphaelPath<"SVG" | "VML">[] = [];
-  bottomLines: RaphaelPath<"SVG" | "VML">[] = [];
 
-  group: RaphaelSet<"SVG" | "VML">;
+  leftLines: PathElement[] = [];
 
-  symbol?: RaphaelElement<"SVG" | "VML", Element | SVGRectElement>;
+  rightLines: PathElement[] = [];
+
+  topLines: PathElement[] = [];
+
+  bottomLines: PathElement[] = [];
+
+  group: SetElement;
+
+  symbol?: PathElement | RectElement;
 
   symbolType?: SymbolType;
 
   flowstate: string;
+
   key: string;
-  lineStyle: Record<string, keyof RaphaelAttributes>;
+
+  lineStyle: Record<string, LineStyle>;
 
   bottomStart?: boolean;
+
   next?: FlowChartSymbol;
+
+  thenHandler?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
+
   direction_next: Direction | undefined;
+
   isPositioned?: boolean;
+
   width = 0;
+
   height = 0;
+
   topStart?: boolean;
+
   topEnd?: boolean;
+
   rightStart?: boolean;
+
   leftStart?: boolean;
+
   leftEnd?: boolean;
+
   rightEnd?: boolean;
+
   pathOk?: boolean;
+
   constructor(
-    chart: FlowChart,
+    public readonly chart: FlowChart,
     options: Partial<SymbolOptions>,
-    symbol?: RaphaelElement<"SVG" | "VML", Element | SVGRectElement>,
+    symbol?: PathElement | RectElement,
   ) {
-    this.chart = chart;
-    this.group = this.chart.paper.set();
+    this.group = chart.paper.set();
     this.symbol = symbol;
     this.symbolType = options.symbolType;
     this.flowstate = options.flowstate ?? "future";
@@ -58,159 +196,146 @@ class FlowChartSymbol {
     this.key = options.key ?? "";
     this.params = options.params ?? {};
 
-    this.direction_next =
-      options.next && options.direction_next
-        ? options.direction_next
-        : undefined;
+    if (options.next != null && options.direction_next != null)
+      this.direction_next = options.direction_next;
 
-    this.text = this.chart.paper.text(0, 0, options.text ?? "");
-    // Raphael does not support the svg group tag so setting the text node id to the symbol node id plus t
-    if (options.key) this.text.node.id = `${options.key}t`;
+    this.text = chart.paper.text(0, 0, options.text ?? "");
 
-    this.text.node.setAttribute("class", `${this.getAttr<string>("class")}t`);
+    this.setupText(options);
+
+    if (symbol != null) this.setupSymbol(symbol, options);
+  }
+
+  /**
+   * Applies the text id, class, font, link, click handler and wrapping.
+   *
+   * @param options Symbol options parsed from the flowchart.
+   */
+  private setupText(options: Partial<SymbolOptions>): void {
+    if (options.key != null) this.text.node.id = `${options.key}t`;
+
+    this.text.node.setAttribute("class", `${this.getAttrOr<string>("class", "flowchart")}t`);
 
     this.text.attr({
-      "font-size": this.getAttr<number>("font-size")!,
-      fill: this.getAttr<string>("font-color")!,
+      "font-size": this.getAttrOr<number>("font-size", 14),
+      fill: this.getAttrOr<string>("font-color", "black"),
       "text-anchor": "start",
-      x: this.getAttr<number>("text-margin")!,
+      x: this.getAttrOr<number>("text-margin", 10),
     });
 
-    const font = this.getAttr<string>("font");
-    const fontFamily = this.getAttr<string>("font-family");
-    const fontWeight = this.getAttr<string>("font-weight");
+    this.applyFont(this.text);
 
-    if (font) this.text.attr({ font: font });
-    if (fontFamily) this.text.attr({ "font-family": fontFamily });
-    if (fontWeight) this.text.attr({ "font-weight": fontWeight });
+    if (options.link != null) this.text.attr("href", options.link);
+    if (options.target != null) this.text.attr("target", options.target);
 
-    if (options.link) this.text.attr("href", options.link);
-    if (options.target) this.text.attr("target", options.target);
-
-    // Add click function with event and options params
-    if (options.function) {
-      const { function: functionName } = options;
-
-      this.text.attr({ cursor: "pointer" });
-
-      this.text.node.addEventListener(
-        "click",
-        (event) => {
-          // prettier-ignore
-          (
-            // @ts-expect-error: a
-            window[functionName] as
-              | ((event: Event, options: Partial<SymbolOptions>) => void)
-              | undefined
-          )?.(event, options);
-        },
-        false,
-      );
+    if (options.function != null) {
+      this.text.attr("cursor", "pointer");
+      bindClick(this.text, options);
     }
 
-    const maxWidth = this.getAttr<number>("maxWidth");
+    const maxWidth = this.getAttr("maxWidth") as number | null;
 
-    if (maxWidth) {
+    if (maxWidth != null) {
       // using this approach: http://stackoverflow.com/a/3153457/22466
-      const words = options.text!.split(" ");
+      const words = (options.text ?? "").split(" ");
       let tempText = "";
 
-      words.forEach((word) => {
+      for (const word of words) {
         this.text.attr("text", `${tempText} ${word}`);
 
-        if (this.text.getBBox().width > maxWidth) tempText += `\n${word}`;
-        else tempText += ` ${word}`;
-      });
+        tempText += this.text.getBBox().width > maxWidth ? `\n${word}` : ` ${word}`;
+      }
 
-      this.text.attr("text", tempText.substring(1));
+      this.text.attr("text", tempText.slice(1));
     }
 
     this.group.push(this.text);
-
-    if (symbol) {
-      symbol.node.setAttribute("class", this.getAttr<string>("class")!);
-
-      const tempMargin = this.getAttr<number>("text-margin")!;
-
-      symbol.attr({
-        fill: this.getAttr<string>("fill")!,
-        stroke: this.getAttr<string>("element-color")!,
-        "stroke-width": this.getAttr<number>("line-width")!,
-        width: this.text.getBBox().width + 2 * tempMargin,
-        height: this.text.getBBox().height + 2 * tempMargin,
-      });
-
-      const roundness = this.getAttr<number>("roundness")!;
-
-      if (typeof roundness === "number" && !isNaN(roundness)) {
-        symbol.node.setAttribute("ry", roundness.toString());
-        symbol.node.setAttribute("rx", roundness.toString());
-      }
-
-      if (options.link) symbol.attr("href", options.link);
-      if (options.target) symbol.attr("target", options.target);
-
-      // Add click function with event and options params
-      if (options.function) {
-        const { function: functionName } = options;
-
-        symbol.node.addEventListener(
-          "click",
-          (event) => {
-            // prettier-ignore
-            (
-            // @ts-expect-error: a
-              window[functionName] as (
-                event: Event,
-                options: Partial<SymbolOptions>,
-              ) => void
-            )?.(event, options);
-          },
-          false,
-        );
-        symbol.attr({ cursor: "pointer" });
-      }
-
-      if (options.key) symbol.node.id = options.key;
-
-      this.group.push(symbol);
-      symbol.insertBefore(this.text);
-
-      this.text.attr({
-        y: symbol.getBBox().height / 2,
-      });
-
-      this.initialize();
-    }
   }
 
-  /* Gets the attribute based on FlowState, Symbol Name and default, first found wins */
-  getAttr<T>(attName: string): T | null {
-    if (!this.chart) return null;
+  /**
+   * Creates the shape element around the already-set-up text.
+   *
+   * @param symbol Shape element the text is placed in.
+   * @param options Symbol options parsed from the flowchart.
+   */
+  private setupSymbol(symbol: PathElement | RectElement, options: Partial<SymbolOptions>): void {
+    symbol.node.setAttribute("class", this.getAttrOr<string>("class", "flowchart"));
 
-    const rootOption = this.chart.options?.[attName] ?? null;
+    const tempMargin = this.getAttrOr<number>("text-margin", 10);
+    const textBox = this.text.getBBox();
 
-    const symbolOption =
-      this.chart.options.symbols?.[this.symbolType!][attName] ?? null;
+    symbol.attr({
+      fill: this.getAttrOr<string>("fill", "white"),
+      stroke: this.getAttrOr<string>("element-color", "black"),
+      "stroke-width": this.getAttrOr<number>("line-width", 3),
+      width: textBox.width + 2 * tempMargin,
+      height: textBox.height + 2 * tempMargin,
+    });
 
-    // @ts-expect-error: flowstate is not defined in the type
-    if (this.chart.options.flowstate?.[this.flowstate]) {
-      const flowStateOption: T | undefined =
-        // @ts-expect-error: flowstate is not defined in the type
-        this.chart.options.flowstate[this.flowstate][attName];
+    const roundness = this.getAttr("roundness") as number | null;
 
-      if (flowStateOption) return flowStateOption;
+    if (typeof roundness === "number" && !Number.isNaN(roundness)) {
+      symbol.node.setAttribute("ry", roundness.toString());
+      symbol.node.setAttribute("rx", roundness.toString());
     }
 
-    return symbolOption || rootOption;
+    if (options.link != null) symbol.attr("href", options.link);
+    if (options.target != null) symbol.attr("target", options.target);
+
+    if (options.function != null) {
+      bindClick(symbol, options);
+      symbol.attr("cursor", "pointer");
+    }
+
+    if (options.key != null) symbol.node.id = options.key;
+
+    this.group.push(symbol);
+    symbol.insertBefore(this.text);
+
+    this.text.attr({ y: symbol.getBBox().height / 2 });
+
+    this.initialize();
+  }
+
+  /**
+   * Applies configured font attributes to an element.
+   *
+   * @param element Element receiving the font attributes.
+   */
+  private applyFont(element: Renderable): void {
+    const font = this.getAttr("font") as string | null;
+    const fontFamily = this.getAttr("font-family") as string | null;
+    const fontWeight = this.getAttr("font-weight");
+
+    if (font != null) element.attr("font", font);
+    if (fontFamily != null) element.attr("font-family", fontFamily);
+    if (fontWeight != null) element.attr("font-weight", fontWeight);
+  }
+
+  /**
+   * Gets the attribute based on FlowState, Symbol Name and default, first found wins.
+   *
+   * @param attName Attribute name.
+   * @returns The attribute value, or `null` when none is configured.
+   */
+  getAttr(attName: string): AttributeValue | null {
+    const { options } = this.chart;
+    const symbolOptions = this.symbolType == null ? null : options.symbols[this.symbolType];
+    const symbolOption = symbolOptions?.[attName];
+    const flowStateOption = options.flowstate?.[this.flowstate]?.[attName];
+    const value = flowStateOption ?? symbolOption ?? options[attName];
+
+    return (value ?? null) as AttributeValue | null;
+  }
+
+  getAttrOr<T>(attName: string, fallback: T): T {
+    return (this.getAttr(attName) ?? fallback) as T;
   }
 
   initialize(): void {
-    this.group.transform(
-      `t${this.getAttr<number>("line-width")!},${this.getAttr<number>(
-        "line-width",
-      )!}`,
-    );
+    const lineWidth = this.getAttrOr<number>("line-width", 3);
+
+    this.group.transform(`t${lineWidth},${lineWidth}`);
 
     const boundingBox = this.group.getBBox();
 
@@ -242,7 +367,7 @@ class FlowChartSymbol {
   }
 
   shiftY(y: number): void {
-    this.group.transform(`$t${this.getX()},${this.getY() + y}`);
+    this.group.transform(`t${this.getX()},${this.getY() + y}`);
   }
 
   setY(y: number): void {
@@ -269,147 +394,70 @@ class FlowChartSymbol {
   }
 
   render(): void {
-    if (this.next) {
-      const lineLength = this.getAttr<number>("line-length")!;
+    const { next } = this;
 
-      if (this.direction_next === "right") {
-        const rightPoint = this.getRight();
+    if (next == null) return;
 
-        if (!this.next.isPositioned) {
-          this.next.setY(rightPoint.y - this.next.height / 2);
-          this.next.shiftX(this.group.getBBox().x + this.width + lineLength);
+    const lineLength = this.getAttrOr<number>("line-length", 50);
 
-          const shift = (): void => {
-            let hasSymbolUnder = false;
-            let symbol: FlowChartSymbol;
+    if (this.direction_next === "right") {
+      this.placeBeside(next, "right", lineLength);
+    } else if (this.direction_next === "left") {
+      this.placeBeside(next, "left", lineLength);
+    } else if (!next.isPositioned) {
+      const bottomPoint = this.getBottom();
 
-            for (symbol of this.chart.symbols) {
-              const diff = Math.abs(
-                symbol.getCenter().x - this.next!.getCenter().x,
-              );
+      next.shiftY(this.getY() + this.height + lineLength);
+      next.setX(bottomPoint.x - next.width / 2);
+      next.isPositioned = true;
 
-              if (
-                symbol.getCenter().y > this.next!.getCenter().y &&
-                diff <= this.next!.width / 2
-              ) {
-                hasSymbolUnder = true;
-                break;
-              }
-            }
-
-            if (hasSymbolUnder) {
-              if (this.next!.symbolType === "end") return;
-
-              this.next!.setX(symbol!.getX() + symbol!.width + lineLength);
-              shift();
-            }
-          };
-
-          shift();
-
-          this.next.isPositioned = true;
-
-          this.next.render();
-        }
-      } else if (this.direction_next === "left") {
-        const leftPoint = this.getLeft();
-
-        if (!this.next.isPositioned) {
-          this.next.setY(leftPoint.y - this.next.height / 2);
-          this.next.shiftX(-(this.group.getBBox().x + this.width + lineLength));
-
-          const shift = (): void => {
-            let hasSymbolUnder = false;
-            let symbol: FlowChartSymbol;
-
-            for (symbol of this.chart.symbols) {
-              const diff = Math.abs(
-                symbol.getCenter().x - this.next!.getCenter().x,
-              );
-
-              if (
-                symbol.getCenter().y > this.next!.getCenter().y &&
-                diff <= this.next!.width / 2
-              ) {
-                hasSymbolUnder = true;
-                break;
-              }
-            }
-
-            if (hasSymbolUnder) {
-              if (this.next!.symbolType === "end") return;
-              this.next!.setX(symbol!.getX() + symbol!.width + lineLength);
-              shift();
-            }
-          };
-
-          shift();
-
-          this.next.isPositioned = true;
-
-          this.next.render();
-        }
-      } else {
-        const bottomPoint = this.getBottom();
-
-        if (!this.next.isPositioned) {
-          this.next.shiftY(this.getY() + this.height + lineLength);
-          this.next.setX(bottomPoint.x - this.next.width / 2);
-          this.next.isPositioned = true;
-
-          this.next.render();
-        }
-      }
+      next.render();
     }
   }
 
   renderLines(): void {
-    if (this.next)
-      if (this.direction_next)
-        this.drawLineTo(
-          this.next,
-          this.getAttr("arrow-text") ?? "",
-          this.direction_next,
-        );
-      else this.drawLineTo(this.next, this.getAttr<string>("arrow-text") ?? "");
+    const { next } = this;
+
+    if (next == null) return;
+
+    const arrowText = (this.getAttr("arrow-text") as string | null) ?? "";
+
+    if (this.direction_next == null) this.drawLineTo(next, arrowText);
+    else this.drawLineTo(next, arrowText, this.direction_next);
   }
 
-  drawLineTo(
-    symbol: FlowChartSymbol,
-    text: string,
-    direction?: Direction,
-  ): void {
+  drawLineTo(symbol: FlowChartSymbol, text: string, direction?: Direction): void {
     if (!this.connectedTo.includes(symbol)) this.connectedTo.push(symbol);
 
     const { x, y } = this.getCenter();
-    const right = this.getRight(),
-      bottom = this.getBottom(),
-      top = this.getTop(),
-      left = this.getLeft();
+    const right = this.getRight();
+    const bottom = this.getBottom();
+    const top = this.getTop();
+    const left = this.getLeft();
 
     const { x: symbolX, y: symbolY } = symbol.getCenter();
-    const symbolTop = symbol.getTop(),
-      symbolRight = symbol.getRight(),
-      symbolLeft = symbol.getLeft();
+    const symbolTop = symbol.getTop();
+    const symbolRight = symbol.getRight();
+    const symbolLeft = symbol.getLeft();
 
-    const isOnSameColumn = x === symbolX,
-      isOnSameLine = y === symbolY,
-      isUnder = y < symbolY,
-      isUpper = y > symbolY || this === symbol,
-      isLeft = x > symbolX,
-      isRight = x < symbolX;
+    const isOnSameColumn = x === symbolX;
+    const isOnSameLine = y === symbolY;
+    const isUnder = y < symbolY;
+    const isUpper = y > symbolY || this === symbol;
+    const isLeft = x > symbolX;
+    const isRight = x < symbolX;
 
-    let maxX = 0,
-      line;
-    const lineLength = this.getAttr<number>("line-length")!;
-    const lineWith = this.getAttr<number>("line-width")!;
+    let maxX = 0;
+    let line: PathElement | null = null;
 
-    if ((!direction || direction === "bottom") && isOnSameColumn && isUnder) {
+    const lineLength = this.getAttrOr<number>("line-length", 50);
+    const lineWidth = this.getAttrOr<number>("line-width", 3);
+
+    if ((direction == null || direction === "bottom") && isOnSameColumn && isUnder) {
       if (symbol.topLines.length === 0 && this.bottomLines.length === 0) {
         line = drawLine(this.chart, bottom, [symbolTop], text);
       } else {
-        const yOffset =
-          Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
+        const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
 
         line = drawLine(
           this.chart,
@@ -426,16 +474,11 @@ class FlowChartSymbol {
       this.bottomStart = true;
       symbol.topEnd = true;
       maxX = bottom.x;
-    } else if (
-      (!direction || direction === "right") &&
-      isOnSameLine &&
-      isRight
-    ) {
+    } else if ((direction == null || direction === "right") && isOnSameLine && isRight) {
       if (symbol.leftLines.length === 0 && this.rightLines.length === 0) {
         line = drawLine(this.chart, right, [symbolLeft], text);
       } else {
-        const yOffset =
-          Math.max(symbol.leftLines.length, this.rightLines.length) * 10;
+        const yOffset = Math.max(symbol.leftLines.length, this.rightLines.length) * 10;
 
         line = drawLine(
           this.chart,
@@ -454,12 +497,11 @@ class FlowChartSymbol {
       this.rightStart = true;
       symbol.leftEnd = true;
       maxX = symbolLeft.x;
-    } else if ((!direction || direction === "left") && isOnSameLine && isLeft) {
+    } else if ((direction == null || direction === "left") && isOnSameLine && isLeft) {
       if (symbol.rightLines.length === 0 && this.leftLines.length === 0) {
         line = drawLine(this.chart, left, [symbolRight], text);
       } else {
-        const yOffset =
-          Math.max(symbol.rightLines.length, this.leftLines.length) * 10;
+        const yOffset = Math.max(symbol.rightLines.length, this.leftLines.length) * 10;
 
         line = drawLine(
           this.chart,
@@ -478,13 +520,8 @@ class FlowChartSymbol {
       this.leftStart = true;
       symbol.rightEnd = true;
       maxX = symbolRight.x;
-    } else if (
-      (!direction || direction === "right") &&
-      isOnSameColumn &&
-      isUpper
-    ) {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.rightLines.length) * 10;
+    } else if ((direction == null || direction === "right") && isOnSameColumn && isUpper) {
+      const yOffset = Math.max(symbol.topLines.length, this.rightLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -505,13 +542,8 @@ class FlowChartSymbol {
       this.rightStart = true;
       symbol.topEnd = true;
       maxX = right.x + lineLength / 2;
-    } else if (
-      (!direction || direction === "right") &&
-      isOnSameColumn &&
-      isUnder
-    ) {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.rightLines.length) * 10;
+    } else if ((direction == null || direction === "right") && isOnSameColumn && isUnder) {
+      const yOffset = Math.max(symbol.topLines.length, this.rightLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -532,11 +564,10 @@ class FlowChartSymbol {
       this.rightStart = true;
       symbol.topEnd = true;
       maxX = right.x + lineLength / 2;
-    } else if ((!direction || direction === "bottom") && isLeft) {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
+    } else if ((direction == null || direction === "bottom") && isLeft) {
+      const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
 
-      if (this.leftEnd && isUpper)
+      if (this.leftEnd && isUpper) {
         line = drawLine(
           this.chart,
           bottom,
@@ -555,7 +586,7 @@ class FlowChartSymbol {
           ],
           text,
         );
-      else
+      } else {
         line = drawLine(
           this.chart,
           bottom,
@@ -566,15 +597,15 @@ class FlowChartSymbol {
           ],
           text,
         );
+      }
 
       this.bottomLines.push(line);
       symbol.topLines.push(line);
       this.bottomStart = true;
       symbol.topEnd = true;
       maxX = bottom.x + (bottom.x - symbolTop.x) / 2;
-    } else if ((!direction || direction === "bottom") && isRight && isUnder) {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
+    } else if ((direction == null || direction === "bottom") && isRight && isUnder) {
+      const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -592,9 +623,8 @@ class FlowChartSymbol {
       symbol.topEnd = true;
       maxX = bottom.x;
       if (symbolTop.x > maxX) maxX = symbolTop.x;
-    } else if ((!direction || direction === "bottom") && isRight) {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
+    } else if ((direction == null || direction === "bottom") && isRight) {
+      const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -619,9 +649,8 @@ class FlowChartSymbol {
       this.bottomStart = true;
       symbol.topEnd = true;
       maxX = bottom.x + (bottom.x - symbolTop.x) / 2;
-    } else if (direction && direction === "right" && isLeft) {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.rightLines.length) * 10;
+    } else if (direction === "right" && isLeft) {
+      const yOffset = Math.max(symbol.topLines.length, this.rightLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -642,9 +671,8 @@ class FlowChartSymbol {
       this.rightStart = true;
       symbol.topEnd = true;
       maxX = right.x + lineLength / 2;
-    } else if (direction && direction === "right" && isRight) {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.rightLines.length) * 10;
+    } else if (direction === "right" && isRight) {
+      const yOffset = Math.max(symbol.topLines.length, this.rightLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -660,14 +688,8 @@ class FlowChartSymbol {
       this.rightStart = true;
       symbol.topEnd = true;
       maxX = right.x + lineLength / 2;
-    } else if (
-      direction &&
-      direction === "bottom" &&
-      isOnSameColumn &&
-      isUpper
-    ) {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
+    } else if (direction === "bottom" && isOnSameColumn && isUpper) {
+      const yOffset = Math.max(symbol.topLines.length, this.bottomLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -697,8 +719,7 @@ class FlowChartSymbol {
 
       if (symbolLeft.x < left.x) diffX = symbolLeft.x - lineLength / 2;
 
-      const yOffset =
-        Math.max(symbol.topLines.length, this.leftLines.length) * 10;
+      const yOffset = Math.max(symbol.topLines.length, this.leftLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -717,8 +738,7 @@ class FlowChartSymbol {
       symbol.topEnd = true;
       maxX = left.x;
     } else if (direction === "left") {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.leftLines.length) * 10;
+      const yOffset = Math.max(symbol.topLines.length, this.leftLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -740,8 +760,7 @@ class FlowChartSymbol {
       symbol.topEnd = true;
       maxX = left.x;
     } else if (direction === "top") {
-      const yOffset =
-        Math.max(symbol.topLines.length, this.topLines.length) * 10;
+      const yOffset = Math.max(symbol.topLines.length, this.topLines.length) * 10;
 
       line = drawLine(
         this.chart,
@@ -761,134 +780,79 @@ class FlowChartSymbol {
     }
 
     // update line style
-    if (this.lineStyle[symbol.key] && line)
-      line.attr(this.lineStyle[symbol.key]);
+    if (line != null) {
+      const style = this.lineStyle[symbol.key];
 
-    if (line) {
-      for (let l = 0, llen = this.chart.lines.length; l < llen; l++) {
-        const otherLine = this.chart.lines[l];
+      if (style != null) line.attr(style);
 
-        const ePath = otherLine.attr("path") as unknown as [
-            string,
-            ...number[],
-          ][],
-          lPath = line.attr("path") as unknown as [string, ...number[]][];
+      this.adjustCrossingLines(line, lineWidth);
 
-        for (let iP = 0, lenP = ePath.length - 1; iP < lenP; iP++) {
-          const newPath: [string, ...number[]][] = [];
+      this.chart.lines.push(line);
+      if (this.chart.minXFromSymbols > left.x) this.chart.minXFromSymbols = left.x;
+    }
 
-          newPath.push(["M", ePath[iP][1], ePath[iP][2]]);
-          newPath.push(["L", ePath[iP + 1][1], ePath[iP + 1][2]]);
+    if (maxX > this.chart.maxXFromLine) this.chart.maxXFromLine = maxX;
+  }
 
-          const line1FromX = newPath[0][1];
-          const line1FromY = newPath[0][2];
-          const line1ToX = newPath[1][1];
-          const line1ToY = newPath[1][2];
+  private placeBeside(next: FlowChartSymbol, side: "left" | "right", lineLength: number): void {
+    if (next.isPositioned) return;
 
-          for (let lP = 0, lenlP = lPath.length - 1; lP < lenlP; lP++) {
-            const newLinePath: [string, ...number[]][] = [];
+    const point = side === "right" ? this.getRight() : this.getLeft();
 
-            newLinePath.push(["M", lPath[lP][1], lPath[lP][2]]);
-            newLinePath.push(["L", lPath[lP + 1][1], lPath[lP + 1][2]]);
+    next.setY(point.y - next.height / 2);
 
-            const line2FromX = newLinePath[0][1];
-            const line2FromY = newLinePath[0][2];
-            const line2ToX = newLinePath[1][1];
-            const line2ToY = newLinePath[1][2];
+    if (side === "right") next.shiftX(this.getX() + this.width + lineLength);
+    else next.shiftX(-(this.getX() + this.width + lineLength));
 
-            const res = checkLineIntersection(
-              line1FromX,
-              line1FromY,
-              line1ToX,
-              line1ToY,
-              line2FromX,
-              line2FromY,
-              line2ToX,
-              line2ToY,
-            );
+    const shift = (): void => {
+      let symbolUnder: FlowChartSymbol | undefined;
 
-            if (res.onLine1 && res.onLine2) {
-              let newSegment: [string, ...number[]];
+      for (const symbol of this.chart.symbols) {
+        const diff = Math.abs(symbol.getCenter().x - next.getCenter().x);
 
-              if (line2FromY === line2ToY) {
-                if (line2FromX > line2ToX) {
-                  newSegment = ["L", res.x! + lineWith * 2, line2FromY];
-                  lPath.splice(lP + 1, 0, newSegment);
-                  newSegment = [
-                    "C",
-                    res.x! + lineWith * 2,
-                    line2FromY,
-                    res.x!,
-                    line2FromY - lineWith * 4,
-                    res.x! - lineWith * 2,
-                    line2FromY,
-                  ];
-                  lPath.splice(lP + 2, 0, newSegment);
-                  line.attr("path", lPath as unknown as string);
-                } else {
-                  newSegment = ["L", res.x! - lineWith * 2, line2FromY];
-                  lPath.splice(lP + 1, 0, newSegment);
-                  newSegment = [
-                    "C",
-                    res.x! - lineWith * 2,
-                    line2FromY,
-                    res.x!,
-                    line2FromY - lineWith * 4,
-                    res.x! + lineWith * 2,
-                    line2FromY,
-                  ];
-                  lPath.splice(lP + 2, 0, newSegment);
-                  line.attr("path", lPath as unknown as string);
-                }
-              } else if (line2FromY > line2ToY) {
-                newSegment = ["L", line2FromX, res.y! + lineWith * 2];
-                lPath.splice(lP + 1, 0, newSegment);
-                newSegment = [
-                  "C",
-                  line2FromX,
-                  res.y! + lineWith * 2,
-                  line2FromX + lineWith * 4,
-                  res.y!,
-                  line2FromX,
-                  res.y! - lineWith * 2,
-                ];
-                lPath.splice(lP + 2, 0, newSegment);
-                line.attr("path", lPath as unknown as string);
-              } else {
-                newSegment = ["L", line2FromX, res.y! - lineWith * 2];
-                lPath.splice(lP + 1, 0, newSegment);
-                newSegment = [
-                  "C",
-                  line2FromX,
-                  res.y! - lineWith * 2,
-                  line2FromX + lineWith * 4,
-                  res.y!,
-                  line2FromX,
-                  res.y! + lineWith * 2,
-                ];
-                lPath.splice(lP + 2, 0, newSegment);
-                line.attr("path", lPath as unknown as string);
-              }
-
-              lP += 2;
-            }
-          }
+        if (symbol.getCenter().y > next.getCenter().y && diff <= next.width / 2) {
+          symbolUnder = symbol;
+          break;
         }
       }
 
-      this.chart.lines.push(line);
-      if (
-        this.chart.minXFromSymbols === undefined ||
-        this.chart.minXFromSymbols > left.x
-      )
-        this.chart.minXFromSymbols = left.x;
-    }
+      if (symbolUnder == null || next.symbolType === "end") return;
 
-    if (
-      !this.chart.maxXFromLine ||
-      (this.chart.maxXFromLine && maxX > this.chart.maxXFromLine)
-    )
-      this.chart.maxXFromLine = maxX;
+      next.setX(symbolUnder.getX() + symbolUnder.width + lineLength);
+      shift();
+    };
+
+    shift();
+
+    next.isPositioned = true;
+
+    next.render();
+  }
+
+  /**
+   * Curves lines around previously drawn lines they cross (hop-over effect).
+   *
+   * @param line Line being drawn.
+   * @param lineWidth Stroke width used for the bend size.
+   */
+  private adjustCrossingLines(line: PathElement, lineWidth: number): void {
+    for (const otherLine of this.chart.lines) {
+      const otherPath = otherLine.getPath();
+      const path = line.getPath();
+
+      for (
+        let otherIndex = 0, otherLength = otherPath.length - 1;
+        otherIndex < otherLength;
+        otherIndex += 1
+      ) {
+        for (let index = 0, length = path.length - 1; index < length; index += 1) {
+          if (
+            bendCrossing(line, { path, index }, { path: otherPath, index: otherIndex }, lineWidth)
+          )
+            index += 2;
+        }
+      }
+    }
   }
 }
 

@@ -1,6 +1,4 @@
-import type { RaphaelAttributes } from "raphael";
-
-import type FlowChartSymbol from "./symbols/symbol.js";
+export type { default as FlowChartSymbol } from "./symbols/symbol.js";
 
 export type SymbolType =
   | "start"
@@ -11,13 +9,19 @@ export type SymbolType =
   | "condition"
   | "parallel";
 
+/** A single style entry: either a global option or a per-symbol / per-flowstate override. */
+export type LineStyle = Record<string, string | number>;
+
+/** Styles applied when a node text carries a flowstate (`node|past`). */
+export type FlowStateStyles = Record<string, LineStyle>;
+
 export interface SVGOptions {
   x: number;
   y: number;
   "text-margin": number;
   font?: string;
   "font-family"?: string;
-  "font-weight"?: string;
+  "font-weight"?: string | number;
   "font-size": number;
   "font-color": string;
   "line-width": number;
@@ -28,57 +32,71 @@ export interface SVGOptions {
   "yes-text": string;
   "no-text": string;
   "arrow-end": string;
+  "arrow-start"?: string;
+  "arrow-text"?: string;
   class: string;
   scale: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [props: string]: any;
+  maxWidth?: number;
+  roundness?: number;
+  /** Allows arbitrary user-provided style keys (flowstate overrides, custom attributes). */
+  [props: string]: unknown;
 }
 
 export interface DrawOptions extends Partial<SVGOptions> {
   width?: number;
   height?: number;
-  /** Symbol Styles */
+  /** Symbol styles */
   symbols?: Record<string, Partial<SVGOptions>>;
-  /** FlowState config */
-  flowstate?: string;
+  /** FlowState styles */
+  flowstate?: FlowStateStyles | null;
 }
 
-export interface ParsedDrawOptions extends Partial<SVGOptions> {
+export interface ParsedDrawOptions extends SVGOptions {
   width?: number;
   height?: number;
-  /** Stymbol Styles */
+  /** Symbol styles */
   symbols: Record<string, Partial<SVGOptions>>;
-  /** FlowState config */
-  flowstate?: string | null;
+  /** FlowState styles */
+  flowstate?: FlowStateStyles | null;
 }
 
-export type Direction =
-  | "top"
-  | "right"
-  | "left"
-  | "bottom"
-  | "path1"
-  | "path2"
-  | "path3";
+export type Direction = "top" | "right" | "left" | "bottom" | "path1" | "path2" | "path3";
 
-export interface SymbolOptions extends ParsedDrawOptions {
-  symbolType: SymbolType;
-
+/**
+ * A node / connection as parsed from the flowchart DSL.
+ *
+ * `next`, `yes`, `no` and `path*` point at other parsed symbols (not at their rendered
+ * counterparts); the chart turns them into rendered symbols while walking the graph.
+ */
+export interface SymbolOptions {
   key: string;
+  symbolType: SymbolType;
 
   text: string | null;
   link: string | null;
   target: string | null;
-  function: null | string;
-  lineStyle: Record<string, keyof RaphaelAttributes>;
+  function: string | null;
+  flowstate: string | null;
+  lineStyle: Record<string, LineStyle>;
   params: Record<string, string>;
-  direction_next?: Direction;
-  next?: FlowChartSymbol;
 
-  path1?: FlowChartSymbol;
-  path2?: FlowChartSymbol;
-  path3?: FlowChartSymbol;
-  direction_path1: Direction;
-  direction_path2: Direction;
-  direction_path3: Direction;
+  next?: SymbolOptions;
+  yes?: SymbolOptions;
+  no?: SymbolOptions;
+  path1?: SymbolOptions;
+  path2?: SymbolOptions;
+  path3?: SymbolOptions;
+
+  direction_next?: Direction | null;
+  direction_yes?: Direction | null;
+  direction_no?: Direction | null;
+  direction_path1?: Direction | null;
+  direction_path2?: Direction | null;
+  direction_path3?: Direction | null;
+
+  yes_annotation?: string | null;
+  no_annotation?: string | null;
+  path1_annotation?: string | null;
+  path2_annotation?: string | null;
+  path3_annotation?: string | null;
 }
