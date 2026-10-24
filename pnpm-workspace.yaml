@@ -1,5 +1,11 @@
 virtualStoreType: global
 
+packageExtensions:
+  "@codecov/rollup-plugin":
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+
 minimumReleaseAgeExclude:
   - "@mr-hope/*"
   - "@oxfmt/*"

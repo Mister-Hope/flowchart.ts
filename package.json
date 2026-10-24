@@ -48,6 +48,7 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@codecov/rollup-plugin": "2.0.1",
     "@mr-hope/tsconfig": "0.0.4",
     "@types/node": "24.19.2",
     "@vitest/coverage-istanbul": "5.0.5",

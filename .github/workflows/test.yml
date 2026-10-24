@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   test:
@@ -37,7 +38,25 @@ jobs:
         run: pnpm run type-check
 
       - name: Build
+        env:
+          BUNDLE_ANALYSIS: ${{ matrix.node-version == 24 && 'true' || '' }}
         run: pnpm run build
 
-      - name: Unit test
-        run: pnpm run test
+      - name: Unit test and save results
+        env:
+          TEST_REPORT: ${{ matrix.node-version == 24 && 'true' || '' }}
+        run: pnpm run test:coverage
+
+      - name: Upload test results
+        if: ${{ !cancelled() && matrix.node-version == 24 }}
+        uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
+          files: ./coverage/test-report.junit.xml
+          report_type: test_results
+
+      - name: Upload coverage
+        if: ${{ !cancelled() && matrix.node-version == 24 }}
+        uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
