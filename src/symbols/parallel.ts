@@ -1,5 +1,6 @@
 import type FlowChart from "../chart.js";
 import type { Direction, SymbolOptions } from "../options.js";
+import { placeBottom, placeLeft, placeRight } from "./placement.js";
 import { FlowChartSymbol } from "./symbol.js";
 
 type Directions = [path1: Direction, path2: Direction, path3: Direction];
@@ -117,10 +118,10 @@ export class Parallel extends FlowChartSymbol {
 
     const lineLength = this.getAttrOr<number>("line-length", 50);
 
-    this.placeBottom(lineLength);
+    placeBottom(this, lineLength);
     this.placeTop(lineLength);
-    this.placeLeft(lineLength);
-    this.placeRight(lineLength);
+    placeLeft(this, lineLength);
+    placeRight(this, lineLength);
   }
 
   override renderLines(): void {

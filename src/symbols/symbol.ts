@@ -1,23 +1,19 @@
-import { checkLineIntersection, drawPath } from "../action.js";
+import { drawPath } from "../action.js";
 import type FlowChart from "../chart.js";
 import type { Direction, LineStyle, SymbolOptions, SymbolType } from "../options.js";
 import type {
   AttributeValue,
   PathElement,
-  PathSegment,
   RectElement,
   Renderable,
   SetElement,
   TextElement,
 } from "../render/index.js";
 import type { Position } from "../typings.js";
+import { adjustCrossingLines } from "./crossing.js";
 import { routeConnection } from "./line-routing.js";
 import { applyNodeCallback, applyNodeLink } from "./node-links.js";
-
-interface PathLocation {
-  path: PathSegment[];
-  index: number;
-}
+import { placeBeside } from "./placement.js";
 
 /** Value types of the known style/option keys, so lookups do not need casts. */
 interface StyleValues {
@@ -44,86 +40,6 @@ interface StyleValues {
   maxWidth: number;
   roundness: number;
 }
-
-/**
- * Bends the segment at `index` around an intersection with another path, if they cross.
- *
- * @param line Line element whose path is being modified.
- * @param location Path and segment index being checked.
- * @param other Previously drawn path and segment index to check against.
- * @param lineWidth Stroke width used for the bend size.
- * @returns Whether a bend was inserted.
- */
-const bendCrossing = (
-  line: PathElement,
-  location: PathLocation,
-  other: PathLocation,
-  lineWidth: number,
-): boolean => {
-  const { path, index } = location;
-  const { path: otherPath, index: otherIndex } = other;
-  const start = path[index];
-  const end = path[index + 1];
-  const otherStart = otherPath[otherIndex];
-  const otherEnd = otherPath[otherIndex + 1];
-
-  const res = checkLineIntersection(
-    { x: otherStart[1], y: otherStart[2] },
-    { x: otherEnd[1], y: otherEnd[2] },
-    { x: start[1], y: start[2] },
-    { x: end[1], y: end[2] },
-  );
-
-  if (!res.onLine1 || !res.onLine2 || res.x == null || res.y == null) return false;
-
-  const intersectionX = res.x;
-  const intersectionY = res.y;
-  let firstSegment: PathSegment, secondSegment: PathSegment;
-
-  if (start[2] === end[2]) {
-    const direction = start[1] > end[1] ? 1 : -1;
-    const x = intersectionX + direction * lineWidth * 2;
-
-    firstSegment = ["L", x, start[2]];
-    secondSegment = [
-      "C",
-      x,
-      start[2],
-      intersectionX,
-      start[2] - lineWidth * 4,
-      intersectionX - direction * lineWidth * 2,
-      start[2],
-    ];
-  } else if (start[2] > end[2]) {
-    firstSegment = ["L", start[1], intersectionY + lineWidth * 2];
-    secondSegment = [
-      "C",
-      start[1],
-      intersectionY + lineWidth * 2,
-      start[1] + lineWidth * 4,
-      intersectionY,
-      start[1],
-      intersectionY - lineWidth * 2,
-    ];
-  } else {
-    firstSegment = ["L", start[1], intersectionY - lineWidth * 2];
-    secondSegment = [
-      "C",
-      start[1],
-      intersectionY - lineWidth * 2,
-      start[1] + lineWidth * 4,
-      intersectionY,
-      start[1],
-      intersectionY + lineWidth * 2,
-    ];
-  }
-
-  path.splice(index + 1, 0, firstSegment);
-  path.splice(index + 2, 0, secondSegment);
-  line.setPath(path);
-
-  return true;
-};
 
 export class FlowChartSymbol {
   text: TextElement;
@@ -458,99 +374,6 @@ export class FlowChartSymbol {
     }
   }
 
-  /**
-   * Positions the `bottom` child below this symbol.
-   *
-   * @param lineLength Minimum distance between the symbols.
-   */
-  protected placeBottom(lineLength: number): void {
-    const bottomSymbol = this.bottom_symbol;
-
-    if (bottomSymbol == null || bottomSymbol.isPositioned) return;
-
-    const bottomPoint = this.getBottom();
-
-    bottomSymbol.shiftY(this.getY() + this.height + lineLength);
-    bottomSymbol.setX(bottomPoint.x - bottomSymbol.width / 2);
-    bottomSymbol.isPositioned = true;
-
-    bottomSymbol.render();
-  }
-
-  /**
-   * Positions the `left` child next to this symbol.
-   *
-   * @param lineLength Minimum distance between the symbols.
-   */
-  protected placeLeft(lineLength: number): void {
-    const leftSymbol = this.left_symbol;
-
-    if (leftSymbol == null || leftSymbol.isPositioned) return;
-
-    const leftPoint = this.getLeft();
-
-    leftSymbol.setY(leftPoint.y - leftSymbol.height / 2);
-    leftSymbol.shiftX(-(this.getX() + this.width + lineLength));
-
-    this.shiftBeside(leftSymbol, lineLength);
-
-    leftSymbol.isPositioned = true;
-
-    leftSymbol.render();
-  }
-
-  /**
-   * Positions the `right` child next to this symbol.
-   *
-   * @param lineLength Minimum distance between the symbols.
-   */
-  protected placeRight(lineLength: number): void {
-    const rightSymbol = this.right_symbol;
-
-    if (rightSymbol == null || rightSymbol.isPositioned) return;
-
-    const rightPoint = this.getRight();
-
-    rightSymbol.setY(rightPoint.y - rightSymbol.height / 2);
-    rightSymbol.shiftX(this.getX() + this.width + lineLength);
-
-    this.shiftBeside(rightSymbol, lineLength);
-
-    rightSymbol.isPositioned = true;
-
-    rightSymbol.render();
-  }
-
-  /**
-   * Moves a horizontally placed child down until it no longer overlaps another symbol.
-   *
-   * @param symbol Child symbol to shift.
-   * @param lineLength Minimum distance between the symbols.
-   */
-  protected shiftBeside(symbol: FlowChartSymbol, lineLength: number): void {
-    const shift = (): void => {
-      let symbolUnder: FlowChartSymbol | undefined;
-
-      if (this.params["align-next"] !== "no") {
-        for (const otherSymbol of this.chart.symbols) {
-          const diff = Math.abs(otherSymbol.getCenter().x - symbol.getCenter().x);
-
-          if (otherSymbol.getCenter().y > symbol.getCenter().y && diff <= symbol.width / 2) {
-            symbolUnder = otherSymbol;
-            break;
-          }
-        }
-      }
-
-      if (symbolUnder == null || symbol.symbolType === "end") return;
-
-      symbol.setX(symbolUnder.getX() + symbolUnder.width + lineLength);
-      shift();
-    };
-
-    shift();
-  }
-
   render(): void {
     const { next } = this;
 
@@ -559,9 +382,9 @@ export class FlowChartSymbol {
     const lineLength = this.getAttrOr<number>("line-length", 50);
 
     if (this.direction_next === "right") {
-      this.placeBeside(next, "right", lineLength);
+      placeBeside(this, next, "right", lineLength);
     } else if (this.direction_next === "left") {
-      this.placeBeside(next, "left", lineLength);
+      placeBeside(this, next, "left", lineLength);
     } else if (!next.isPositioned) {
       const bottomPoint = this.getBottom();
 
@@ -599,71 +422,10 @@ export class FlowChartSymbol {
 
     if (style != null) line.setAttrs(style);
 
-    this.adjustCrossingLines(line, this.getAttrOr<number>("line-width", 3));
+    adjustCrossingLines(line, this.chart.lines, this.getAttrOr<number>("line-width", 3));
     this.chart.lines.push(line);
 
     if (this.chart.minXFromSymbols > left.x) this.chart.minXFromSymbols = left.x;
     if (maxX > this.chart.maxXFromLine) this.chart.maxXFromLine = maxX;
-  }
-
-  private placeBeside(next: FlowChartSymbol, side: "left" | "right", lineLength: number): void {
-    if (next.isPositioned) return;
-
-    const point = side === "right" ? this.getRight() : this.getLeft();
-
-    next.setY(point.y - next.height / 2);
-
-    if (side === "right") next.shiftX(this.getX() + this.width + lineLength);
-    else next.shiftX(-(this.getX() + this.width + lineLength));
-
-    const shift = (): void => {
-      let symbolUnder: FlowChartSymbol | undefined;
-
-      for (const symbol of this.chart.symbols) {
-        const diff = Math.abs(symbol.getCenter().x - next.getCenter().x);
-
-        if (symbol.getCenter().y > next.getCenter().y && diff <= next.width / 2) {
-          symbolUnder = symbol;
-          break;
-        }
-      }
-
-      if (symbolUnder == null || next.symbolType === "end") return;
-
-      next.setX(symbolUnder.getX() + symbolUnder.width + lineLength);
-      shift();
-    };
-
-    shift();
-
-    next.isPositioned = true;
-
-    next.render();
-  }
-
-  /**
-   * Curves lines around previously drawn lines they cross (hop-over effect).
-   *
-   * @param line Line being drawn.
-   * @param lineWidth Stroke width used for the bend size.
-   */
-  private adjustCrossingLines(line: PathElement, lineWidth: number): void {
-    for (const otherLine of this.chart.lines) {
-      const otherPath = otherLine.getPath();
-      const path = line.getPath();
-
-      for (
-        let otherIndex = 0, otherLength = otherPath.length - 1;
-        otherIndex < otherLength;
-        otherIndex += 1
-      ) {
-        for (let index = 0, length = path.length - 1; index < length; index += 1) {
-          if (
-            bendCrossing(line, { path, index }, { path: otherPath, index: otherIndex }, lineWidth)
-          )
-            index += 2;
-        }
-      }
-    }
   }
 }
