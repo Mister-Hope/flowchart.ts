@@ -49,11 +49,28 @@ Styles can be passed per call (colors, fonts, line width, ...), per symbol type,
 ```bash
 pnpm install      # install dependencies
 pnpm dev          # demo page of the examples in `template/`
-pnpm build        # build `dist/flowchart.js` and `dist/flowchart.d.ts` with tsdown
+pnpm build        # build `dist/flowchart.js` and `dist/flowchart.d.ts` with tsdown + publint
 pnpm test         # run the vitest suite (happy-dom)
 pnpm lint:check   # oxlint + oxfmt
 pnpm type-check   # tsc --noEmit
 ```
+
+## Architecture
+
+- `src/parse/` — DSL parsing: `lines.ts` splits/joins input lines, `definition.ts` parses node
+  definitions, `flow.ts` applies connections, `style.ts` applies per-line style overrides,
+  `draw.ts` builds the display-symbol tree, and `index.ts` exposes `parse()`
+- `src/symbols/` — rendered node classes (`start`, `end`, `condition`, `parallel`, ...) and their
+  shared helpers: `symbol.ts` holds shape setup and measurement, `line-routing.ts` chooses
+  connection paths, `placement.ts` positions child nodes, `crossing.ts` bends lines around
+  intersections, and `node-links.ts` binds links/callbacks. `index.ts` is the barrel
+- `src/render/` — the in-house SVG renderer: elements, paths, text metrics, arrow markers and the
+  paper/set abstractions; no runtime dependencies
+- `src/chart.ts` — layout orchestration (symbol alignment, rendering order, viewBox sizing)
+- `src/action.ts` — path/line drawing primitives shared by symbols
+- `__tests__/` — unit + regression tests. `fixtures/charts.ts` is the DSL corpus and
+  `snapshots.spec.ts` snapshots the full rendered DOM and geometry, so layout refactors have to
+  keep the output stable; update snapshots with `pnpm test -u` after a deliberate layout change
 
 ## Example
 
