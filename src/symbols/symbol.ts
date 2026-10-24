@@ -19,6 +19,32 @@ interface PathLocation {
   index: number;
 }
 
+/** Value types of the known style/option keys, so lookups do not need casts. */
+interface StyleValues {
+  x: number;
+  y: number;
+  "text-margin": number;
+  font: string;
+  "font-family": string;
+  "font-weight": string | number;
+  "font-size": number;
+  "font-color": string;
+  "line-width": number;
+  "line-length": number;
+  "line-color": string;
+  "element-color": string;
+  fill: string;
+  "yes-text": string;
+  "no-text": string;
+  "arrow-end": string;
+  "arrow-start": string;
+  "arrow-text": string;
+  class: string;
+  scale: number;
+  maxWidth: number;
+  roundness: number;
+}
+
 /**
  * Bends the segment at `index` around an intersection with another path, if they cross.
  *
@@ -190,7 +216,7 @@ export class FlowChartSymbol {
     applyNodeLink(this.text, options);
     applyNodeCallback(this.text, options);
 
-    const maxWidth = this.getAttr("maxWidth") as number | null;
+    const maxWidth = this.getAttr("maxWidth");
 
     if (maxWidth != null) {
       // using this approach: http://stackoverflow.com/a/3153457/22466
@@ -281,9 +307,9 @@ export class FlowChartSymbol {
       height: textBox.height + 2 * tempMargin,
     });
 
-    const roundness = this.getAttr("roundness") as number | null;
+    const roundness = this.getAttr("roundness");
 
-    if (typeof roundness === "number" && !Number.isNaN(roundness)) {
+    if (roundness != null && !Number.isNaN(roundness)) {
       symbol.node.setAttribute("ry", roundness.toString());
       symbol.node.setAttribute("rx", roundness.toString());
     }
@@ -302,8 +328,8 @@ export class FlowChartSymbol {
    * @param element Element receiving the font attributes.
    */
   protected applyFont(element: Renderable): void {
-    const font = this.getAttr("font") as string | null;
-    const fontFamily = this.getAttr("font-family") as string | null;
+    const font = this.getAttr("font");
+    const fontFamily = this.getAttr("font-family");
     const fontWeight = this.getAttr("font-weight");
 
     if (font != null) element.setAttr("font", font);
@@ -317,6 +343,8 @@ export class FlowChartSymbol {
    * @param attName Attribute name.
    * @returns The attribute value, or `null` when none is configured.
    */
+  getAttr<StyleKey extends keyof StyleValues>(attName: StyleKey): StyleValues[StyleKey] | null;
+  getAttr(attName: string): AttributeValue | null;
   getAttr(attName: string): AttributeValue | null {
     const { options } = this.chart;
     const symbolOptions = this.symbolType == null ? null : options.symbols[this.symbolType];
@@ -327,8 +355,13 @@ export class FlowChartSymbol {
     return (value ?? null) as AttributeValue | null;
   }
 
-  getAttrOr<T>(attName: string, fallback: T): T {
-    return (this.getAttr(attName) ?? fallback) as T;
+  getAttrOr<StyleKey extends keyof StyleValues>(
+    attName: StyleKey,
+    fallback: StyleValues[StyleKey],
+  ): StyleValues[StyleKey];
+  getAttrOr<T>(attName: string, fallback: T): T;
+  getAttrOr(attName: string, fallback: unknown): unknown {
+    return this.getAttr(attName) ?? fallback;
   }
 
   initialize(): void {
@@ -545,7 +578,7 @@ export class FlowChartSymbol {
 
     if (next == null) return;
 
-    const arrowText = (this.getAttr("arrow-text") as string | null) ?? "";
+    const arrowText = this.getAttr("arrow-text") ?? "";
 
     if (this.direction_next == null) this.drawLineTo(next, arrowText);
     else this.drawLineTo(next, arrowText, this.direction_next);
