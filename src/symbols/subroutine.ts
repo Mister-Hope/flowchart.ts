@@ -1,5 +1,6 @@
 import type FlowChart from "../chart.js";
 import type { SymbolOptions } from "../options.js";
+import { isSafeDomId } from "../security.js";
 import { applyNodeLink } from "./node-links.js";
 import { FlowChartSymbol } from "./symbol.js";
 
@@ -27,7 +28,7 @@ export class Subroutine extends FlowChartSymbol {
       fill: this.getAttrOr<string>("fill", "white"),
     });
 
-    if (options.key != null) innerWrapper.node.id = `${options.key}i`;
+    if (options.key != null && isSafeDomId(options.key)) innerWrapper.node.id = `${options.key}i`;
 
     this.applyFont(innerWrapper);
     applyNodeLink(innerWrapper, options);

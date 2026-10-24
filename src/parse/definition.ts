@@ -1,4 +1,5 @@
 import type { SymbolOptions, SymbolType } from "../options.js";
+import { validateLink, validateTarget } from "../security.js";
 import type { Chart } from "./types.js";
 
 // Returns the text between the first `(` and the last `)` of a DSL fragment.
@@ -163,15 +164,16 @@ const splitCallbackOrLink = (rawType: string, text: string | null): CallbackOrLi
   return { rawType, text, link: null, functionName: null };
 };
 
-// Extracts `[blank]`-style target hints from a link.
+// Extracts a trailing `[blank]`-style target hint from a link.
+const TARGET_SUFFIX_PATTERN = /\[(?<target>[^\]]+)\]$/u;
+
 const splitTarget = (link: string | null): { link: string | null; target: string | null } => {
   if (link == null) return { link, target: null };
 
-  const startIndex = link.indexOf("[") + 1;
-  const endIndex = link.indexOf("]");
+  const match = TARGET_SUFFIX_PATTERN.exec(link);
+  const target = match?.groups?.target;
 
-  if (startIndex > 0 && endIndex > 0)
-    return { link: link.slice(0, startIndex - 1), target: link.slice(startIndex, endIndex) };
+  if (match != null && target != null) return { link: link.slice(0, match.index), target };
 
   return { link, target: null };
 };
@@ -201,7 +203,9 @@ export const parseDefinition = (line: string): SymbolOptions => {
   const { rawType, text } = splitText(parts[1] ?? "");
   const { rawType: type, text: label, link, functionName } = splitCallbackOrLink(rawType, text);
   const flowType = type.includes("\n") ? (type.split("\n")[0] ?? "") : type;
-  const { link: plainLink, target } = splitTarget(link);
+  const { link: rawLink, target: rawTarget } = splitTarget(link);
+  const safeLink = rawLink == null ? null : validateLink(rawLink, key);
+  const safeTarget = rawTarget == null ? null : validateTarget(rawTarget, key);
   const { text: plainText, flowstate } = splitFlowstate(label);
 
   if (!isSymbolType(flowType))
@@ -211,8 +215,8 @@ export const parseDefinition = (line: string): SymbolOptions => {
     key,
     symbolType: flowType,
     text: plainText,
-    link: plainLink,
-    target,
+    link: safeLink,
+    target: safeTarget,
     function: functionName,
     flowstate,
     lineStyle: {},

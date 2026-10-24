@@ -85,8 +85,11 @@ pnpm deps:update   # ncu -u + pnpm install
 - Numeric attribute parsing lives in `src/utils.ts` (`toNumber`), together with `deepAssign`.
 - `oxlint.config.ts` intentionally has **no file-scoped overrides**; keep it that way.
 - No `eslint-disable` / `oxlint-disable` comments anywhere; fix the underlying issue instead.
+- The DSL is untrusted input: every value that can reach a DOM attribute, a URL or a callback must
+  go through `src/security.ts` (link/target validation, `sanitizeLineStyle`, `isSafeDomId`). Never
+  add an `innerHTML` path, and never write `on*`/`style`/`href` attributes from raw DSL values.
 - Bundle size matters (the user rejected a `ts-deepmerge` dependency for +0.46 kB gzip). Current
-  runtime bundle is ~39.2 kB min / ~11.3 kB gzip; avoid adding runtime dependencies and check
+  runtime bundle is ~43.8 kB min / ~12.8 kB gzip; avoid adding runtime dependencies and check
   `pnpm build` output when touching shared code.
 
 ## Releasing

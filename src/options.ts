@@ -42,6 +42,9 @@ export interface SVGOptions {
   [props: string]: unknown;
 }
 
+/** Click handler registered through {@link DrawOptions.callbacks} or found on `globalThis`. */
+export type ClickCallback = (event: Event, options: Partial<SymbolOptions>) => void;
+
 export interface DrawOptions extends Partial<SVGOptions> {
   width?: number;
   height?: number;
@@ -49,6 +52,8 @@ export interface DrawOptions extends Partial<SVGOptions> {
   symbols?: Record<string, Partial<SVGOptions>>;
   /** FlowState styles */
   flowstate?: FlowStateStyles | null;
+  /** Click handlers referenced by `:$callback` in the DSL. */
+  callbacks?: Record<string, ClickCallback> | null;
 }
 
 export interface ParsedDrawOptions extends SVGOptions {
@@ -58,6 +63,8 @@ export interface ParsedDrawOptions extends SVGOptions {
   symbols: Record<string, Partial<SVGOptions>>;
   /** FlowState styles */
   flowstate?: FlowStateStyles | null;
+  /** Click handlers referenced by `:$callback` in the DSL. */
+  callbacks?: Record<string, ClickCallback> | null;
 }
 
 export type Direction = "top" | "right" | "left" | "bottom" | "path1" | "path2" | "path3";

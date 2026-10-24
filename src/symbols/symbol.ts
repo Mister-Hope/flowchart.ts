@@ -9,6 +9,7 @@ import type {
   SetElement,
   TextElement,
 } from "../render/index.js";
+import { FlowchartSecurityError, isSafeDomId, sanitizeLineStyle } from "../security.js";
 import type { Position } from "../typings.js";
 import { adjustCrossingLines } from "./crossing.js";
 import { routeConnection } from "./line-routing.js";
@@ -117,7 +118,7 @@ export class FlowChartSymbol {
    * @param options Symbol options parsed from the flowchart.
    */
   private setupText(options: Partial<SymbolOptions>): void {
-    if (options.key != null) this.text.node.id = `${options.key}t`;
+    if (options.key != null && isSafeDomId(options.key)) this.text.node.id = `${options.key}t`;
 
     this.text.node.setAttribute("class", `${this.getAttrOr<string>("class", "flowchart")}t`);
 
@@ -130,7 +131,7 @@ export class FlowChartSymbol {
 
     this.applyFont(this.text);
     applyNodeLink(this.text, options);
-    applyNodeCallback(this.text, options);
+    applyNodeCallback(this.chart, this.text, options);
 
     const maxWidth = this.getAttr("maxWidth");
 
@@ -196,7 +197,7 @@ export class FlowChartSymbol {
     this.styleShape(symbol);
     applyNodeLink(symbol, options);
 
-    if (options.key != null) symbol.node.id = options.key;
+    if (options.key != null && isSafeDomId(options.key)) symbol.node.id = options.key;
 
     this.finishShape(symbol);
 
@@ -231,9 +232,9 @@ export class FlowChartSymbol {
     }
 
     applyNodeLink(symbol, options);
-    applyNodeCallback(symbol, options);
+    applyNodeCallback(this.chart, symbol, options);
 
-    if (options.key != null) symbol.node.id = options.key;
+    if (options.key != null && isSafeDomId(options.key)) symbol.node.id = options.key;
 
     this.finishShape(symbol);
   }
@@ -420,7 +421,15 @@ export class FlowChartSymbol {
     const { line, maxX } = routed;
     const style = this.lineStyle[symbol.key];
 
-    if (style != null) line.setAttrs(style);
+    if (style != null) {
+      // Re-sanitize at render time so programmatic changes to `chart.symbols` cannot inject
+      // attributes into the DOM.
+      try {
+        line.setAttrs(sanitizeLineStyle(style));
+      } catch (err) {
+        if (!(err instanceof FlowchartSecurityError)) throw err;
+      }
+    }
 
     adjustCrossingLines(line, this.chart.lines, this.getAttrOr<number>("line-width", 3));
     this.chart.lines.push(line);
