@@ -9,7 +9,7 @@ import type {
 } from "./options.js";
 import Condition from "./symbols/condition.js";
 import End from "./symbols/end.js";
-import InputOutput from "./symbols/inputoutput.js";
+import InputOutput from "./symbols/input-output.js";
 import Operation from "./symbols/operation.js";
 import Parallel from "./symbols/parallel.js";
 import Start from "./symbols/start.js";
