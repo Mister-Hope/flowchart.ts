@@ -54,6 +54,13 @@ describe("layout: SVG outer sizing", () => {
     expect(Number(svg.style.width.replace("px", ""))).toBeCloseTo(200 / contentRatio, 3);
   });
 
+  it("supports a responsive CSS height", () => {
+    const { svg } = render({ height: "100%" });
+
+    expect(svg.style.height).toBe("100%");
+    expect(svg.style.width).toBe("auto");
+  });
+
   it("applies both dimensions when given", () => {
     const { svg } = render({ width: 400, height: 200 });
 
