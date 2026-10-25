@@ -129,11 +129,22 @@ What the workflow (`.github/workflows/publish.yml`) does:
 
 1. rejects non-maintainer actors and non-`main` branches, then runs `pnpm ci`, lint, type-check,
    tests and build;
-2. `pnpm version <bump> -m "chore: release v%s"`, which creates the release commit and `v*` tag;
-3. pushes the commit + tag to `main` (needs `contents: write`);
-4. resolves the npm dist-tag (`latest` for stable versions, an explicit tag for prereleases), then
+2. bumps `package.json` with `pnpm version <bump> --no-git-tag-version` (no commit or tag yet);
+3. adds the new version section to `CHANGELOG.md` with
+   `changelogen --output CHANGELOG.md -r <version> --from <previous tag>`;
+4. commits `package.json` + `CHANGELOG.md` as `chore: release v<version>`, tags it and pushes the
+   commit + tag to `main` (needs `contents: write`);
+5. resolves the npm dist-tag (`latest` for stable versions, an explicit tag for prereleases), then
    runs `pnpm publish --access public --provenance --tag <dist-tag>`, authenticated via OIDC
-   (`id-token: write`) with provenance attached by pnpm.
+   (`id-token: write`) with provenance attached by pnpm;
+6. syncs the GitHub Release from the generated changelog with `changelogen gh release <version>`
+   (prereleases are marked with `gh release edit --prerelease`). Because the release is generated
+   from `CHANGELOG.md`, no release notes artifact or custom script is involved.
+
+`CHANGELOG.md` is generated: fix the commit message instead of editing the file. Preview the next
+entry locally with `pnpm changelog` (a `changelogen --no-output` run). `bump = none` retries do not
+rewrite the release commit; they only re-run the publish and the GitHub Release sync (with a
+`gh release create --generate-notes` fallback for releases older than the changelog automation).
 
 A failed publish can be retried with `bump = none` without creating another version commit. Branch
 protection must allow the workflow to push the release commit/tag directly to `main`.

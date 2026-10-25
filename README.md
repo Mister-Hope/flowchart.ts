@@ -376,3 +376,10 @@ para(path3@an3, bottom)->e
 ![img](https://user-images.githubusercontent.com/1086194/137810516-0d7d7307-fc55-466f-b06d-a6ca9f6b8785.png)
 
 </details>
+
+## Changelog
+
+Release notes are generated from [Conventional Commits](https://www.conventionalcommits.org/) with
+[changelogen](https://github.com/unjs/changelogen) and published to
+[CHANGELOG.md](./CHANGELOG.md) and the
+[GitHub Releases](https://github.com/Mister-Hope/flowchart.ts/releases) page.
