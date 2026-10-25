@@ -22,17 +22,19 @@ export const getLines = (input: string): string[] => {
 
   if (prevBreak < source.length) lines.push(source.slice(prevBreak));
 
-  for (let index = 1, { length } = lines; index < length;) {
-    const currentLine = lines[index] ?? "";
+  const merged: string[] = [];
+  let current: string | null = null;
 
-    if (!currentLine.includes("->") && !currentLine.includes("=>") && !currentLine.includes("@>")) {
-      lines[index - 1] += `\n${currentLine}`;
-      lines.splice(index, 1);
-      length -= 1;
+  for (const line of lines) {
+    if (current != null && !line.includes("->") && !line.includes("=>") && !line.includes("@>")) {
+      current += `\n${line}`;
     } else {
-      index += 1;
+      if (current != null) merged.push(current);
+      current = line;
     }
   }
 
-  return lines;
+  if (current != null) merged.push(current);
+
+  return merged;
 };

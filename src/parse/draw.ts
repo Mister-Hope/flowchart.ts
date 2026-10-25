@@ -1,5 +1,5 @@
 import type FlowChart from "../chart.js";
-import type { SymbolOptions } from "../options.js";
+import type { SymbolOptions, SymbolType } from "../options.js";
 import type { FlowChartSymbol } from "../symbols/index.js";
 import {
   Condition,
@@ -13,6 +13,21 @@ import {
   Subroutine,
 } from "../symbols/index.js";
 import type { Chart } from "./types.js";
+
+type SymbolConstructor = new (chart: FlowChart, options: SymbolOptions) => FlowChartSymbol;
+
+/** Display classes by parsed symbol type. */
+const SYMBOL_CONSTRUCTORS: Record<SymbolType, SymbolConstructor> = {
+  start: Start,
+  end: End,
+  operation: Operation,
+  inputoutput: InputOutput,
+  input: Input,
+  output: Output,
+  subroutine: Subroutine,
+  condition: Condition,
+  parallel: Parallel,
+};
 
 interface BuildContext {
   chart: Chart;
@@ -30,49 +45,7 @@ const getDisplaySymbol = (
 
   if (existing != null) return existing;
 
-  let displaySymbol: FlowChartSymbol;
-
-  switch (symbolType) {
-    case "start": {
-      displaySymbol = new Start(diagram, symbolOptions);
-      break;
-    }
-    case "end": {
-      displaySymbol = new End(diagram, symbolOptions);
-      break;
-    }
-    case "operation": {
-      displaySymbol = new Operation(diagram, symbolOptions);
-      break;
-    }
-    case "inputoutput": {
-      displaySymbol = new InputOutput(diagram, symbolOptions);
-      break;
-    }
-    case "input": {
-      displaySymbol = new Input(diagram, symbolOptions);
-      break;
-    }
-    case "output": {
-      displaySymbol = new Output(diagram, symbolOptions);
-      break;
-    }
-    case "subroutine": {
-      displaySymbol = new Subroutine(diagram, symbolOptions);
-      break;
-    }
-    case "condition": {
-      displaySymbol = new Condition(diagram, symbolOptions);
-      break;
-    }
-    case "parallel": {
-      displaySymbol = new Parallel(diagram, symbolOptions);
-      break;
-    }
-    default: {
-      throw new Error(`Unknown symbol type "${String(symbolType)}"!`);
-    }
-  }
+  const displaySymbol = new SYMBOL_CONSTRUCTORS[symbolType](diagram, symbolOptions);
 
   displaySymbols[key] = displaySymbol;
 
@@ -146,11 +119,11 @@ const constructChart = (
  *
  * @param chart Parsed chart.
  * @param diagram Diagram to render into.
+ * @param start Parsed start symbol (later branches are discovered from it).
  */
-export const renderDiagram = (chart: Chart, diagram: FlowChart): void => {
+export const renderDiagram = (chart: Chart, diagram: FlowChart, start: SymbolOptions): void => {
   const context: BuildContext = { chart, diagram, displaySymbols: {} };
+  const displayStart = constructChart(context, start);
 
-  if (chart.start != null) constructChart(context, chart.start);
-
-  diagram.render();
+  diagram.render(displayStart);
 };

@@ -4,7 +4,7 @@ import type { BBox } from "./types.js";
 
 /** A rectangle, optionally rounded (`r`). */
 export class RectElement extends Renderable {
-  constructor(node: SVGRectElement, radius = 0) {
+  constructor(node: SVGRectElement, radius: number) {
     super(node);
 
     if (radius > 0) {

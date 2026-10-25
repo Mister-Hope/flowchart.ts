@@ -159,11 +159,7 @@ export class TextElement extends Renderable {
   private computeFirstLineShift(fontSize: number, lineHeight: number, y: number): number {
     const nativeBox = measureNativeBBox(this.node as unknown as SVGGraphicsElement);
 
-    if (nativeBox != null) {
-      const shift = y - (nativeBox.y + nativeBox.height / 2);
-
-      return Number.isFinite(shift) ? shift : 0;
-    }
+    if (nativeBox != null) return y - (nativeBox.y + nativeBox.height / 2);
 
     // Empty text has no ink, so the browser reports a box at y = 0; mirror that.
     if (this.lines.every((line) => line === "")) return y;

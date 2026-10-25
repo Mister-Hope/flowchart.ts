@@ -1,11 +1,12 @@
 import type { LineStyle } from "./options.js";
+import { codePointOf } from "./utils.js";
 
 // ASCII control characters are stripped by browsers while parsing URLs.
 const isControlCharacter = (code: number): boolean => code <= 0x1f || code === 0x7f;
 
 const hasControlCharacters = (value: string): boolean => {
   for (const character of value) {
-    const codePoint = character.codePointAt(0) ?? 0;
+    const codePoint = codePointOf(character);
 
     if (isControlCharacter(codePoint)) return true;
   }
@@ -17,7 +18,7 @@ const stripControlCharacters = (value: string): string => {
   let result = "";
 
   for (const character of value) {
-    const codePoint = character.codePointAt(0) ?? 0;
+    const codePoint = codePointOf(character);
 
     if (!isControlCharacter(codePoint)) result += character;
   }

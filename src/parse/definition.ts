@@ -79,9 +79,11 @@ export const getAnnotation = (line: string): string => {
 
   if (temp.indexOf(",") > 0) temp = temp.slice(0, temp.indexOf(","));
 
-  const tempSplit = temp.split("@");
+  const annotationIndex = temp.indexOf("@");
 
-  return tempSplit.length > 1 ? (startIndex > 0 && endIndex > 0 ? (tempSplit[1] ?? "") : "") : "";
+  if (startIndex <= 0 || endIndex <= 0 || annotationIndex <= 0) return "";
+
+  return temp.slice(annotationIndex + 1);
 };
 
 const SYMBOL_TYPES = new Set<string>([
@@ -123,11 +125,11 @@ interface DefinitionParts {
 
 // Splits the type from the display text: `operation: My Op` -> `operation` + `My Op`.
 const splitText = (rawType: string): DefinitionParts => {
-  if (!rawType.includes(": ")) return { rawType, text: null };
+  const index = rawType.indexOf(": ");
 
-  const parts = rawType.split(": ");
+  if (index === -1) return { rawType, text: null };
 
-  return { rawType: parts.shift() ?? "", text: parts.join(": ") };
+  return { rawType: rawType.slice(0, index), text: rawType.slice(index + 2) };
 };
 
 interface CallbackOrLinkParts extends DefinitionParts {
@@ -137,28 +139,50 @@ interface CallbackOrLinkParts extends DefinitionParts {
 
 // Splits `:$callback` or `:>link` suffixes from the type or text.
 const splitCallbackOrLink = (rawType: string, text: string | null): CallbackOrLinkParts => {
-  if (text != null && text.includes(":$")) {
-    const parts = text.split(":$");
+  if (text != null) {
+    const callbackIndex = text.indexOf(":$");
 
-    return { rawType, text: parts.shift() ?? null, link: null, functionName: parts.join(":$") };
+    if (callbackIndex !== -1) {
+      return {
+        rawType,
+        text: text.slice(0, callbackIndex),
+        link: null,
+        functionName: text.slice(callbackIndex + 2),
+      };
+    }
+
+    const linkIndex = text.indexOf(":>");
+
+    if (linkIndex !== -1) {
+      return {
+        rawType,
+        text: text.slice(0, linkIndex),
+        link: text.slice(linkIndex + 2),
+        functionName: null,
+      };
+    }
   }
 
-  if (rawType.includes(":$")) {
-    const parts = rawType.split(":$");
+  const callbackIndex = rawType.indexOf(":$");
 
-    return { rawType: parts.shift() ?? "", text, link: null, functionName: parts.join(":$") };
+  if (callbackIndex !== -1) {
+    return {
+      rawType: rawType.slice(0, callbackIndex),
+      text,
+      link: null,
+      functionName: rawType.slice(callbackIndex + 2),
+    };
   }
 
-  if (text != null && text.includes(":>")) {
-    const parts = text.split(":>");
+  const linkIndex = rawType.indexOf(":>");
 
-    return { rawType, text: parts.shift() ?? null, link: parts.join(":>"), functionName: null };
-  }
-
-  if (rawType.includes(":>")) {
-    const parts = rawType.split(":>");
-
-    return { rawType: parts.shift() ?? "", text, link: parts.join(":>"), functionName: null };
+  if (linkIndex !== -1) {
+    return {
+      rawType: rawType.slice(0, linkIndex),
+      text,
+      link: rawType.slice(linkIndex + 2),
+      functionName: null,
+    };
   }
 
   return { rawType, text, link: null, functionName: null };
@@ -182,10 +206,13 @@ const splitTarget = (link: string | null): { link: string | null; target: string
 const splitFlowstate = (text: string | null): { text: string | null; flowstate: string | null } => {
   if (text == null || !text.includes("|")) return { text, flowstate: null };
 
-  const parts = text.split("|");
-  const flowstate = parts.pop()?.trim() ?? null;
+  const separator = text.lastIndexOf("|");
+  const flowstate = text.slice(separator + 1).trim();
 
-  return { text: parts.join("|"), flowstate };
+  return {
+    text: text.slice(0, separator),
+    flowstate: flowstate === "" ? null : flowstate,
+  };
 };
 
 /**
@@ -195,14 +222,14 @@ const splitFlowstate = (text: string | null): { text: string | null; flowstate: 
  * @returns The symbol definition.
  */
 export const parseDefinition = (line: string): SymbolOptions => {
-  const parts = line.split("=>");
-  const left = parts[0] ?? "";
+  const separator = line.indexOf("=>");
+  const left = line.slice(0, Math.max(0, separator));
   const key = left.replace(/\(.*\)/u, "");
   const params = parseParams(left);
 
-  const { rawType, text } = splitText(parts[1] ?? "");
+  const { rawType, text } = splitText(line.slice(separator + 2));
   const { rawType: type, text: label, link, functionName } = splitCallbackOrLink(rawType, text);
-  const flowType = type.includes("\n") ? (type.split("\n")[0] ?? "") : type;
+  const flowType = type.split("\n", 1).join("");
   const { link: rawLink, target: rawTarget } = splitTarget(link);
   const safeLink = rawLink == null ? null : validateLink(rawLink, key);
   const safeTarget = rawTarget == null ? null : validateTarget(rawTarget, key);

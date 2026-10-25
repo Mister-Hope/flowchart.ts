@@ -85,7 +85,7 @@ export class Parallel extends FlowChartSymbol {
 
   textMargin?: number;
 
-  constructor(chart: FlowChart, options: Partial<SymbolOptions> = {}) {
+  constructor(chart: FlowChart, options: SymbolOptions) {
     const symbol = chart.paper.rect({ x: 0, y: 0, width: 0, height: 0 });
 
     super(chart, options, symbol);
@@ -93,15 +93,7 @@ export class Parallel extends FlowChartSymbol {
     this.path1_annotation = options.path1_annotation ?? "";
     this.path2_annotation = options.path2_annotation ?? "";
     this.path3_annotation = options.path3_annotation ?? "";
-    this.textMargin = this.getAttrOr<number>("text-margin", 10);
-
-    const { next, direction_next } = options;
-
-    if (next != null) {
-      if (direction_next === "path1" && options.path1 == null) options.path1 = next;
-      else if (direction_next === "path2" && options.path2 == null) options.path2 = next;
-      else if (direction_next === "path3" && options.path3 == null) options.path3 = next;
-    }
+    this.textMargin = this.getAttr("text-margin");
 
     const direction1 = options.direction_path1 ?? null;
     const direction2 = options.direction_path2 ?? null;
@@ -123,7 +115,7 @@ export class Parallel extends FlowChartSymbol {
     this.assignDirectionalSymbol(this.path2_direction, this.path2_symbol);
     this.assignDirectionalSymbol(this.path3_direction, this.path3_symbol);
 
-    const lineLength = this.getAttrOr<number>("line-length", 50);
+    const lineLength = this.getAttr("line-length");
 
     placeBottom(this, lineLength);
     placeTop(this, lineLength);

@@ -1,4 +1,4 @@
-import type { Direction, SymbolOptions } from "../options.js";
+import type { Direction, SymbolOptions, SymbolType } from "../options.js";
 import { getAnnotation, getSymbolValue, requireSymbol } from "./definition.js";
 import type { Chart } from "./types.js";
 
@@ -28,16 +28,16 @@ const splitBranch = (flowSymbol: string): { next: string; direction: Direction |
     if (!next.includes(",") && !BARE_BRANCH_NAMES.has(next)) next = `next, ${next}`;
   }
 
-  let direction: Direction | null = null;
+  const separator = next.indexOf(",");
 
-  if (next.includes(",")) {
-    const parts = next.split(",");
+  if (separator === -1) return { next, direction: null };
 
-    next = parts[0] ?? "next";
-    direction = (parts[1]?.trim() ?? null) as Direction | null;
-  }
+  const rawDirection = next.slice(separator + 1).trim();
 
-  return { next, direction };
+  return {
+    next: next.slice(0, separator),
+    direction: rawDirection === "" ? null : (rawDirection as Direction),
+  };
 };
 
 const setLinkedSymbol = (source: SymbolOptions, name: string, target: SymbolOptions): void => {
@@ -102,15 +102,28 @@ const setLinkedDirection = (
   }
 };
 
+/** Annotation slots per symbol type and branch name. */
+const ANNOTATION_KEYS: Partial<Record<SymbolType, Record<string, keyof SymbolOptions>>> = {
+  condition: {
+    yes: "yes_annotation",
+    true: "yes_annotation",
+    no: "no_annotation",
+  },
+  parallel: {
+    path1: "path1_annotation",
+    path2: "path2_annotation",
+    path3: "path3_annotation",
+  },
+};
+
 const setAnnotation = (symbol: SymbolOptions, next: string, annotation: string): void => {
-  if (symbol.symbolType === "condition") {
-    if (next === "yes" || next === "true") symbol.yes_annotation = annotation;
-    else symbol.no_annotation = annotation;
-  } else if (symbol.symbolType === "parallel") {
-    if (next === "path1") symbol.path1_annotation = annotation;
-    else if (next === "path2") symbol.path2_annotation = annotation;
-    else if (next === "path3") symbol.path3_annotation = annotation;
-  }
+  const keys = ANNOTATION_KEYS[symbol.symbolType];
+  if (keys == null) return;
+
+  const key = keys[next];
+  if (key == null) return;
+
+  (symbol as unknown as Record<string, string>)[key] = annotation;
 };
 
 /**
@@ -128,8 +141,8 @@ export const applyFlowLine = (source: string, chart: Chart): void => {
 
   const flowSymbols = line.split("->");
 
-  for (let index = 0, { length } = flowSymbols; index < length; index += 1) {
-    let flowSymbol = flowSymbols[index] ?? "";
+  for (const [index, flowSymbolValue] of flowSymbols.entries()) {
+    let flowSymbol = flowSymbolValue;
     const symbolValue = getSymbolValue(flowSymbol);
 
     // `true`/`false` are aliases for the condition branches `yes`/`no`.
@@ -138,6 +151,11 @@ export const applyFlowLine = (source: string, chart: Chart): void => {
 
     const { next, direction } = splitBranch(flowSymbol);
     const realSymbol = requireSymbol(flowSymbol, chart);
+
+    if (annotation != null && annotation !== "") {
+      setAnnotation(realSymbol, next, annotation);
+      annotation = null;
+    }
 
     if (!BRANCH_NAMES.has(next)) {
       throw new Error(
@@ -151,15 +169,12 @@ export const applyFlowLine = (source: string, chart: Chart): void => {
       );
     }
 
-    if (annotation != null && annotation !== "") {
-      setAnnotation(realSymbol, next, annotation);
-      annotation = null;
-    }
-
     chart.start ??= realSymbol;
 
-    if (index + 1 < length) {
-      const nextSymbol = requireSymbol(flowSymbols[index + 1] ?? "", chart);
+    const followingSymbol = flowSymbols[index + 1];
+
+    if (followingSymbol != null) {
+      const nextSymbol = requireSymbol(followingSymbol, chart);
 
       setLinkedSymbol(realSymbol, next, nextSymbol);
       setLinkedDirection(realSymbol, next, direction);

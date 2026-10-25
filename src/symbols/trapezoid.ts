@@ -12,10 +12,10 @@ import { FlowChartSymbol } from "./symbol.js";
 export abstract class TrapezoidSymbol extends FlowChartSymbol {
   protected readonly textMargin: number;
 
-  constructor(chart: FlowChart, options: Partial<SymbolOptions> = {}) {
+  constructor(chart: FlowChart, options: SymbolOptions) {
     super(chart, options);
 
-    this.textMargin = this.getAttrOr<number>("text-margin", 10);
+    this.textMargin = this.getAttr("text-margin");
 
     this.text.setAttr("x", this.textMargin * 3);
   }

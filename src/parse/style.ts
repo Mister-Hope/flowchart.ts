@@ -11,14 +11,15 @@ import type { Chart } from "./types.js";
 export const applyStyleLine = (line: string, chart: Chart): void => {
   const lineStyleSymbols = line.split("@>");
 
-  for (let index = 0, { length } = lineStyleSymbols; index < length; index += 1) {
-    if (index + 1 !== length) {
-      const currentSymbol = requireSymbol(lineStyleSymbols[index] ?? "", chart);
-      const nextSymbol = requireSymbol(lineStyleSymbols[index + 1] ?? "", chart);
+  for (const [index, current] of lineStyleSymbols.entries()) {
+    const next = lineStyleSymbols[index + 1];
 
-      const style = JSON.parse(getStyle(lineStyleSymbols[index + 1] ?? "")) as unknown;
+    if (next == null) continue;
 
-      currentSymbol.lineStyle[nextSymbol.key] = sanitizeLineStyle(style);
-    }
+    const currentSymbol = requireSymbol(current, chart);
+    const nextSymbol = requireSymbol(next, chart);
+    const style = JSON.parse(getStyle(next)) as unknown;
+
+    currentSymbol.lineStyle[nextSymbol.key] = sanitizeLineStyle(style);
   }
 };

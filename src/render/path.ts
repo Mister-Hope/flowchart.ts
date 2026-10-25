@@ -4,15 +4,16 @@ import type { MarkerRegistry } from "./markers.js";
 import { measureNativeBBox } from "./text-metrics.js";
 import type { AttributeValue, BBox, PathSegment } from "./types.js";
 
-const PATH_COMMAND_REGEXP = /(?<command>[a-z])(?<coordinates>[^a-z]*)/giu;
+const PATH_COMMAND_REGEXP = /[a-z][^a-z]*/giu;
 const PATH_NUMBER_REGEXP = /-?\d*\.?\d+(?:e[-+]?\d+)?/giu;
 
 export const parsePath = (path: string): PathSegment[] => {
   const segments: PathSegment[] = [];
 
   for (const match of path.matchAll(PATH_COMMAND_REGEXP)) {
-    const command = (match.groups?.command ?? "").toUpperCase();
-    const coordinates = (match.groups?.coordinates?.match(PATH_NUMBER_REGEXP) ?? []).map(Number);
+    const segment = match.join("");
+    const command = segment.charAt(0).toUpperCase();
+    const coordinates = (segment.slice(1).match(PATH_NUMBER_REGEXP) ?? []).map(Number);
 
     segments.push([command, ...coordinates]);
   }
@@ -109,6 +110,8 @@ export class PathElement extends Renderable {
 
   private endTrim = 0;
 
+  private strokeColor = "#000000";
+
   constructor(
     node: SVGPathElement,
     private readonly markers: MarkerRegistry,
@@ -149,8 +152,11 @@ export class PathElement extends Renderable {
       case "arrow-start":
       case "stroke":
       case "stroke-width": {
+        if (name === "stroke") this.strokeColor = String(value);
+
         if (name === "stroke" || name === "stroke-width")
           this.node.setAttribute(name, String(value));
+
         this.updateMarkers();
         break;
       }
@@ -170,7 +176,7 @@ export class PathElement extends Renderable {
 
   private updateMarkers(): void {
     const strokeWidth = toNumber(this.attributes["stroke-width"], 3);
-    const stroke = String(this.attributes.stroke ?? "#000000");
+    const stroke = this.strokeColor;
     const end = this.markers.getMarker(
       "end",
       String(this.attributes["arrow-end"] ?? "none"),

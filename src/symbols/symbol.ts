@@ -9,8 +9,9 @@ import type {
   SetElement,
   TextElement,
 } from "../render/index.js";
-import { FlowchartSecurityError, isSafeDomId, sanitizeLineStyle } from "../security.js";
+import { isSafeDomId, sanitizeLineStyle } from "../security.js";
 import type { Position } from "../typings.js";
+import { toNumber } from "../utils.js";
 import { adjustCrossingLines } from "./crossing.js";
 import { routeConnection } from "./line-routing.js";
 import { applyNodeCallback, applyNodeLink } from "./node-links.js";
@@ -42,6 +43,36 @@ interface StyleValues {
   roundness: number;
 }
 
+/** Style keys that `defaultOptions` always provides (see `src/config.ts`). */
+type GuaranteedStyleKey =
+  | "arrow-end"
+  | "class"
+  | "element-color"
+  | "fill"
+  | "font-color"
+  | "font-size"
+  | "line-color"
+  | "line-length"
+  | "line-width"
+  | "no-text"
+  | "text-margin"
+  | "x"
+  | "y"
+  | "yes-text";
+
+type DirectionalSlot = "top_symbol" | "bottom_symbol" | "left_symbol" | "right_symbol";
+
+/** Maps a layout direction to the symbol slot it fills. */
+const DIRECTIONAL_SLOTS: Record<Direction, DirectionalSlot | null> = {
+  top: "top_symbol",
+  bottom: "bottom_symbol",
+  left: "left_symbol",
+  right: "right_symbol",
+  path1: null,
+  path2: null,
+  path3: null,
+};
+
 export class FlowChartSymbol {
   text: TextElement;
 
@@ -57,7 +88,7 @@ export class FlowChartSymbol {
 
   group: SetElement;
 
-  symbolType?: SymbolType;
+  symbolType: SymbolType;
 
   flowstate: string;
 
@@ -92,15 +123,15 @@ export class FlowChartSymbol {
 
   constructor(
     public readonly chart: FlowChart,
-    options: Partial<SymbolOptions>,
+    options: SymbolOptions,
     symbol?: PathElement | RectElement,
   ) {
     this.group = chart.paper.set();
     this.symbolType = options.symbolType;
     this.flowstate = options.flowstate ?? "future";
-    this.lineStyle = options.lineStyle ?? {};
-    this.key = options.key ?? "";
-    this.params = options.params ?? {};
+    this.lineStyle = options.lineStyle;
+    this.key = options.key;
+    this.params = options.params;
 
     if (options.next != null && options.direction_next != null)
       this.direction_next = options.direction_next;
@@ -117,25 +148,26 @@ export class FlowChartSymbol {
    *
    * @param options Symbol options parsed from the flowchart.
    */
-  private setupText(options: Partial<SymbolOptions>): void {
+  private setupText(options: SymbolOptions): void {
     this.applyNodeId(this.text.node, `${this.key}t`);
 
-    this.text.node.setAttribute("class", `${this.getAttrOr<string>("class", "flowchart")}t`);
+    this.text.node.setAttribute("class", `${this.getAttr("class")}t`);
 
     this.text.setAttrs({
-      "font-size": this.getAttrOr<number>("font-size", 14),
-      fill: this.getAttrOr<string>("font-color", "black"),
+      "font-size": this.getAttr("font-size"),
+      fill: this.getAttr("font-color"),
       "text-anchor": "start",
-      x: this.getAttrOr<number>("text-margin", 10),
+      x: this.getAttr("text-margin"),
     });
 
     this.applyFont(this.text);
     applyNodeLink(this.text, options);
     applyNodeCallback(this.chart, this.text, options);
 
-    const maxWidth = this.getAttr("maxWidth");
+    const rawMaxWidth = this.getAttr("maxWidth");
 
-    if (maxWidth != null) {
+    if (rawMaxWidth != null) {
+      const maxWidth = toNumber(rawMaxWidth);
       // using this approach: http://stackoverflow.com/a/3153457/22466
       const words = (options.text ?? "").split(" ");
       let tempText = "";
@@ -159,12 +191,12 @@ export class FlowChartSymbol {
    */
   protected styleShape(symbol: Renderable): void {
     symbol.setAttrs({
-      stroke: this.getAttrOr<string>("element-color", "black"),
-      "stroke-width": this.getAttrOr<number>("line-width", 3),
-      fill: this.getAttrOr<string>("fill", "white"),
+      stroke: this.getAttr("element-color"),
+      "stroke-width": this.getAttr("line-width"),
+      fill: this.getAttr("fill"),
     });
 
-    symbol.node.setAttribute("class", this.getAttrOr<string>("class", "flowchart"));
+    symbol.node.setAttribute("class", this.getAttr("class"));
   }
 
   /**
@@ -211,15 +243,15 @@ export class FlowChartSymbol {
    * @param options Symbol options parsed from the flowchart.
    */
   private setupSymbol(symbol: PathElement | RectElement, options: Partial<SymbolOptions>): void {
-    symbol.node.setAttribute("class", this.getAttrOr<string>("class", "flowchart"));
+    symbol.node.setAttribute("class", this.getAttr("class"));
 
-    const tempMargin = this.getAttrOr<number>("text-margin", 10);
+    const tempMargin = this.getAttr("text-margin");
     const textBox = this.text.getBBox();
 
     symbol.setAttrs({
-      fill: this.getAttrOr<string>("fill", "white"),
-      stroke: this.getAttrOr<string>("element-color", "black"),
-      "stroke-width": this.getAttrOr<number>("line-width", 3),
+      fill: this.getAttr("fill"),
+      stroke: this.getAttr("element-color"),
+      "stroke-width": this.getAttr("line-width"),
       width: textBox.width + 2 * tempMargin,
       height: textBox.height + 2 * tempMargin,
     });
@@ -274,12 +306,12 @@ export class FlowChartSymbol {
    * @param attName Attribute name.
    * @returns The attribute value, or `null` when none is configured.
    */
-  getAttr<StyleKey extends keyof StyleValues>(attName: StyleKey): StyleValues[StyleKey] | null;
+  getAttr<StyleKey extends GuaranteedStyleKey>(attName: StyleKey): StyleValues[StyleKey];
   getAttr(attName: string): AttributeValue | null;
   getAttr(attName: string): AttributeValue | null {
     const { options } = this.chart;
     const styleKey = attName as keyof SVGOptions;
-    const symbolOptions = this.symbolType == null ? null : options.symbols[this.symbolType];
+    const symbolOptions = options.symbols[this.symbolType];
     const symbolOption = symbolOptions?.[styleKey];
     const flowStateOption = options.flowstate?.[this.flowstate]?.[attName];
     const value = flowStateOption ?? symbolOption ?? options[styleKey];
@@ -287,17 +319,8 @@ export class FlowChartSymbol {
     return value ?? null;
   }
 
-  getAttrOr<StyleKey extends keyof StyleValues>(
-    attName: StyleKey,
-    fallback: StyleValues[StyleKey],
-  ): StyleValues[StyleKey];
-  getAttrOr<T>(attName: string, fallback: T): T;
-  getAttrOr(attName: string, fallback: unknown): unknown {
-    return this.getAttr(attName) ?? fallback;
-  }
-
   initialize(): void {
-    const lineWidth = this.getAttrOr<number>("line-width", 3);
+    const lineWidth = this.getAttr("line-width");
 
     this.group.transform(`t${lineWidth},${lineWidth}`);
 
@@ -373,58 +396,25 @@ export class FlowChartSymbol {
   ): void {
     if (symbol == null) return;
 
-    const existing = this.getDirectionalSymbol(direction);
+    const slot = DIRECTIONAL_SLOTS[direction];
+    if (slot == null) return;
+
+    const existing = this.getDirectionalSymbol(slot);
 
     if (existing != null && existing !== symbol)
       this.warnBranchDirectionConflict(direction, existing, symbol);
 
-    switch (direction) {
-      case "top": {
-        this.top_symbol = symbol;
-        break;
-      }
-      case "bottom": {
-        this.bottom_symbol = symbol;
-        break;
-      }
-      case "left": {
-        this.left_symbol = symbol;
-        break;
-      }
-      case "right": {
-        this.right_symbol = symbol;
-        break;
-      }
-      default: {
-        break;
-      }
-    }
+    this[slot] = symbol;
   }
 
   /**
-   * Gets the child symbol that currently leaves this symbol through `direction`.
+   * Gets the child symbol assigned to a layout slot.
    *
-   * @param direction One of `top`, `bottom`, `left`, `right`.
+   * @param slot Slot to read.
    * @returns The assigned child, or `null` when the direction is unused.
    */
-  private getDirectionalSymbol(direction: Direction): FlowChartSymbol | null {
-    switch (direction) {
-      case "top": {
-        return this.top_symbol ?? null;
-      }
-      case "bottom": {
-        return this.bottom_symbol ?? null;
-      }
-      case "left": {
-        return this.left_symbol ?? null;
-      }
-      case "right": {
-        return this.right_symbol ?? null;
-      }
-      default: {
-        return null;
-      }
-    }
+  private getDirectionalSymbol(slot: DirectionalSlot): FlowChartSymbol | null {
+    return this[slot] ?? null;
   }
 
   /**
@@ -452,7 +442,7 @@ export class FlowChartSymbol {
 
     if (next == null) return;
 
-    const lineLength = this.getAttrOr<number>("line-length", 50);
+    const lineLength = this.getAttr("line-length");
 
     if (this.direction_next === "right") {
       placeBeside(this, next, "right", lineLength);
@@ -474,20 +464,18 @@ export class FlowChartSymbol {
 
     if (next == null) return;
 
-    const arrowText = this.getAttr("arrow-text") ?? "";
+    const arrowText = String(this.getAttr("arrow-text") ?? "");
 
     if (this.direction_next == null) this.drawLineTo(next, arrowText);
     else this.drawLineTo(next, arrowText, this.direction_next);
   }
 
   drawLineTo(symbol: FlowChartSymbol, text: string, direction?: Direction): void {
-    const left = this.getLeft();
     const routed = routeConnection(this, symbol, {
       text,
       direction,
-      lineLength: this.getAttrOr<number>("line-length", 50),
+      lineLength: this.getAttr("line-length"),
     });
-
     if (routed == null) return;
 
     const { line, maxX } = routed;
@@ -498,15 +486,14 @@ export class FlowChartSymbol {
       // attributes into the DOM.
       try {
         line.setAttrs(sanitizeLineStyle(style));
-      } catch (err) {
-        if (!(err instanceof FlowchartSecurityError)) throw err;
+      } catch {
+        // Programmatic styles are re-sanitized at render time; invalid values are simply dropped.
       }
     }
 
-    adjustCrossingLines(line, this.chart.lines, this.getAttrOr<number>("line-width", 3));
+    adjustCrossingLines(line, this.chart.lines, this.getAttr("line-width"));
     this.chart.lines.push(line);
 
-    if (this.chart.minXFromSymbols > left.x) this.chart.minXFromSymbols = left.x;
     if (maxX > this.chart.maxXFromLine) this.chart.maxXFromLine = maxX;
   }
 }

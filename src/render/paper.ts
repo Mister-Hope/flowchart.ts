@@ -48,11 +48,7 @@ export class Paper {
         ? document.querySelector<HTMLElement>(`#${CSS.escape(container)}`)
         : container;
 
-    if (element == null) {
-      throw new Error(
-        `Flowchart container not found: ${typeof container === "string" ? container : container.tagName}`,
-      );
-    }
+    if (element == null) throw new Error("Flowchart container not found.");
 
     this.container = element;
     this.document = element.ownerDocument;
@@ -72,7 +68,6 @@ export class Paper {
       element.prepend(canvas);
     } else {
       const host = this.createMeasurementHost();
-
       if (host == null) {
         element.prepend(canvas);
       } else {
@@ -128,7 +123,6 @@ export class Paper {
    */
   private createMeasurementHost(): HTMLElement | null {
     const { body } = this.document;
-
     if (body == null) return null;
 
     const host = this.document.createElement("div");
@@ -207,9 +201,9 @@ export class Paper {
     this.canvas.setAttribute("height", String(height));
   }
 
-  setViewBox({ x, y, width, height }: BBox, fit = false): void {
+  setViewBox({ x, y, width, height }: BBox): void {
     this.canvas.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
-    this.canvas.setAttribute("preserveAspectRatio", fit ? "xMidYMid meet" : "xMinYMin");
+    this.canvas.setAttribute("preserveAspectRatio", "xMidYMid meet");
   }
 
   /**
@@ -231,8 +225,6 @@ export class Paper {
     contentWidth: number,
     contentHeight: number,
   ): void {
-    if (width == null && height == null) return;
-
     const ratio = contentHeight / contentWidth;
 
     if (width != null) {
@@ -245,9 +237,9 @@ export class Paper {
       return;
     }
 
-    if (height != null) {
-      this.canvas.style.height = toCssLength(height);
-      this.canvas.style.width = typeof height === "number" ? `${height / ratio}px` : "auto";
-    }
+    if (height == null) return;
+
+    this.canvas.style.height = toCssLength(height);
+    this.canvas.style.width = typeof height === "number" ? `${height / ratio}px` : "auto";
   }
 }

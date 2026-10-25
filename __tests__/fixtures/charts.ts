@@ -1,4 +1,5 @@
 import type { DrawOptions } from "../../src/options.js";
+import { CHART_EXTRA_FIXTURES } from "./charts-extra.js";
 
 /** A render fixture: the DSL plus optional draw options. */
 export interface ChartFixture {
@@ -331,21 +332,6 @@ st->a->b->e
 st@>a({"stroke":"Red"})@>b({"stroke":"Red","stroke-width":6,"arrow-end":"classic-wide-long"})@>e({"stroke":"Red"})`,
   },
 
-  "arrow-classic": {
-    dsl: "st=>start: Start\ne=>end: End\nst->e",
-    options: { "arrow-end": "classic" },
-  },
-  "arrow-open": { dsl: "st=>start: Start\ne=>end: End\nst->e", options: { "arrow-end": "open" } },
-  "arrow-oval": { dsl: "st=>start: Start\ne=>end: End\nst->e", options: { "arrow-end": "oval" } },
-  "arrow-diamond": {
-    dsl: "st=>start: Start\ne=>end: End\nst->e",
-    options: { "arrow-end": "diamond" },
-  },
-  "arrow-wide-long": {
-    dsl: "st=>start: Start\ne=>end: End\nst->e",
-    options: { "arrow-end": "classic-wide-long", "line-width": 6 },
-  },
-
   "symbol-styles": {
     dsl: ALL_NODE_TYPES,
     options: {
@@ -491,4 +477,6 @@ a->b->c`,
     dsl: "st=>start: Start\nop=>operation: Op\ne=>end: End\nst->op->e",
     options: { scale: 0.5 },
   },
+
+  ...CHART_EXTRA_FIXTURES,
 };

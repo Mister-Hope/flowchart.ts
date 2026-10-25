@@ -10,7 +10,7 @@ import { TrapezoidSymbol } from "./trapezoid.js";
  * ```
  */
 export class Input extends TrapezoidSymbol {
-  constructor(chart: FlowChart, options: Partial<SymbolOptions> = {}) {
+  constructor(chart: FlowChart, options: SymbolOptions) {
     super(chart, options);
 
     const textBox = this.text.getBBox();

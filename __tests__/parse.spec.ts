@@ -6,6 +6,65 @@ import { parse } from "../src/index.js";
 const chartOf = (input: string): Chart => parse(input);
 
 describe("parse: definitions", () => {
+  it("parses empty input", () => {
+    const chart = parse();
+
+    expect(chart.start).toBeNull();
+    expect(chart.symbols).toStrictEqual({});
+  });
+
+  it("ignores lines that contain no flow syntax", () => {
+    expect(() => parse("plain text without flow syntax")).not.toThrow();
+  });
+
+  it("applies line styles written without a JSON payload", () => {
+    const chart = parse("st=>start: Start\nop=>operation: Op\nst->op\nst@>op");
+
+    expect(chart.symbols.st?.lineStyle).toStrictEqual({ op: {} });
+  });
+
+  it("parses callbacks without a display text", () => {
+    const chart = parse("st=>start:$callback\ne=>end: End\nst->e");
+
+    expect(chart.symbols.st?.function).toBe("callback");
+    expect(chart.symbols.st?.text).toBeNull();
+  });
+
+  it("parses callbacks attached to the raw node type", () => {
+    const chart = parse("st=>start: Start:$callback\ne=>end: End\nst->e");
+
+    expect(chart.symbols.st?.function).toBe("callback");
+  });
+
+  it("skips malformed parameter fragments", () => {
+    const chart = parse("cond(a=1, broken)=>condition: Ready?");
+
+    expect(chart.symbols.cond?.params).toStrictEqual({ a: "1" });
+  });
+
+  it("treats an empty direction as no direction", () => {
+    const chart = parse("c=>condition: C?\ne=>end: E\nc(yes,)->e");
+
+    expect(chart.symbols.c?.direction_yes).toBeNull();
+  });
+
+  it("drops a trailing flowstate separator", () => {
+    const chart = parse("st=>start: Start|\ne=>end: E\nst->e");
+
+    expect(chart.symbols.st?.text).toBe("Start");
+    expect(chart.symbols.st?.flowstate).toBeNull();
+  });
+
+  it("applies annotations on symbols without annotated branches", () => {
+    expect(() => parse("st=>start: S\ne=>end: E\nst(no@x)->e")).not.toThrow();
+  });
+
+  it("applies annotations before direction validation", () => {
+    expect(() => parse("c=>condition: C?\ne=>end: E\nc(bogus@x)->e")).toThrow(
+      'Unknown direction "bogus"',
+    );
+  });
+
   it("parses a node definition", () => {
     const chart = chartOf("st=>start: Start");
     const symbol = chart.symbols.st;

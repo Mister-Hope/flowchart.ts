@@ -77,3 +77,11 @@ export const deepAssign = <T extends object>(...sources: (Partial<T> | undefined
 
   return result as T;
 };
+
+/**
+ * Unicode code point of one iterated character, including surrogate pairs.
+ *
+ * @param character A single character produced by `for...of` over a string.
+ * @returns The code point value.
+ */
+export const codePointOf = (character: string): number => Number(character.codePointAt(0));

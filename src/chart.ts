@@ -24,13 +24,11 @@ class FlowChart {
 
   paper: Paper;
 
-  minXFromSymbols = 0;
-
   // Unlike `0`, `-Infinity` lets the first connection set the bound even when it is negative
   // (a chart drawn left of the origin would otherwise clamp the right edge to `x = 0`).
   maxXFromLine = Number.NEGATIVE_INFINITY;
 
-  constructor(container: string | HTMLElement, options: DrawOptions = {}) {
+  constructor(container: string | HTMLElement, options: DrawOptions) {
     this.paper = new Paper(container);
     this.options = deepAssign<ParsedDrawOptions>(defaultOptions, options);
   }
@@ -66,12 +64,10 @@ class FlowChart {
     return symbol;
   }
 
-  render(): void {
-    if (this.start == null) return;
-
+  render(start: FlowChartSymbol): void {
     try {
       this.positionSymbols();
-      this.start.render();
+      start.render();
       this.renderLines();
       this.updateCanvasSize();
     } finally {
@@ -87,8 +83,6 @@ class FlowChart {
   private bindConditionHandlers(symbol: Condition): void {
     symbol.yes = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
       symbol.yes_symbol = nextSymbol;
-
-      if (symbol.no_symbol) symbol.pathOk = true;
 
       return this.handle(nextSymbol);
     };
@@ -106,15 +100,11 @@ class FlowChart {
     symbol.path1 = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
       symbol.path1_symbol = nextSymbol;
 
-      if (symbol.path2_symbol) symbol.pathOk = true;
-
       return this.handle(nextSymbol);
     };
 
     symbol.path2 = (nextSymbol: FlowChartSymbol): FlowChartSymbol => {
       symbol.path2_symbol = nextSymbol;
-
-      if (symbol.path3_symbol) symbol.pathOk = true;
 
       return this.handle(nextSymbol);
     };
@@ -154,7 +144,7 @@ class FlowChart {
     const height = maxY + lineWidth - minY;
 
     this.paper.setSize(width * scale, height * scale);
-    this.paper.setViewBox({ x: minX, y: minY, width, height }, true);
+    this.paper.setViewBox({ x: minX, y: minY, width, height });
     this.paper.setOuterSize(this.options.width, this.options.height, width, height);
   }
 
@@ -184,8 +174,6 @@ class FlowChart {
       if (x2 > maxX) maxX = x2;
       if (y2 > maxY) maxY = y2;
     }
-
-    if (this.minXFromSymbols < minX) minX = this.minXFromSymbols;
 
     // Keep one line width of padding when symbols/lines extend past the origin.
     if (minX < 0) minX -= this.options["line-width"];

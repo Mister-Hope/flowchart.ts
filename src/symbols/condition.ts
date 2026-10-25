@@ -31,12 +31,12 @@ export class Condition extends FlowChartSymbol {
 
   no?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
 
-  constructor(chart: FlowChart, options: Partial<ConditionSymbolOptions> = {}) {
+  constructor(chart: FlowChart, options: ConditionSymbolOptions) {
     super(chart, options);
 
     this.yes_annotation = options.yes_annotation;
     this.no_annotation = options.no_annotation;
-    this.textMargin = this.getAttrOr<number>("text-margin", 10);
+    this.textMargin = this.getAttr("text-margin");
 
     let yesDirection = options.direction_yes ?? null;
     let noDirection = options.direction_no ?? null;
@@ -79,7 +79,7 @@ export class Condition extends FlowChartSymbol {
     this.assignDirectionalSymbol(this.yes_direction, this.yes_symbol);
     this.assignDirectionalSymbol(this.no_direction, this.no_symbol);
 
-    const lineLength = this.getAttrOr<number>("line-length", 50);
+    const lineLength = this.getAttr("line-length");
 
     placeBottom(this, lineLength);
     placeTop(this, lineLength);
@@ -93,7 +93,7 @@ export class Condition extends FlowChartSymbol {
         this.yes_symbol,
         this.yes_annotation != null && this.yes_annotation !== ""
           ? this.yes_annotation
-          : this.getAttrOr<string>("yes-text", "yes"),
+          : this.getAttr("yes-text"),
         this.yes_direction,
       );
     }
@@ -103,7 +103,7 @@ export class Condition extends FlowChartSymbol {
         this.no_symbol,
         this.no_annotation != null && this.no_annotation !== ""
           ? this.no_annotation
-          : this.getAttrOr<string>("no-text", "no"),
+          : this.getAttr("no-text"),
         this.no_direction,
       );
     }

@@ -33,17 +33,15 @@ const resolveClickHandler = (chart: FlowChart, functionName: string): ClickCallb
  * @param chart Chart providing the `callbacks` option.
  * @param element Element that should react to clicks.
  * @param options Parsed symbol options containing the callback name.
+ * @param functionName Resolved callback name from `options.function`.
  * @returns Whether a click handler was bound.
  */
 const bindClick = (
   chart: FlowChart,
   element: Renderable,
   options: Partial<SymbolOptions>,
+  functionName: string,
 ): boolean => {
-  const { function: functionName } = options;
-
-  if (functionName == null) return false;
-
   const handler = resolveClickHandler(chart, functionName);
 
   if (handler == null) return false;
@@ -94,7 +92,9 @@ export const applyNodeCallback = (
   element: Renderable,
   options: Partial<SymbolOptions>,
 ): void => {
-  if (options.function == null) return;
+  const functionName = options.function;
 
-  if (bindClick(chart, element, options)) element.setAttr("cursor", "pointer");
+  if (functionName == null) return;
+
+  if (bindClick(chart, element, options, functionName)) element.setAttr("cursor", "pointer");
 };
