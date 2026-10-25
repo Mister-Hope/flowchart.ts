@@ -6,6 +6,9 @@ const DIRECTIONS = new Set<string>(["top", "right", "left", "bottom", "path1", "
 
 const BRANCH_NAMES = new Set<string>(["next", "yes", "no", "path1", "path2", "path3"]);
 
+/** Branch specifiers that are valid without an explicit direction (e.g. `cond(yes)`). */
+const BARE_BRANCH_NAMES = new Set<string>(["yes", "no", "path1", "path2", "path3"]);
+
 /**
  * Splits the branch specifier of a flow fragment into a branch name and an optional direction.
  *
@@ -20,8 +23,9 @@ const splitBranch = (flowSymbol: string): { next: string; direction: Direction |
   if (startIndex > 0 && endIndex > 0) {
     next = flowSymbol.slice(startIndex, endIndex);
 
-    // A bare specifier like `(right)` is a direction for the default branch, not a branch name.
-    if (!next.includes(",") && next !== "yes" && next !== "no") next = `next, ${next}`;
+    // A bare specifier like `(right)` is a direction for the default branch; `yes`/`no` and
+    // `path1`-`path3` are branch names on their own.
+    if (!next.includes(",") && !BARE_BRANCH_NAMES.has(next)) next = `next, ${next}`;
   }
 
   let direction: Direction | null = null;
