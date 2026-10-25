@@ -47,8 +47,15 @@ export type SymbolStyles = Partial<Record<SymbolType, Partial<SVGOptions>>>;
 export type ClickCallback = (event: Event, options: Partial<SymbolOptions>) => void;
 
 export interface DrawOptions extends Partial<SVGOptions> {
-  width?: number;
-  height?: number;
+  /**
+   * Outer width of the rendered SVG: a pixel number or any CSS length (e.g. `"100%"`).
+   *
+   * The viewBox keeps describing the content, so the chart scales into the box; a missing dimension
+   * follows the content aspect ratio (and is set to `auto` for CSS lengths).
+   */
+  width?: number | string;
+  /** Outer height of the rendered SVG, see {@link DrawOptions.width}. */
+  height?: number | string;
   /** Symbol styles */
   symbols?: SymbolStyles;
   /** FlowState styles */
@@ -58,8 +65,10 @@ export interface DrawOptions extends Partial<SVGOptions> {
 }
 
 export interface ParsedDrawOptions extends SVGOptions {
-  width?: number;
-  height?: number;
+  /** Outer width of the rendered SVG, see {@link DrawOptions.width}. */
+  width?: number | string;
+  /** Outer height of the rendered SVG, see {@link DrawOptions.width}. */
+  height?: number | string;
   /** Symbol styles */
   symbols: SymbolStyles;
   /** FlowState styles */
