@@ -186,6 +186,20 @@ describe("parse: text, links and styles", () => {
     expect(chart.symbols.st?.next?.key).toBe("e");
   });
 
+  it("supports escaped line breaks with CRLF input", () => {
+    const chart = chartOf("st=>start: first\\\r\nsecond\r\ne=>end: End\r\nst->e");
+
+    expect(chart.symbols.st?.text).toBe("first\nsecond");
+    expect(chart.symbols.st?.next?.key).toBe("e");
+  });
+
+  it("normalizes lone carriage returns", () => {
+    const chart = chartOf("st=>start: Start\re=>end: End\rst->e");
+
+    expect(chart.symbols.st?.text).toBe("Start");
+    expect(chart.symbols.st?.next?.key).toBe("e");
+  });
+
   it("lets the last duplicate definition win", () => {
     const chart = chartOf("st=>start: First\nst=>start: Second\ne=>end: End\nst->e");
 
