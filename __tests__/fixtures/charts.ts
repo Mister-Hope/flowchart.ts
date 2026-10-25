@@ -438,6 +438,12 @@ e=>end: End
 st->sub->io->e`,
   },
 
+  "start-end-default-text": {
+    dsl: `st=>start
+e=>end
+st->e`,
+  },
+
   "readme-example": { dsl: EXAMPLES.readme },
   "flowstates-and-directions": { dsl: EXAMPLES.flowstatesAndDirections },
   "annotations-and-styles": { dsl: EXAMPLES.annotationsAndStyles },

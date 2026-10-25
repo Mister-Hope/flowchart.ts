@@ -4520,7 +4520,7 @@ exports[`rendered chart snapshots > renders custom-branch-names 1`] = `
       "tag": "use",
     },
   ],
-  "height": "655.71",
+  "height": "663.7600000000001",
   "nodes": [
     {
       "attrs": {
@@ -4712,7 +4712,7 @@ exports[`rendered chart snapshots > renders custom-branch-names 1`] = `
     },
     {
       "attrs": {
-        "transform": "translate(115.52,632.71)",
+        "transform": "translate(103.48,624.66)",
       },
       "tag": "g",
     },
@@ -4726,13 +4726,13 @@ exports[`rendered chart snapshots > renders custom-branch-names 1`] = `
       "attrs": {
         "class": "flowchart",
         "fill": "white",
-        "height": "20",
+        "height": "36.1",
         "id": "e",
         "rx": "20",
         "ry": "20",
         "stroke": "black",
         "stroke-width": "3",
-        "width": "20",
+        "width": "44.08",
         "x": "0",
         "y": "0",
       },
@@ -4753,17 +4753,17 @@ exports[`rendered chart snapshots > renders custom-branch-names 1`] = `
         "id": "et",
         "text-anchor": "start",
         "x": "10",
-        "y": "10",
+        "y": "18.05",
       },
       "tag": "text",
-      "text": "",
+      "text": "End",
     },
     {
       "attrs": {
-        "dy": "10",
+        "dy": "4.2",
       },
       "tag": "tspan",
-      "text": "",
+      "text": "End",
     },
     {
       "attrs": {
@@ -4940,7 +4940,7 @@ exports[`rendered chart snapshots > renders custom-branch-names 1`] = `
     },
     {
       "attrs": {
-        "d": "M125.52,526.95L125.52,628.21",
+        "d": "M125.52,526.95L125.52,620.16",
         "fill": "none",
         "marker-end": "url(#flowchart-marker-1)",
         "stroke": "black",
@@ -5018,7 +5018,7 @@ exports[`rendered chart snapshots > renders custom-branch-names 1`] = `
     },
     {
       "attrs": {
-        "d": "M662.28,351.43L662.28,597.71L125.52,597.71L125.52,628.21",
+        "d": "M662.28,351.43L662.28,589.66L125.52,589.66L125.52,620.16",
         "fill": "none",
         "marker-end": "url(#flowchart-marker-1)",
         "stroke": "black",
@@ -5047,7 +5047,7 @@ exports[`rendered chart snapshots > renders custom-branch-names 1`] = `
     },
   ],
   "preserveAspectRatio": "xMidYMid meet",
-  "viewBox": "0 0 933.66 655.71",
+  "viewBox": "0 0 933.66 663.7600000000001",
   "width": "933.66",
 }
 `;
@@ -10138,7 +10138,7 @@ exports[`rendered chart snapshots > renders readme-example 1`] = `
       "tag": "use",
     },
   ],
-  "height": "535.1999999999999",
+  "height": "543.25",
   "nodes": [
     {
       "attrs": {
@@ -10338,7 +10338,7 @@ exports[`rendered chart snapshots > renders readme-example 1`] = `
     },
     {
       "attrs": {
-        "transform": "translate(84.66,512.2)",
+        "transform": "translate(72.62,504.15)",
       },
       "tag": "g",
     },
@@ -10352,13 +10352,13 @@ exports[`rendered chart snapshots > renders readme-example 1`] = `
       "attrs": {
         "class": "flowchart",
         "fill": "white",
-        "height": "20",
+        "height": "36.1",
         "id": "e",
         "rx": "20",
         "ry": "20",
         "stroke": "black",
         "stroke-width": "3",
-        "width": "20",
+        "width": "44.08",
         "x": "0",
         "y": "0",
       },
@@ -10379,17 +10379,17 @@ exports[`rendered chart snapshots > renders readme-example 1`] = `
         "id": "et",
         "text-anchor": "start",
         "x": "10",
-        "y": "10",
+        "y": "18.05",
       },
       "tag": "text",
-      "text": "",
+      "text": "End",
     },
     {
       "attrs": {
-        "dy": "10",
+        "dy": "4.2",
       },
       "tag": "tspan",
-      "text": "",
+      "text": "End",
     },
     {
       "attrs": {
@@ -10566,7 +10566,7 @@ exports[`rendered chart snapshots > renders readme-example 1`] = `
     },
     {
       "attrs": {
-        "d": "M94.66,426.53L94.66,507.7",
+        "d": "M94.66,426.53L94.66,499.65",
         "fill": "none",
         "marker-end": "url(#flowchart-marker-1)",
         "stroke": "black",
@@ -10606,7 +10606,7 @@ exports[`rendered chart snapshots > renders readme-example 1`] = `
     },
   ],
   "preserveAspectRatio": "xMidYMid meet",
-  "viewBox": "0 0 386.68 535.1999999999999",
+  "viewBox": "0 0 386.68 543.25",
   "width": "386.68",
 }
 `;
@@ -10801,6 +10801,144 @@ exports[`rendered chart snapshots > renders scale-half 1`] = `
 `;
 
 exports[`rendered chart snapshots > renders single-connection 1`] = `
+{
+  "defs": [
+    {
+      "attrs": {
+        "d": "M5,0 0,2.5 5,5z",
+        "id": "flowchart-arrow-block",
+        "stroke-linecap": "round",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "id": "flowchart-marker-1",
+        "markerHeight": "3",
+        "markerWidth": "3",
+        "orient": "auto",
+        "refX": "1.5",
+        "refY": "1.5",
+      },
+      "tag": "marker",
+    },
+    {
+      "attrs": {
+        "fill": "black",
+        "href": "#flowchart-arrow-block",
+        "stroke": "none",
+        "stroke-width": "1.67",
+        "transform": "rotate(180 1.5 1.5) scale(0.6,0.6)",
+      },
+      "tag": "use",
+    },
+  ],
+  "height": "137.2",
+  "nodes": [
+    {
+      "attrs": {
+        "transform": "translate(6,6)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "st",
+        "rx": "20",
+        "ry": "20",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "53.6",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "stt",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "Start",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "Start",
+    },
+    {
+      "attrs": {
+        "transform": "translate(10.76,98.1)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "e",
+        "rx": "20",
+        "ry": "20",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "44.08",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "et",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "End",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "End",
+    },
+    {
+      "attrs": {
+        "d": "M32.8,42.1L32.8,93.6",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+  ],
+  "preserveAspectRatio": "xMidYMid meet",
+  "viewBox": "0 0 62.6 137.2",
+  "width": "62.6",
+}
+`;
+
+exports[`rendered chart snapshots > renders start-end-default-text 1`] = `
 {
   "defs": [
     {
