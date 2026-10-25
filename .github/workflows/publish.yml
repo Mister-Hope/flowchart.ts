@@ -27,7 +27,7 @@ on:
         default: ""
       dist_tag:
         type: string
-        description: npm dist-tag (leave empty for pnpm npm/next default, e.g. next)
+        description: npm dist-tag; required for prereleases (e.g. next), stable releases use latest
         default: ""
       dryrun:
         type: boolean
@@ -111,21 +111,31 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Releasing v$VERSION"
 
+      - name: Resolve npm dist-tag
+        id: dist-tag
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DIST_TAG: ${{ inputs.dist_tag }}
+        run: |
+          if [ -n "$DIST_TAG" ]; then
+            echo "tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+            echo "Publishing v$VERSION with dist-tag $DIST_TAG"
+          elif [[ "$VERSION" == *-* ]]; then
+            echo "::error::v$VERSION is a prerelease, so dist_tag must be set (e.g. next); otherwise pnpm publishes it as latest."
+            exit 1
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+            echo "Publishing v$VERSION with dist-tag latest"
+          fi
+
       - name: Push release commit and tag
         if: ${{ !inputs.dryrun && inputs.bump != 'none' }}
         run: git push origin "HEAD:${GITHUB_REF_NAME}" --follow-tags
 
       - name: Publish to npm (dry run)
         if: ${{ inputs.dryrun }}
-        run: pnpm publish --dry-run --access public --no-git-checks
+        run: pnpm publish --dry-run --access public --no-git-checks --tag "${{ steps.dist-tag.outputs.tag }}"
 
       - name: Publish to npm
         if: ${{ !inputs.dryrun }}
-        env:
-          DIST_TAG: ${{ inputs.dist_tag }}
-        run: |
-          if [ -n "$DIST_TAG" ]; then
-            pnpm publish --access public --no-git-checks --provenance --tag "$DIST_TAG"
-          else
-            pnpm publish --access public --no-git-checks --provenance
-          fi
+        run: pnpm publish --access public --no-git-checks --provenance --tag "${{ steps.dist-tag.outputs.tag }}"

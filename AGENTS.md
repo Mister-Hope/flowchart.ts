@@ -108,7 +108,9 @@ Run a release manually: **Actions → Publish → Run workflow** from `main`:
 
 - `bump`: `patch` / `minor` / `major`, a `pre*` bump, or `none` to publish the current version again
 - `preid`: prerelease identifier for pre* bumps (e.g. `beta`)
-- `dist_tag`: npm dist-tag, e.g. `next` for a prerelease
+- `dist_tag`: npm dist-tag, e.g. `next` for a prerelease. **Required for prereleases** — the
+  workflow refuses to publish a `-` version without an explicit tag, so it cannot silently land on
+  `latest`; stable versions default to `latest`.
 - `dryrun`: bumps `package.json` locally without a commit/tag and runs `pnpm publish --dry-run`
 
 What the workflow (`.github/workflows/publish.yml`) does:
@@ -117,8 +119,9 @@ What the workflow (`.github/workflows/publish.yml`) does:
    tests and build;
 2. `pnpm version <bump> -m "chore: release v%s"`, which creates the release commit and `v*` tag;
 3. pushes the commit + tag to `main` (needs `contents: write`);
-4. `pnpm publish --access public --provenance`, authenticated via OIDC (`id-token: write`) with
-   provenance attached by pnpm.
+4. resolves the npm dist-tag (`latest` for stable versions, an explicit tag for prereleases), then
+   runs `pnpm publish --access public --provenance --tag <dist-tag>`, authenticated via OIDC
+   (`id-token: write`) with provenance attached by pnpm.
 
 A failed publish can be retried with `bump = none` without creating another version commit. Branch
 protection must allow the workflow to push the release commit/tag directly to `main`.
