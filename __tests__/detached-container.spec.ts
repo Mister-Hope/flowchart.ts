@@ -60,6 +60,11 @@ const render = (container: HTMLElement): HTMLElement => {
   return container;
 };
 
+// The two charts in the first test share node keys, so the second one gets suffixed ids; select
+// the start shape itself instead of relying on a global id.
+const startWidth = (container: HTMLElement): string | null =>
+  container.querySelector("rect")?.getAttribute("width") ?? null;
+
 describe("layout: detached containers", () => {
   it("measures detached containers in a temporary host instead of using estimates", () => {
     const restore = installMockedBBox();
@@ -78,8 +83,8 @@ describe("layout: detached containers", () => {
       render(detached);
 
       // The mocked native metric for "Start" is 5 * 14 * 0.6 = 42, plus 2 * text-margin.
-      expect(attached.querySelector("#st")?.getAttribute("width")).toBe("62");
-      expect(detached.querySelector("#st")?.getAttribute("width")).toBe("62");
+      expect(startWidth(attached)).toBe("62");
+      expect(startWidth(detached)).toBe("62");
 
       // The temporary host must not leak into the document.
       expect(document.querySelectorAll("[data-flowchart-measure]")).toHaveLength(0);
@@ -88,7 +93,7 @@ describe("layout: detached containers", () => {
 
       // Appending the container later must not change the already measured layout.
       document.body.append(detached);
-      expect(detached.querySelector("#st")?.getAttribute("width")).toBe("62");
+      expect(startWidth(detached)).toBe("62");
     } finally {
       restore();
     }
@@ -107,7 +112,7 @@ describe("layout: detached containers", () => {
       render(container);
 
       expect(document.querySelectorAll("[data-flowchart-measure]")).toHaveLength(0);
-      expect(container.querySelector("#st")?.getAttribute("width")).toBe("62");
+      expect(startWidth(container)).toBe("62");
     } finally {
       restore();
     }

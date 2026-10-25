@@ -1,3 +1,4 @@
+import { isSafeDomId } from "../security.js";
 import { MarkerRegistry } from "./markers.js";
 import { PathElement } from "./path.js";
 import { RectElement } from "./rect.js";
@@ -19,6 +20,9 @@ export class Paper {
   readonly canvas: SVGSVGElement;
 
   readonly defs: SVGDefsElement;
+
+  /** Suffix appended to this chart's node ids so several charts can coexist in one document. */
+  idSuffix = "";
 
   private readonly container: HTMLElement;
 
@@ -73,6 +77,39 @@ export class Paper {
     this.canvas = canvas;
     this.defs = defs;
     this.markers = new MarkerRegistry(defs, `flowchart-${paperSequence}`);
+  }
+
+  /**
+   * Resolves the id suffix that keeps this chart's node ids unique in the document.
+   *
+   * The first chart keeps the original ids (`st`, `stt`, ...). A chart whose ids are already taken
+   * gets a numeric suffix (`st-2`, `stt-2`, ...), so `getElementById` and CSS id selectors keep
+   * addressing the right chart when several charts share node keys.
+   *
+   * @param keys Node keys rendered by this chart.
+   * @returns `""` when the ids are free, otherwise `-2`, `-3`, ...
+   */
+  resolveIdSuffix(keys: string[]): string {
+    const candidates = keys.flatMap((key) => [key, `${key}t`]).filter((id) => isSafeDomId(id));
+    const existingIds = new Set(
+      [...this.document.querySelectorAll("[id]")].map((element) => element.id),
+    );
+
+    let index = 1;
+
+    const collides = (): boolean => {
+      const suffix = index === 1 ? "" : `-${index}`;
+
+      return candidates.some((id) => {
+        const candidate = `${id}${suffix}`;
+
+        return isSafeDomId(candidate) && existingIds.has(candidate);
+      });
+    };
+
+    while (collides()) index += 1;
+
+    return index === 1 ? "" : `-${index}`;
   }
 
   /**
