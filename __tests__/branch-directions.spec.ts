@@ -71,6 +71,21 @@ cond(no, top)->b`);
     expect(isAbove(noBranch, condition)).toBe(true);
   });
 
+  it("lays out a `left` branch beside the condition", () => {
+    const chart = render(`st=>start: S
+cond=>condition: C?
+a=>operation: A
+b=>operation: B
+st->cond
+cond(yes, left)->a
+cond(no)->b`);
+    const condition = symbolOf(chart, "cond");
+    const yesBranch = symbolOf(chart, "a");
+
+    expect(yesBranch.isPositioned).toBe(true);
+    expect(yesBranch.getX() + yesBranch.width).toBeLessThan(condition.getX());
+  });
+
   it("warns when both condition branches resolve to the same direction", () => {
     const warning = vi.spyOn(globalThis.console, "warn").mockImplementation(() => {});
 

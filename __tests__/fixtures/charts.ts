@@ -152,6 +152,16 @@ cond(yes, top)->a
 cond(no)->b`,
   },
 
+  "condition-left-branch": {
+    dsl: `st=>start: Start
+cond=>condition: Left?
+a=>operation: A
+b=>operation: B
+st->cond
+cond(yes, left)->a
+cond(no)->b`,
+  },
+
   "condition-annotations": {
     dsl: `st=>start: Start
 cond=>condition: Annotated?
