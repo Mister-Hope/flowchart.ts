@@ -26,6 +26,12 @@ const PATH3_DIRECTIONS: Partial<Record<Direction, Directions>> = {
 };
 
 /**
+ * Fallback for a `path2` / `path3` direction outside the tables above, matching the final `else`
+ * branch of the original renderer (`right`, `bottom`, `top`).
+ */
+const FALLBACK_DIRECTIONS: Directions = ["right", "bottom", "top"];
+
+/**
  * Resolves the per-path directions, mirroring the defaults of the original renderer.
  *
  * @param direction1 Explicit direction for the first path.
@@ -44,9 +50,9 @@ const resolveDirections = (
     if (direction1 != null && direction2 == null && direction3 == null)
       return PATH1_DIRECTIONS[direction1] ?? DEFAULT_DIRECTIONS;
     if (direction1 == null && direction2 != null && direction3 == null)
-      return PATH2_DIRECTIONS[direction2] ?? ["right", "bottom", "top"];
+      return PATH2_DIRECTIONS[direction2] ?? FALLBACK_DIRECTIONS;
     if (direction1 == null && direction2 == null && direction3 != null)
-      return PATH3_DIRECTIONS[direction3] ?? DEFAULT_DIRECTIONS;
+      return PATH3_DIRECTIONS[direction3] ?? FALLBACK_DIRECTIONS;
   }
 
   return [direction1 ?? "bottom", direction2 ?? "right", direction3 ?? "top"];
