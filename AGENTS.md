@@ -52,7 +52,7 @@ pnpm deps:update   # ncu -u + pnpm install
 - `src/symbols/` — rendered nodes:
   - `symbol.ts` base class: shape setup, measurement, option lookup, line drawing
   - `line-routing.ts` ordered route rules for connection paths
-  - `placement.ts` bottom/left/right/beside positioning and overlap shifting
+  - `placement.ts` top/bottom/left/right/beside positioning and overlap shifting
   - `crossing.ts` hop-over bends for crossing lines
   - `node-links.ts` link/target and click-callback binding
   - one file per node type; `index.ts` is the barrel
