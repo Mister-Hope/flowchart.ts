@@ -40,6 +40,13 @@ chart.clean();
 `parse` accepts the DSL below and returns a `Chart`; `draw(container, options)` renders it as SVG.
 Styles can be passed per call (colors, fonts, line width, ...), per symbol type, or per flowstate.
 
+### Multiple charts
+
+Node ids (`#st`, `#stt`, ...) are global to the document. When several charts on one page use the
+same node keys, the later charts get a numeric id suffix (`#st-2`, `#stt-2`, ...) so
+`getElementById()` and CSS id selectors keep addressing the right chart. A chart whose keys are not
+used yet keeps the plain ids.
+
 ## Requirements
 
 - **ESM-only**: the package ships ES modules (`"type": "module"`, no CommonJS entry); use it with a bundler or an ESM-capable runtime

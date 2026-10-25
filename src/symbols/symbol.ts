@@ -118,7 +118,7 @@ export class FlowChartSymbol {
    * @param options Symbol options parsed from the flowchart.
    */
   private setupText(options: Partial<SymbolOptions>): void {
-    if (options.key != null && isSafeDomId(options.key)) this.text.node.id = `${options.key}t`;
+    this.applyNodeId(this.text.node, `${this.key}t`);
 
     this.text.node.setAttribute("class", `${this.getAttrOr<string>("class", "flowchart")}t`);
 
@@ -197,7 +197,7 @@ export class FlowChartSymbol {
     this.styleShape(symbol);
     applyNodeLink(symbol, options);
 
-    if (options.key != null && isSafeDomId(options.key)) symbol.node.id = options.key;
+    this.applyNodeId(symbol.node, this.key);
 
     this.finishShape(symbol);
 
@@ -234,9 +234,23 @@ export class FlowChartSymbol {
     applyNodeLink(symbol, options);
     applyNodeCallback(this.chart, symbol, options);
 
-    if (options.key != null && isSafeDomId(options.key)) symbol.node.id = options.key;
+    this.applyNodeId(symbol.node, this.key);
 
     this.finishShape(symbol);
+  }
+
+  /**
+   * Applies a document-unique id to a rendered element.
+   *
+   * The paper's suffix keeps node ids unique when several charts on the same page share keys.
+   *
+   * @param node Element receiving the id.
+   * @param id Base id: the node key, or `${key}t` for its label.
+   */
+  private applyNodeId(node: SVGElement, id: string): void {
+    const suffixed = `${id}${this.chart.paper.idSuffix}`;
+
+    if (isSafeDomId(suffixed)) node.id = suffixed;
   }
 
   /**

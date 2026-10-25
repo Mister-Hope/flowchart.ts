@@ -29,6 +29,9 @@ export const parse = (input = ""): Chart => {
 
       const diagram = new FlowChart(container, options);
 
+      // Node ids are document-global: suffix them when another chart already uses the same keys.
+      diagram.paper.idSuffix = diagram.paper.resolveIdSuffix(Object.keys(this.symbols));
+
       this.diagram = diagram;
       renderDiagram(this, diagram);
     },
