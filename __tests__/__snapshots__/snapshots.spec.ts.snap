@@ -8686,6 +8686,195 @@ exports[`rendered chart snapshots > renders multi-line-text 1`] = `
 }
 `;
 
+exports[`rendered chart snapshots > renders negative-offset 1`] = `
+{
+  "defs": [
+    {
+      "attrs": {
+        "d": "M5,0 0,2.5 5,5z",
+        "id": "flowchart-arrow-block",
+        "stroke-linecap": "round",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "id": "flowchart-marker-1",
+        "markerHeight": "3",
+        "markerWidth": "3",
+        "orient": "auto",
+        "refX": "1.5",
+        "refY": "1.5",
+      },
+      "tag": "marker",
+    },
+    {
+      "attrs": {
+        "fill": "black",
+        "href": "#flowchart-arrow-block",
+        "stroke": "none",
+        "stroke-width": "1.67",
+        "transform": "rotate(180 1.5 1.5) scale(0.6,0.6)",
+      },
+      "tag": "use",
+    },
+  ],
+  "height": "109.29999999999998",
+  "nodes": [
+    {
+      "attrs": {
+        "transform": "translate(-54,-34)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "a",
+        "rx": "20",
+        "ry": "20",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "29.52",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "at",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "A",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "A",
+    },
+    {
+      "attrs": {
+        "transform": "translate(-54,18.1)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "b",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "29.52",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "bt",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "B",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "B",
+    },
+    {
+      "attrs": {
+        "transform": "translate(-54,70.2)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "c",
+        "rx": "20",
+        "ry": "20",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "29.52",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "ct",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "C",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "C",
+    },
+    {
+      "attrs": {
+        "d": "M-39.24,2.1L-39.24,13.6",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "d": "M-39.24,54.2L-39.24,65.7",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+  ],
+  "preserveAspectRatio": "xMidYMid meet",
+  "viewBox": "-57 0 35.52 109.29999999999998",
+  "width": "35.52",
+}
+`;
+
 exports[`rendered chart snapshots > renders parallel-annotations 1`] = `
 {
   "defs": [

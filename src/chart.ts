@@ -26,7 +26,9 @@ class FlowChart {
 
   minXFromSymbols = 0;
 
-  maxXFromLine = 0;
+  // Unlike `0`, `-Infinity` lets the first connection set the bound even when it is negative
+  // (a chart drawn left of the origin would otherwise clamp the right edge to `x = 0`).
+  maxXFromLine = Number.NEGATIVE_INFINITY;
 
   constructor(container: string | HTMLElement, options: DrawOptions = {}) {
     this.paper = new Paper(container, options.width, options.height);
