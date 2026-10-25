@@ -443,6 +443,14 @@ st->sub->io->e`,
   "annotations-and-styles": { dsl: EXAMPLES.annotationsAndStyles },
   "custom-branch-names": { dsl: EXAMPLES.customBranchNames },
 
+  "negative-offset": {
+    dsl: `a=>start: A
+b=>operation: B
+c=>end: C
+a->b->c`,
+    options: { x: -60, y: -40 },
+  },
+
   "scale-half": {
     dsl: "st=>start: Start\nop=>operation: Op\ne=>end: End\nst->op->e",
     options: { scale: 0.5 },
