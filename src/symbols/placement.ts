@@ -52,6 +52,26 @@ export const placeBottom = (symbol: FlowChartSymbol, lineLength: number): void =
 };
 
 /**
+ * Positions the `top` child above a symbol.
+ *
+ * @param symbol Parent symbol.
+ * @param lineLength Minimum distance between the symbols.
+ */
+export const placeTop = (symbol: FlowChartSymbol, lineLength: number): void => {
+  const topSymbol = symbol.top_symbol;
+
+  if (topSymbol == null || topSymbol.isPositioned) return;
+
+  const topPoint = symbol.getTop();
+
+  topSymbol.shiftY(symbol.getY() - topSymbol.height - lineLength);
+  topSymbol.setX(topPoint.x + topSymbol.width);
+  topSymbol.isPositioned = true;
+
+  topSymbol.render();
+};
+
+/**
  * Positions the `left` child next to a symbol.
  *
  * @param symbol Parent symbol.

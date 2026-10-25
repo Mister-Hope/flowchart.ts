@@ -3541,6 +3541,279 @@ exports[`rendered chart snapshots > renders condition-directions 1`] = `
 }
 `;
 
+exports[`rendered chart snapshots > renders condition-left-branch 1`] = `
+{
+  "defs": [
+    {
+      "attrs": {
+        "d": "M5,0 0,2.5 5,5z",
+        "id": "flowchart-arrow-block",
+        "stroke-linecap": "round",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "id": "flowchart-marker-1",
+        "markerHeight": "3",
+        "markerWidth": "3",
+        "orient": "auto",
+        "refX": "1.5",
+        "refY": "1.5",
+      },
+      "tag": "marker",
+    },
+    {
+      "attrs": {
+        "fill": "black",
+        "href": "#flowchart-arrow-block",
+        "stroke": "none",
+        "stroke-width": "1.67",
+        "transform": "rotate(180 1.5 1.5) scale(0.6,0.6)",
+      },
+      "tag": "use",
+    },
+  ],
+  "height": "164.27499999999998",
+  "nodes": [
+    {
+      "attrs": {
+        "transform": "translate(28.16,15.02)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "st",
+        "rx": "20",
+        "ry": "20",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "53.6",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "stt",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "Start",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "Start",
+    },
+    {
+      "attrs": {
+        "transform": "translate(6,107.13)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "d": "M24.48,13.54L0,27.07L48.96,54.15L97.92,27.07L48.96,0L0,27.07",
+        "fill": "white",
+        "id": "cond",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "condt",
+        "text-anchor": "start",
+        "x": "29.48",
+        "y": "27.07",
+      },
+      "tag": "text",
+      "text": "Left?",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "Left?",
+    },
+    {
+      "attrs": {
+        "transform": "translate(-113.72,116.15)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "a",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "29.52",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "at",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "A",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "A",
+    },
+    {
+      "attrs": {
+        "transform": "translate(194.12,116.15)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "b",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "29.52",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "bt",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "B",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "B",
+    },
+    {
+      "attrs": {
+        "d": "M54.96,51.12L54.96,102.63",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "d": "M6,134.2L-79.7,134.2",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "text-anchor": "end",
+        "x": "1",
+        "y": "124.2",
+      },
+      "tag": "text",
+      "text": "yes",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "yes",
+    },
+    {
+      "attrs": {
+        "d": "M103.92,134.2L189.62,134.2",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "text-anchor": "start",
+        "x": "108.92",
+        "y": "124.2",
+      },
+      "tag": "text",
+      "text": "no",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "no",
+    },
+  ],
+  "preserveAspectRatio": "xMidYMid meet",
+  "viewBox": "-116.72000000000001 0 343.36 164.27499999999998",
+  "width": "343.36",
+}
+`;
+
 exports[`rendered chart snapshots > renders condition-nested 1`] = `
 {
   "defs": [
@@ -4046,6 +4319,279 @@ exports[`rendered chart snapshots > renders condition-nested 1`] = `
   "preserveAspectRatio": "xMidYMid meet",
   "viewBox": "0 0 346.47999999999996 510.44999999999993",
   "width": "346.47999999999996",
+}
+`;
+
+exports[`rendered chart snapshots > renders condition-top-branch 1`] = `
+{
+  "defs": [
+    {
+      "attrs": {
+        "d": "M5,0 0,2.5 5,5z",
+        "id": "flowchart-arrow-block",
+        "stroke-linecap": "round",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "id": "flowchart-marker-1",
+        "markerHeight": "3",
+        "markerWidth": "3",
+        "orient": "auto",
+        "refX": "1.5",
+        "refY": "1.5",
+      },
+      "tag": "marker",
+    },
+    {
+      "attrs": {
+        "fill": "black",
+        "href": "#flowchart-arrow-block",
+        "stroke": "none",
+        "stroke-width": "1.67",
+        "transform": "rotate(180 1.5 1.5) scale(0.6,0.6)",
+      },
+      "tag": "use",
+    },
+  ],
+  "height": "164.27499999999998",
+  "nodes": [
+    {
+      "attrs": {
+        "transform": "translate(25.22,15.02)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "st",
+        "rx": "20",
+        "ry": "20",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "53.6",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "stt",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "Start",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "Start",
+    },
+    {
+      "attrs": {
+        "transform": "translate(6,107.13)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "d": "M23.01,13.54L0,27.07L46.02,54.15L92.04,27.07L46.02,0L0,27.07",
+        "fill": "white",
+        "id": "cond",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "condt",
+        "text-anchor": "start",
+        "x": "28.01",
+        "y": "27.07",
+      },
+      "tag": "text",
+      "text": "Top?",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "Top?",
+    },
+    {
+      "attrs": {
+        "transform": "translate(81.54,36.05)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "a",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "29.52",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "at",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "A",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "A",
+    },
+    {
+      "attrs": {
+        "transform": "translate(185.3,116.15)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "b",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "29.52",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "bt",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "B",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "B",
+    },
+    {
+      "attrs": {
+        "d": "M52.02,51.12L52.02,102.63",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "d": "M52.02,107.13L52.02,1.05L96.3,1.05L96.3,31.55",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "text-anchor": "start",
+        "x": "57.02",
+        "y": "97.13",
+      },
+      "tag": "text",
+      "text": "yes",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "yes",
+    },
+    {
+      "attrs": {
+        "d": "M98.04,134.2L180.8,134.2",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "text-anchor": "start",
+        "x": "103.04",
+        "y": "124.2",
+      },
+      "tag": "text",
+      "text": "no",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "no",
+    },
+  ],
+  "preserveAspectRatio": "xMidYMid meet",
+  "viewBox": "0 0 217.82 164.27499999999998",
+  "width": "217.82",
 }
 `;
 
@@ -9158,6 +9704,244 @@ exports[`rendered chart snapshots > renders parallel-directions 1`] = `
   "preserveAspectRatio": "xMidYMid meet",
   "viewBox": "0 -20 232.12 341.4",
   "width": "232.12",
+}
+`;
+
+exports[`rendered chart snapshots > renders parallel-partial-top 1`] = `
+{
+  "defs": [
+    {
+      "attrs": {
+        "d": "M5,0 0,2.5 5,5z",
+        "id": "flowchart-arrow-block",
+        "stroke-linecap": "round",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "id": "flowchart-marker-1",
+        "markerHeight": "3",
+        "markerWidth": "3",
+        "orient": "auto",
+        "refX": "1.5",
+        "refY": "1.5",
+      },
+      "tag": "marker",
+    },
+    {
+      "attrs": {
+        "fill": "black",
+        "href": "#flowchart-arrow-block",
+        "stroke": "none",
+        "stroke-width": "1.67",
+        "transform": "rotate(180 1.5 1.5) scale(0.6,0.6)",
+      },
+      "tag": "use",
+    },
+  ],
+  "height": "157.2",
+  "nodes": [
+    {
+      "attrs": {
+        "transform": "translate(13.98,6)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "st",
+        "rx": "20",
+        "ry": "20",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "53.6",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "stt",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "Start",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "Start",
+    },
+    {
+      "attrs": {
+        "transform": "translate(6,98.1)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "para",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "69.56",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "parat",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "Parallel",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "Parallel",
+    },
+    {
+      "attrs": {
+        "transform": "translate(70.3,18)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "a",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "29.52",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "at",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "A",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "A",
+    },
+    {
+      "attrs": {
+        "transform": "translate(151.58,98.1)",
+      },
+      "tag": "g",
+    },
+    {
+      "attrs": {
+        "class": "flowchart",
+        "fill": "white",
+        "height": "36.1",
+        "id": "b",
+        "stroke": "black",
+        "stroke-width": "3",
+        "width": "29.52",
+        "x": "0",
+        "y": "0",
+      },
+      "tag": "rect",
+    },
+    {
+      "attrs": {
+        "class": "flowchartt",
+        "fill": "black",
+        "font-family": "Arial",
+        "font-size": "14px",
+        "id": "bt",
+        "text-anchor": "start",
+        "x": "10",
+        "y": "18.05",
+      },
+      "tag": "text",
+      "text": "B",
+    },
+    {
+      "attrs": {
+        "dy": "4.2",
+      },
+      "tag": "tspan",
+      "text": "B",
+    },
+    {
+      "attrs": {
+        "d": "M40.78,42.1L40.78,93.6",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "d": "M40.78,98.1L40.78,-17L85.06,-17L85.06,13.5",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+    {
+      "attrs": {
+        "d": "M75.56,116.15L147.08,116.15",
+        "fill": "none",
+        "marker-end": "url(#flowchart-marker-1)",
+        "stroke": "black",
+        "stroke-width": "3",
+      },
+      "tag": "path",
+    },
+  ],
+  "preserveAspectRatio": "xMidYMid meet",
+  "viewBox": "0 -20 184.10000000000002 157.2",
+  "width": "184.10000000000002",
 }
 `;
 

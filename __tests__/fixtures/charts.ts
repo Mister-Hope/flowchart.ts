@@ -142,6 +142,26 @@ a(right)->c
 b(left)->d`,
   },
 
+  "condition-top-branch": {
+    dsl: `st=>start: Start
+cond=>condition: Top?
+a=>operation: A
+b=>operation: B
+st->cond
+cond(yes, top)->a
+cond(no)->b`,
+  },
+
+  "condition-left-branch": {
+    dsl: `st=>start: Start
+cond=>condition: Left?
+a=>operation: A
+b=>operation: B
+st->cond
+cond(yes, left)->a
+cond(no)->b`,
+  },
+
   "condition-annotations": {
     dsl: `st=>start: Start
 cond=>condition: Annotated?
@@ -199,6 +219,16 @@ para(path3, top)->c
 a->e
 b->e
 c->e`,
+  },
+
+  "parallel-partial-top": {
+    dsl: `st=>start: Start
+para=>parallel: Parallel
+a=>operation: A
+b=>operation: B
+st->para
+para(path1, top)->a
+para(path2, right)->b`,
   },
 
   "parallel-annotations": {

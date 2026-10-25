@@ -203,6 +203,8 @@ The following directions are available and define the direction the connection w
 - top
 - bottom
 
+Every branch of a `condition` or `parallel` node needs its own direction: when two branches of the same node resolve to the same direction, only the last one is laid out. The chart logs a warning and the earlier branch is skipped.
+
 ### Node Specific Specifiers by Type
 
 Each node variables has optional specifiers, like direction, and some have special specifiers depending on the node type that are defined below. Specifiers are added after the variable name in `()` and separated with `,` like `nodeVar(spec1, spec2)`.

@@ -1,6 +1,6 @@
 import type FlowChart from "../chart.js";
 import type { Direction, SymbolOptions } from "../options.js";
-import { placeBottom, placeLeft, placeRight } from "./placement.js";
+import { placeBottom, placeLeft, placeRight, placeTop } from "./placement.js";
 import { FlowChartSymbol } from "./symbol.js";
 
 export interface ConditionSymbolOptions extends SymbolOptions {
@@ -82,6 +82,7 @@ export class Condition extends FlowChartSymbol {
     const lineLength = this.getAttrOr<number>("line-length", 50);
 
     placeBottom(this, lineLength);
+    placeTop(this, lineLength);
     placeRight(this, lineLength);
     placeLeft(this, lineLength);
   }

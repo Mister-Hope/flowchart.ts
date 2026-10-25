@@ -1,6 +1,6 @@
 import type FlowChart from "../chart.js";
 import type { Direction, SymbolOptions } from "../options.js";
-import { placeBottom, placeLeft, placeRight } from "./placement.js";
+import { placeBottom, placeLeft, placeRight, placeTop } from "./placement.js";
 import { FlowChartSymbol } from "./symbol.js";
 
 type Directions = [path1: Direction, path2: Direction, path3: Direction];
@@ -120,7 +120,7 @@ export class Parallel extends FlowChartSymbol {
     const lineLength = this.getAttrOr<number>("line-length", 50);
 
     placeBottom(this, lineLength);
-    this.placeTop(lineLength);
+    placeTop(this, lineLength);
     placeLeft(this, lineLength);
     placeRight(this, lineLength);
   }
@@ -134,24 +134,5 @@ export class Parallel extends FlowChartSymbol {
 
     if (this.path3_symbol != null)
       this.drawLineTo(this.path3_symbol, this.path3_annotation, this.path3_direction);
-  }
-
-  /**
-   * Positions the `top` branch symbol above this node.
-   *
-   * @param lineLength Minimum distance between the node and the branch symbol.
-   */
-  private placeTop(lineLength: number): void {
-    const topSymbol = this.top_symbol;
-
-    if (topSymbol == null || topSymbol.isPositioned) return;
-
-    const topPoint = this.getTop();
-
-    topSymbol.shiftY(this.getY() - topSymbol.height - lineLength);
-    topSymbol.setX(topPoint.x + topSymbol.width);
-    topSymbol.isPositioned = true;
-
-    topSymbol.render();
   }
 }

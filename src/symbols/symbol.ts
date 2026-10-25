@@ -345,13 +345,24 @@ export class FlowChartSymbol {
   /**
    * Assigns the child symbol that leaves this symbol through `direction`.
    *
+   * Only one child can leave a symbol per direction. When two branches resolve to the same
+   * direction, the later assignment would overwrite the earlier child and leave that node
+   * unpositioned, so the conflict is reported and the earlier branch is dropped.
+   *
    * @param direction One of `top`, `bottom`, `left`, `right`.
-   * @param symbol Child symbol, or `undefined` to clear the direction.
+   * @param symbol Child symbol; `undefined` leaves an earlier assignment untouched.
    */
   protected assignDirectionalSymbol(
     direction: Direction,
     symbol: FlowChartSymbol | undefined,
   ): void {
+    if (symbol == null) return;
+
+    const existing = this.getDirectionalSymbol(direction);
+
+    if (existing != null && existing !== symbol)
+      this.warnBranchDirectionConflict(direction, existing, symbol);
+
     switch (direction) {
       case "top": {
         this.top_symbol = symbol;
@@ -373,6 +384,52 @@ export class FlowChartSymbol {
         break;
       }
     }
+  }
+
+  /**
+   * Gets the child symbol that currently leaves this symbol through `direction`.
+   *
+   * @param direction One of `top`, `bottom`, `left`, `right`.
+   * @returns The assigned child, or `null` when the direction is unused.
+   */
+  private getDirectionalSymbol(direction: Direction): FlowChartSymbol | null {
+    switch (direction) {
+      case "top": {
+        return this.top_symbol ?? null;
+      }
+      case "bottom": {
+        return this.bottom_symbol ?? null;
+      }
+      case "left": {
+        return this.left_symbol ?? null;
+      }
+      case "right": {
+        return this.right_symbol ?? null;
+      }
+      default: {
+        return null;
+      }
+    }
+  }
+
+  /**
+   * Reports two branches that resolve to the same direction.
+   *
+   * `globalThis.console` is used because the shared lint config rejects direct `console` calls,
+   * while a dropped branch should still be surfaced to the chart author.
+   *
+   * @param direction Direction both branches use.
+   * @param existing Branch assigned earlier, which cannot be laid out.
+   * @param symbol Branch assigned later, which takes over the direction.
+   */
+  private warnBranchDirectionConflict(
+    direction: Direction,
+    existing: FlowChartSymbol,
+    symbol: FlowChartSymbol,
+  ): void {
+    globalThis.console.warn(
+      `[flowchart.ts] Both "${existing.key}" and "${symbol.key}" leave "${this.key}" through the "${direction}" direction; "${existing.key}" cannot be laid out. Use a different direction for every branch.`,
+    );
   }
 
   render(): void {
