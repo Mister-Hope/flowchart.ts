@@ -39,6 +39,8 @@ chart.clean();
 
 `parse` accepts the DSL below and returns a `Chart`; `draw(container, options)` renders it as SVG.
 Styles can be passed per call (colors, fonts, line width, ...), per symbol type, or per flowstate.
+The option types (`DrawOptions`, `SVGOptions`, `ParsedDrawOptions`, `SymbolType`, `Direction`, ...)
+are exported from the package entry, and option/symbol keys are type-checked.
 
 ## Requirements
 

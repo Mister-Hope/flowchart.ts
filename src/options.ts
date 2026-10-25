@@ -38,9 +38,10 @@ export interface SVGOptions {
   scale: number;
   maxWidth?: number;
   roundness?: number;
-  /** Allows arbitrary user-provided style keys (flowstate overrides, custom attributes). */
-  [props: string]: unknown;
 }
+
+/** Per-symbol-type style overrides, keyed by the node type. */
+export type SymbolStyles = Partial<Record<SymbolType, Partial<SVGOptions>>>;
 
 /** Click handler registered through {@link DrawOptions.callbacks} or found on `globalThis`. */
 export type ClickCallback = (event: Event, options: Partial<SymbolOptions>) => void;
@@ -49,7 +50,7 @@ export interface DrawOptions extends Partial<SVGOptions> {
   width?: number;
   height?: number;
   /** Symbol styles */
-  symbols?: Record<string, Partial<SVGOptions>>;
+  symbols?: SymbolStyles;
   /** FlowState styles */
   flowstate?: FlowStateStyles | null;
   /** Click handlers referenced by `:$callback` in the DSL. */
@@ -60,7 +61,7 @@ export interface ParsedDrawOptions extends SVGOptions {
   width?: number;
   height?: number;
   /** Symbol styles */
-  symbols: Record<string, Partial<SVGOptions>>;
+  symbols: SymbolStyles;
   /** FlowState styles */
   flowstate?: FlowStateStyles | null;
   /** Click handlers referenced by `:$callback` in the DSL. */
