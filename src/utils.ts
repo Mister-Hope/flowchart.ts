@@ -59,9 +59,7 @@ const cloneValue = (value: unknown): unknown => {
  * @param sources Objects to merge, in priority order.
  * @returns The merged object.
  */
-export const deepAssign = <T extends Record<string, unknown>>(
-  ...sources: (Partial<T> | undefined)[]
-): T => {
+export const deepAssign = <T extends object>(...sources: (Partial<T> | undefined)[]): T => {
   const result: Record<string, unknown> = {};
 
   for (const source of sources) {

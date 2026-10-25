@@ -1,6 +1,6 @@
 import { drawPath } from "../action.js";
 import type FlowChart from "../chart.js";
-import type { Direction, LineStyle, SymbolOptions, SymbolType } from "../options.js";
+import type { Direction, LineStyle, SVGOptions, SymbolOptions, SymbolType } from "../options.js";
 import type {
   AttributeValue,
   PathElement,
@@ -278,12 +278,13 @@ export class FlowChartSymbol {
   getAttr(attName: string): AttributeValue | null;
   getAttr(attName: string): AttributeValue | null {
     const { options } = this.chart;
+    const styleKey = attName as keyof SVGOptions;
     const symbolOptions = this.symbolType == null ? null : options.symbols[this.symbolType];
-    const symbolOption = symbolOptions?.[attName];
+    const symbolOption = symbolOptions?.[styleKey];
     const flowStateOption = options.flowstate?.[this.flowstate]?.[attName];
-    const value = flowStateOption ?? symbolOption ?? options[attName];
+    const value = flowStateOption ?? symbolOption ?? options[styleKey];
 
-    return (value ?? null) as AttributeValue | null;
+    return value ?? null;
   }
 
   getAttrOr<StyleKey extends keyof StyleValues>(
