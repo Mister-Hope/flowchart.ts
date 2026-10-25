@@ -52,6 +52,14 @@ describe("render: start / end default text", () => {
     expect(document.querySelector("a")?.getAttribute("href")).toBe("https://example.com");
   });
 
+  it("still renders an empty box for node types without a default text", () => {
+    // `operation` has no default text, so it keeps the zero-size text path.
+    draw("st=>start: Start\nop=>operation\ne=>end: End\nst->op->e");
+
+    expect(labelOf("op")).toBe("");
+    expect(sizeOf("op")).toStrictEqual({ width: 20, height: 20 });
+  });
+
   it("does not override explicit start / end text", () => {
     draw("st=>start: Begin\ne=>end: Finish\nst->e");
 
