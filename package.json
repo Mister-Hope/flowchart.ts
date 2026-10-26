@@ -37,6 +37,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "changelog": "changelogen --no-output",
     "clean": "rimraf dist",
     "deps:update": "ncu -u && pnpm install",
     "dev": "vite dev",
@@ -52,6 +53,7 @@
     "@mr-hope/tsconfig": "0.0.4",
     "@types/node": "24.19.2",
     "@vitest/coverage-istanbul": "5.0.5",
+    "changelogen": "0.6.2",
     "happy-dom": "21.0.4",
     "npm-check-updates": "23.1.1",
     "oxc-config-hope": "0.3.15",

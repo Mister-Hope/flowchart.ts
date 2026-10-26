@@ -92,11 +92,7 @@ jobs:
       - name: Bump version
         if: ${{ inputs.bump != 'none' }}
         run: |
-          ARGS=(--no-commit-hooks -m "chore: release v%s")
-
-          if [ "${{ inputs.dryrun }}" = "true" ]; then
-            ARGS+=(--no-git-tag-version)
-          fi
+          ARGS=(--no-commit-hooks --no-git-tag-version)
 
           if [ -n "${{ inputs.preid }}" ]; then
             pnpm version "${{ inputs.bump }}" --preid "${{ inputs.preid }}" "${ARGS[@]}"
@@ -110,6 +106,23 @@ jobs:
           VERSION="$(node -p "require('./package.json').version")"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Releasing v$VERSION"
+
+      - name: Update CHANGELOG.md
+        if: ${{ !inputs.dryrun && inputs.bump != 'none' }}
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          PREVIOUS="$(git describe --tags --abbrev=0)"
+          pnpm exec changelogen --output CHANGELOG.md -r "$VERSION" --from "$PREVIOUS"
+
+      - name: Commit release commit and tag
+        if: ${{ !inputs.dryrun && inputs.bump != 'none' }}
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git add CHANGELOG.md package.json
+          git commit -m "chore: release v$VERSION"
+          git tag -a "v$VERSION" -m "v$VERSION"
 
       - name: Resolve npm dist-tag
         id: dist-tag
@@ -139,3 +152,21 @@ jobs:
       - name: Publish to npm
         if: ${{ !inputs.dryrun }}
         run: pnpm publish --access public --no-git-checks --provenance --tag "${{ steps.dist-tag.outputs.tag }}"
+
+      - name: Create or update GitHub Release
+        if: ${{ !inputs.dryrun }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          pnpm exec changelogen gh release "$VERSION"
+
+          # `bump = none` may retry a release older than the changelog automation.
+          if ! gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release create "v$VERSION" --verify-tag --generate-notes --title "v$VERSION"
+          fi
+
+          if [[ "$VERSION" == *-* ]]; then
+            gh release edit "v$VERSION" --prerelease
+          fi
