@@ -8,6 +8,12 @@ permissions:
   contents: read
   id-token: write
 
+# Cancel superseded runs for PRs / feature branches, but never cancel or queue a run on `main`:
+# a fast merge should not turn the previous main run into a red X.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   test:
     name: Test
@@ -27,6 +33,7 @@ jobs:
         uses: pnpm/setup@v3
         with:
           runtime: node@${{ matrix.node-version }}
+          cache: true
 
       - name: Install deps
         run: pnpm ci
@@ -60,6 +67,13 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           use_oidc: true
+
+      - name: Cache Playwright browsers
+        if: ${{ matrix.node-version == 24 }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright Chromium
         if: ${{ matrix.node-version == 24 }}
