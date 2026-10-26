@@ -324,3 +324,20 @@ describe("layout: programmatic option mutations", () => {
     expect(document.querySelector('[id="bad keyi"]')).toBeNull();
   });
 });
+
+describe("options: symbol style fallback", () => {
+  it("falls back to global styles for null / undefined symbol styles", () => {
+    for (const symbols of [null, undefined]) {
+      document.body.innerHTML = "";
+
+      const container = document.createElement("div");
+
+      document.body.append(container);
+
+      const chart = parse("st=>start: S\ne=>end: E\nst->e");
+
+      expect(() => chart.draw(container, { symbols: symbols as never })).not.toThrow();
+      expect(container.querySelector("svg")).not.toBeNull();
+    }
+  });
+});
