@@ -31,7 +31,7 @@ class FlowChart {
   maxXFromLine = Number.NEGATIVE_INFINITY;
 
   constructor(container: string | HTMLElement, options: DrawOptions = {}) {
-    this.paper = new Paper(container, options.width, options.height);
+    this.paper = new Paper(container);
     this.options = deepAssign<ParsedDrawOptions>(defaultOptions, options);
   }
 
@@ -155,6 +155,7 @@ class FlowChart {
 
     this.paper.setSize(width * scale, height * scale);
     this.paper.setViewBox({ x: minX, y: minY, width, height }, true);
+    this.paper.setOuterSize(this.options.width, this.options.height, width, height);
   }
 
   private measureBounds(): Bounds {

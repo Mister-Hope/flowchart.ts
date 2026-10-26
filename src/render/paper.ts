@@ -10,6 +10,15 @@ import { SVG_NAMESPACE } from "./types.js";
 const DEFAULT_WIDTH = 512;
 const DEFAULT_HEIGHT = 342;
 
+/**
+ * Formats an explicit outer size as a CSS length.
+ *
+ * @param value Size in pixels or as an already formatted CSS length.
+ * @returns The CSS length.
+ */
+const toCssLength = (value: number | string): string =>
+  typeof value === "number" ? `${value}px` : value;
+
 let paperSequence = 0;
 
 /**
@@ -33,7 +42,7 @@ export class Paper {
   /** Offscreen host used to measure charts rendered into a detached container. */
   private measurementHost: HTMLElement | null = null;
 
-  constructor(container: string | HTMLElement, width?: number, height?: number) {
+  constructor(container: string | HTMLElement) {
     const element =
       typeof container === "string"
         ? document.querySelector<HTMLElement>(`#${CSS.escape(container)}`)
@@ -53,8 +62,8 @@ export class Paper {
 
     canvas.setAttribute("version", "1.1");
     canvas.setAttribute("xmlns", SVG_NAMESPACE);
-    canvas.setAttribute("width", String(width ?? DEFAULT_WIDTH));
-    canvas.setAttribute("height", String(height ?? DEFAULT_HEIGHT));
+    canvas.setAttribute("width", String(DEFAULT_WIDTH));
+    canvas.setAttribute("height", String(DEFAULT_HEIGHT));
     canvas.style.overflow = "hidden";
     canvas.style.position = "relative";
     canvas.append(defs);
@@ -201,5 +210,44 @@ export class Paper {
   setViewBox({ x, y, width, height }: BBox, fit = false): void {
     this.canvas.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
     this.canvas.setAttribute("preserveAspectRatio", fit ? "xMidYMid meet" : "xMinYMin");
+  }
+
+  /**
+   * Applies the explicit outer size from the `width` / `height` draw options.
+   *
+   * The viewBox keeps describing the content, so the browser scales the chart into the requested
+   * box and `preserveAspectRatio` keeps it undistorted. A missing dimension follows the content
+   * aspect ratio; CSS lengths such as `"100%"` make the chart responsive by leaving the other
+   * dimension at `auto`.
+   *
+   * @param width Requested width, in pixels or as a CSS length.
+   * @param height Requested height, in pixels or as a CSS length.
+   * @param contentWidth Width of the viewBox content.
+   * @param contentHeight Height of the viewBox content.
+   */
+  setOuterSize(
+    width: number | string | undefined,
+    height: number | string | undefined,
+    contentWidth: number,
+    contentHeight: number,
+  ): void {
+    if (width == null && height == null) return;
+
+    const ratio = contentHeight / contentWidth;
+
+    if (width != null) {
+      this.canvas.style.width = toCssLength(width);
+
+      if (height == null)
+        this.canvas.style.height = typeof width === "number" ? `${width * ratio}px` : "auto";
+      else this.canvas.style.height = toCssLength(height);
+
+      return;
+    }
+
+    if (height != null) {
+      this.canvas.style.height = toCssLength(height);
+      this.canvas.style.width = typeof height === "number" ? `${height / ratio}px` : "auto";
+    }
   }
 }

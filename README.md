@@ -49,6 +49,20 @@ same node keys, the later charts get a numeric id suffix (`#st-2`, `#stt-2`, ...
 `getElementById()` and CSS id selectors keep addressing the right chart. A chart whose keys are not
 used yet keeps the plain ids.
 
+### Sizing
+
+The SVG is sized from the rendered content. Pass `width` / `height` to scale it into a specific box
+(pixels or any CSS length); the viewBox still describes the content, so the chart scales without
+distortion and a missing dimension follows the content aspect ratio:
+
+```ts
+chart.draw("diagram", { width: 400 }); // 400px wide, height follows the aspect ratio
+chart.draw("diagram", { width: "100%" }); // fills the container, height follows the aspect ratio
+chart.draw("diagram", { height: 200 }); // 200px high, width follows the aspect ratio
+```
+
+`scale` multiplies the automatic content size and is ignored when `width` / `height` are set.
+
 ## Requirements
 
 - **ESM-only**: the package ships ES modules (`"type": "module"`, no CommonJS entry); use it with a bundler or an ESM-capable runtime
