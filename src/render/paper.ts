@@ -21,6 +21,9 @@ const toCssLength = (value: number | string): string =>
 
 let paperSequence = 0;
 
+/** Canvases created by this module, so a new chart can replace a stale one in the same container. */
+const flowchartCanvases = new WeakSet<Element>();
+
 /**
  * Minimal SVG "paper" replacing raphael: it owns the `<svg>` element and creates shapes, text and
  * groups on demand.
@@ -50,6 +53,15 @@ export class Paper {
 
     if (element == null) throw new Error("Flowchart container not found.");
 
+    // A container may only hold one chart: never stack a second one silently.
+    for (const child of element.children) {
+      if (flowchartCanvases.has(child)) {
+        throw new Error(
+          "Container already contains a flowchart. Draw into a separate container or clean the existing chart first.",
+        );
+      }
+    }
+
     this.container = element;
     this.document = element.ownerDocument;
 
@@ -63,6 +75,7 @@ export class Paper {
     canvas.style.overflow = "hidden";
     canvas.style.position = "relative";
     canvas.append(defs);
+    flowchartCanvases.add(canvas);
 
     if (element.isConnected) {
       element.prepend(canvas);
