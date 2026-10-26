@@ -65,6 +65,31 @@ describe("parse: definitions", () => {
     );
   });
 
+  it("maps true/false to the yes/no condition branches", () => {
+    const chart = parse(
+      "st=>start: S\nc=>condition: C?\na=>operation: A\nb=>operation: B\nst->c\nc(true)->a\nc(false)->b",
+    );
+
+    expect(chart.symbols.c?.yes).toBe(chart.symbols.a);
+    expect(chart.symbols.c?.no).toBe(chart.symbols.b);
+  });
+
+  it("maps true/false aliases together with a direction", () => {
+    const chart = parse("c=>condition: C?\na=>operation: A\nc(true, right)->a");
+
+    expect(chart.symbols.c?.direction_yes).toBe("right");
+    expect(chart.symbols.c?.yes).toBe(chart.symbols.a);
+  });
+
+  it("rejects branch names as connection directions", () => {
+    expect(() => parse("a=>operation: A\nb=>end: B\na(next, path1)->b")).toThrow(
+      'Unknown direction "path1"',
+    );
+    expect(() => parse("c=>condition: C?\na=>operation: A\nc(yes, path2)->a")).toThrow(
+      'Unknown direction "path2"',
+    );
+  });
+
   it("parses a node definition", () => {
     const chart = chartOf("st=>start: Start");
     const symbol = chart.symbols.st;
