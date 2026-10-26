@@ -6,6 +6,30 @@ import type { FlowChartSymbol } from "./symbols/index.js";
 import { Condition, Parallel } from "./symbols/index.js";
 import { deepAssign } from "./utils.js";
 
+type NumericOption = "line-length" | "line-width" | "scale" | "text-margin";
+
+/**
+ * Fails with a clear message for a non-finite or out-of-range numeric draw option.
+ *
+ * @param options Parsed draw options.
+ * @param name Option to validate.
+ * @param allowZero Whether zero is a valid value.
+ */
+const assertNumberOption = (
+  options: ParsedDrawOptions,
+  name: NumericOption,
+  allowZero: boolean,
+): void => {
+  const value = options[name];
+  const valid = Number.isFinite(value) && (allowZero ? value >= 0 : value > 0);
+
+  if (!valid) {
+    throw new RangeError(
+      `Invalid "${name}" draw option: ${String(value)}. Expected a finite number ${allowZero ? ">= 0" : "> 0"}.`,
+    );
+  }
+};
+
 interface Bounds {
   minX: number;
   minY: number;
@@ -31,6 +55,11 @@ class FlowChart {
   constructor(container: string | HTMLElement, options: DrawOptions) {
     this.paper = new Paper(container);
     this.options = deepAssign<ParsedDrawOptions>(defaultOptions, options);
+
+    assertNumberOption(this.options, "scale", false);
+    assertNumberOption(this.options, "line-width", true);
+    assertNumberOption(this.options, "line-length", true);
+    assertNumberOption(this.options, "text-margin", true);
   }
 
   startWith(symbol: FlowChartSymbol): FlowChartSymbol {
