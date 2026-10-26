@@ -21,12 +21,16 @@ test("renders a visible chart with native text metrics", async ({ page }) => {
     const text = container.querySelector("text");
 
     return {
+      role: svg?.getAttribute("role") ?? null,
       svgWidth: svg?.getAttribute("width") ?? null,
       textWidth: text?.getBBox().width ?? 0,
+      title: svg?.firstElementChild?.textContent ?? null,
       nodes: container.querySelectorAll("g").length,
     };
   }, DSL);
 
+  expect(result.role).toBe("img");
+  expect(result.title).toBe("Flowchart");
   expect(result.svgWidth).not.toBeNull();
   expect(Number(result.svgWidth)).toBeGreaterThan(0);
   expect(result.textWidth).toBeGreaterThan(0);

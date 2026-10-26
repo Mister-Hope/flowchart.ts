@@ -16,6 +16,7 @@ export const defaultOptions: ParsedDrawOptions = {
   "no-text": "no",
   "arrow-end": "block",
   class: "flowchart",
+  label: "Flowchart",
   scale: 1,
   symbols: {
     start: {},
