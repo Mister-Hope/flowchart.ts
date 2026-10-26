@@ -49,6 +49,10 @@ same node keys, the later charts get a numeric id suffix (`#st-2`, `#stt-2`, ...
 `getElementById()` and CSS id selectors keep addressing the right chart. A chart whose keys are not
 used yet keeps the plain ids.
 
+A container can hold one chart at a time. Drawing a second chart into a container that still has a
+rendered flowchart throws; call `chart.clean()` first or use a separate container. Charts in
+different containers are independent.
+
 ### Sizing
 
 The SVG is sized from the rendered content. Pass `width` / `height` to scale it into a specific box
