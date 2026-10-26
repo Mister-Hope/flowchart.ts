@@ -38,6 +38,15 @@ export const parse = (input = ""): Chart => {
 
       this.diagram = diagram;
       renderDiagram(this, diagram, start);
+
+      const renderedKeys = new Set(diagram.symbols.map((symbol) => symbol.key));
+      const unreachable = Object.keys(this.symbols).filter((key) => !renderedKeys.has(key));
+
+      if (unreachable.length > 0) {
+        globalThis.console.warn(
+          `[flowchart.ts] ${unreachable.length} node(s) are not reachable from the start node and were not rendered: ${unreachable.join(", ")}.`,
+        );
+      }
     },
 
     clean(): void {
