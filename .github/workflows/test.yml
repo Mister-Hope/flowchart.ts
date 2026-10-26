@@ -60,3 +60,11 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           use_oidc: true
+
+      - name: Install Playwright Chromium
+        if: ${{ matrix.node-version == 24 }}
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser smoke test
+        if: ${{ matrix.node-version == 24 }}
+        run: pnpm test:browser

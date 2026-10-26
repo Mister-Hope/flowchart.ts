@@ -9,3 +9,6 @@ coverage/
 .DS_Store
 
 .npmrc
+
+playwright-report/
+test-results/
