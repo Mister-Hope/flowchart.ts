@@ -53,9 +53,7 @@ jobs:
         uses: pnpm/setup@v3
         with:
           runtime: node@^24.22.1
-
-      - name: Install deps
-        run: pnpm ci
+          require-lockfile: true
 
       - name: Linter test
         run: pnpm lint:check
@@ -98,9 +96,7 @@ jobs:
         uses: pnpm/setup@v3
         with:
           runtime: node@^24.22.1
-
-      - name: Install deps
-        run: pnpm ci
+          require-lockfile: true
 
       - name: Config git
         run: |

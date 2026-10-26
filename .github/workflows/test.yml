@@ -34,9 +34,7 @@ jobs:
         with:
           runtime: node@${{ matrix.node-version }}
           cache: true
-
-      - name: Install deps
-        run: pnpm ci
+          require-lockfile: true
 
       - name: Linter test
         run: pnpm run lint:check
