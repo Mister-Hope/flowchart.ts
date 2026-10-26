@@ -226,6 +226,9 @@ The following directions are available and define the direction the connection w
 - top
 - bottom
 
+`path1`, `path2` and `path3` are branch names for `parallel` nodes, not directions; any other
+direction value is rejected with an error.
+
 Every branch of a `condition` or `parallel` node needs its own direction: when two branches of the same node resolve to the same direction, only the last one is laid out. The chart logs a warning and the earlier branch is skipped.
 
 ### Node Specific Specifiers by Type

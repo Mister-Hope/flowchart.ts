@@ -2,16 +2,6 @@ import type { SymbolOptions, SymbolType } from "../options.js";
 import { validateLink, validateTarget } from "../security.js";
 import type { Chart } from "./types.js";
 
-// Returns the text between the first `(` and the last `)` of a DSL fragment.
-const getParenthesizedText = (line: string): string => {
-  const startIndex = line.indexOf("(") + 1;
-  const endIndex = line.indexOf(")");
-
-  if (startIndex > 0 && endIndex > 0) return line.slice(startIndex, endIndex);
-
-  return "";
-};
-
 /**
  * Extracts the JSON object of a line style, e.g. `{"stroke":"red"}`.
  *
@@ -26,14 +16,6 @@ export const getStyle = (line: string): string => {
 
   return "{}";
 };
-
-/**
- * Extracts the branch/direction specifier of a flow fragment, e.g. `yes, right`.
- *
- * @param line DSL fragment such as `cond(yes, right)`.
- * @returns The specifier text, or an empty string when there is none.
- */
-export const getSymbolValue = (line: string): string => getParenthesizedText(line);
 
 /**
  * Looks up a symbol by the key used in a flow line.

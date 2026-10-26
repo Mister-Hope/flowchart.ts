@@ -1,13 +1,21 @@
 import type { Direction, SymbolOptions, SymbolType } from "../options.js";
-import { getAnnotation, getSymbolValue, requireSymbol } from "./definition.js";
+import { getAnnotation, requireSymbol } from "./definition.js";
 import type { Chart } from "./types.js";
 
-const DIRECTIONS = new Set<string>(["top", "right", "left", "bottom", "path1", "path2", "path3"]);
+const DIRECTIONS = new Set<string>(["top", "right", "left", "bottom"]);
 
 const BRANCH_NAMES = new Set<string>(["next", "yes", "no", "path1", "path2", "path3"]);
 
 /** Branch specifiers that are valid without an explicit direction (e.g. `cond(yes)`). */
-const BARE_BRANCH_NAMES = new Set<string>(["yes", "no", "path1", "path2", "path3"]);
+const BARE_BRANCH_NAMES = new Set<string>([
+  "true",
+  "false",
+  "yes",
+  "no",
+  "path1",
+  "path2",
+  "path3",
+]);
 
 /**
  * Splits the branch specifier of a flow fragment into a branch name and an optional direction.
@@ -141,16 +149,12 @@ export const applyFlowLine = (source: string, chart: Chart): void => {
 
   const flowSymbols = line.split("->");
 
-  for (const [index, flowSymbolValue] of flowSymbols.entries()) {
-    let flowSymbol = flowSymbolValue;
-    const symbolValue = getSymbolValue(flowSymbol);
+  for (const [index, flowSymbol] of flowSymbols.entries()) {
+    const { next: rawNext, direction } = splitBranch(flowSymbol);
+    const realSymbol = requireSymbol(flowSymbol, chart);
 
     // `true`/`false` are aliases for the condition branches `yes`/`no`.
-    if (symbolValue === "true" || symbolValue === "false")
-      flowSymbol = flowSymbol.replace("true", "yes").replace("false", "no");
-
-    const { next, direction } = splitBranch(flowSymbol);
-    const realSymbol = requireSymbol(flowSymbol, chart);
+    const next = rawNext === "true" ? "yes" : rawNext === "false" ? "no" : rawNext;
 
     if (annotation != null && annotation !== "") {
       setAnnotation(realSymbol, next, annotation);
