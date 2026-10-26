@@ -438,24 +438,46 @@ export class FlowChartSymbol {
   }
 
   render(): void {
-    const { next } = this;
+    FlowChartSymbol.renderChain(this);
+  }
 
-    if (next == null) return;
+  /**
+   * Places and renders the `next` chain without recursing, so long flowcharts cannot overflow the
+   * call stack. Condition / parallel nodes keep their own recursive layout.
+   *
+   * @param start First symbol of the chain.
+   */
+  private static renderChain(start: FlowChartSymbol): void {
+    let current: FlowChartSymbol = start;
 
-    const lineLength = this.getAttr("line-length");
+    while (true) {
+      const { next } = current;
 
-    if (this.direction_next === "right") {
-      placeBeside(this, next, "right", lineLength);
-    } else if (this.direction_next === "left") {
-      placeBeside(this, next, "left", lineLength);
-    } else if (!next.isPositioned) {
-      const bottomPoint = this.getBottom();
+      if (next == null) return;
 
-      next.shiftY(this.getY() + this.height + lineLength);
-      next.setX(bottomPoint.x - next.width / 2);
-      next.isPositioned = true;
+      if (next.isPositioned) return;
 
-      next.render();
+      const lineLength = current.getAttr("line-length");
+
+      if (current.direction_next === "right") {
+        placeBeside(current, next, "right", lineLength);
+      } else if (current.direction_next === "left") {
+        placeBeside(current, next, "left", lineLength);
+      } else {
+        const bottomPoint = current.getBottom();
+
+        next.shiftY(current.getY() + current.height + lineLength);
+        next.setX(bottomPoint.x - next.width / 2);
+        next.isPositioned = true;
+      }
+
+      if (next.render !== FlowChartSymbol.prototype.render) {
+        next.render();
+
+        return;
+      }
+
+      current = next;
     }
   }
 
