@@ -90,6 +90,10 @@ pnpm deps:update   # ncu -u + pnpm install
   line limit. `render-primitives.spec.ts` unit-tests renderer internals (text anchors, path
   trimming, links, sets, markers, sizing) directly.
 - The `routing-*` fixtures specifically exercise every `line-routing.ts` rule.
+- `pnpm test:browser` runs the Playwright smoke tests in `e2e/` against Chromium (native text metrics
+  in visible / hidden / detached containers and arrow markers). `e2e/*.e2e.ts` is used so oxlint
+  does not treat these files as Vitest specs; `playwright.config.ts` starts `e2e/vite.config.ts`,
+  which serves the built `dist/` bundle. CI installs Chromium for the Node 24 job only.
 - The renderer was cross-checked against the legacy raphael implementation (screenshots + geometry
   for the template examples, plus a 33-fixture browser diff). If you touch text metrics, routing or
   placement, validate the rendered output against that baseline again; the ad-hoc Playwright

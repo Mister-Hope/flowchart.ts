@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>flowchart.ts browser smoke test</title>
+  </head>
+  <body>
+    <script type="module">
+      import { parse } from "/dist/flowchart.js";
+
+      window.flowchart = { parse };
+      window.flowchartReady = true;
+    </script>
+  </body>
+</html>
