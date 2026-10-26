@@ -131,8 +131,6 @@ export const placeBeside = (
   side: "left" | "right",
   lineLength: number,
 ): void => {
-  if (next.isPositioned) return;
-
   const point = side === "right" ? symbol.getRight() : symbol.getLeft();
 
   next.setY(point.y - next.height / 2);
@@ -140,6 +138,4 @@ export const placeBeside = (
   if (side === "right") next.shiftX(symbol.getX() + symbol.width + lineLength);
   else next.shiftX(-(symbol.getX() + symbol.width + lineLength));
   next.isPositioned = true;
-
-  next.render();
 };

@@ -85,35 +85,48 @@ const getChildren = (symbol: SymbolOptions, displaySymbol: FlowChartSymbol): Sym
   return symbol.next == null ? [] : [symbol.next];
 };
 
+interface BuildTask {
+  symbol: SymbolOptions;
+  prevDisplay?: FlowChartSymbol;
+  prev?: SymbolOptions;
+}
+
 /**
  * Walks the parsed symbols depth-first and builds the display-symbol tree.
  *
+ * The walk uses an explicit stack so deep chains cannot overflow the call stack, and it expands
+ * every parsed symbol at most once so cyclic definitions (`c1(yes)->c2`, `c2(no)->c1`) terminate.
+ *
  * @param context Diagram plus parsed chart and display-symbol cache.
- * @param symbol Symbol to build.
- * @param prevDisplay Display symbol the current one is linked from.
- * @param prev Parsed symbol the current one is linked from.
- * @returns The display symbol for `symbol`.
+ * @param start Parsed start symbol.
+ * @returns The display symbol for `start`.
  */
-const constructChart = (
-  context: BuildContext,
-  symbol: SymbolOptions,
-  prevDisplay?: FlowChartSymbol,
-  prev?: SymbolOptions,
-): FlowChartSymbol => {
-  const displaySymbol = getDisplaySymbol(context.diagram, symbol, context.displaySymbols);
+const constructChart = (context: BuildContext, start: SymbolOptions): FlowChartSymbol => {
+  const startDisplay = getDisplaySymbol(context.diagram, start, context.displaySymbols);
+  const stack: BuildTask[] = [{ symbol: start }];
+  const expanded = new Set<string>();
 
-  if (context.chart.start === symbol) context.diagram.startWith(displaySymbol);
-  else if (prevDisplay != null && prev != null && !prevDisplay.pathOk)
-    linkFromPrevious(displaySymbol, symbol, prevDisplay, prev);
+  for (let task = stack.pop(); task != null; task = stack.pop()) {
+    const displaySymbol = getDisplaySymbol(context.diagram, task.symbol, context.displaySymbols);
 
-  if (!displaySymbol.pathOk) {
-    for (const child of getChildren(symbol, displaySymbol))
-      constructChart(context, child, displaySymbol, symbol);
+    if (context.chart.start === task.symbol) context.diagram.startWith(displaySymbol);
+    else if (task.prevDisplay != null && task.prev != null && !task.prevDisplay.pathOk)
+      linkFromPrevious(displaySymbol, task.symbol, task.prevDisplay, task.prev);
+
+    // A parsed symbol is expanded once: this stops cyclic definitions from recursing forever.
+    if (displaySymbol.pathOk || expanded.has(task.symbol.key)) continue;
+
+    expanded.add(task.symbol.key);
+
+    const children = getChildren(task.symbol, displaySymbol);
+
+    // Push in reverse so the first child is processed next, keeping the original DFS order.
+    for (const child of [...children].reverse())
+      stack.push({ symbol: child, prevDisplay: displaySymbol, prev: task.symbol });
   }
 
-  return displaySymbol;
+  return startDisplay;
 };
-
 /**
  * Builds the symbol tree of a parsed chart and renders the diagram.
  *

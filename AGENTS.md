@@ -59,6 +59,10 @@ pnpm deps:update   # ncu -u + pnpm install
 - `src/render/` — in-house SVG renderer: `element.ts` (attributes/link wrappers), `rect.ts`,
   `path.ts`, `text.ts`, `text-metrics.ts`, `markers.ts`, `set.ts`, `paper.ts`
 - `src/chart.ts` — layout orchestration: symbol alignment, render order, viewBox sizing
+- Graph construction (`parse/draw.ts`) uses an explicit stack and expands each parsed symbol once, so
+  cyclic definitions terminate; `FlowChartSymbol.render()` walks plain `next` chains iteratively.
+  Extremely deep condition / parallel nesting still uses recursive layout and is bounded by the JS
+  stack (~4k branch nodes).
 - `src/action.ts` — path/line drawing primitives shared by symbols
 - `__tests__/` — unit + regression tests
 
