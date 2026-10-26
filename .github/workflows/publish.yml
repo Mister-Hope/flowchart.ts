@@ -103,19 +103,24 @@ jobs:
         run: pnpm ci
 
       - name: Config git
+        env:
+          ACTOR: ${{ github.actor }}
         run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "$ACTOR"
+          git config --global user.email "$ACTOR@users.noreply.github.com"
 
       - name: Bump version
         if: ${{ inputs.bump != 'none' }}
+        env:
+          BUMP: ${{ inputs.bump }}
+          PREID: ${{ inputs.preid }}
         run: |
           ARGS=(--no-commit-hooks --no-git-tag-version)
 
-          if [ -n "${{ inputs.preid }}" ]; then
-            pnpm version "${{ inputs.bump }}" --preid "${{ inputs.preid }}" "${ARGS[@]}"
+          if [ -n "$PREID" ]; then
+            pnpm version "$BUMP" --preid "$PREID" "${ARGS[@]}"
           else
-            pnpm version "${{ inputs.bump }}" "${ARGS[@]}"
+            pnpm version "$BUMP" "${ARGS[@]}"
           fi
 
       - name: Show release version
@@ -165,11 +170,15 @@ jobs:
 
       - name: Publish to npm (dry run)
         if: ${{ inputs.dryrun }}
-        run: pnpm publish --dry-run --access public --no-git-checks --tag "${{ steps.dist-tag.outputs.tag }}"
+        env:
+          DIST_TAG: ${{ steps.dist-tag.outputs.tag }}
+        run: pnpm publish --dry-run --access public --no-git-checks --tag "$DIST_TAG"
 
       - name: Publish to npm
         if: ${{ !inputs.dryrun }}
-        run: pnpm publish --access public --no-git-checks --provenance --tag "${{ steps.dist-tag.outputs.tag }}"
+        env:
+          DIST_TAG: ${{ steps.dist-tag.outputs.tag }}
+        run: pnpm publish --access public --no-git-checks --provenance --tag "$DIST_TAG"
 
       - name: Create or update GitHub Release
         if: ${{ !inputs.dryrun }}
