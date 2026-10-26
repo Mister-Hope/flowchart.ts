@@ -6,6 +6,17 @@ import { parse } from "../src/index.js";
 const chartOf = (input: string): Chart => parse(input);
 
 describe("parse: definitions", () => {
+  it("rejects non-string input", () => {
+    expect(() => parse(null as unknown as string)).toThrow(/expects a string/u);
+  });
+
+  it("reports the DSL line for parse errors", () => {
+    expect(() => parse("st=>start: S\nop=>operation: Op\nst->missing")).toThrow(
+      /Line 3: Unknown symbol "missing"/u,
+    );
+    expect(() => parse("st=>start: S\ne=>end: E\nst->e\nst@>e({not json})")).toThrow(SyntaxError);
+  });
+
   it("parses empty input", () => {
     const chart = parse();
 

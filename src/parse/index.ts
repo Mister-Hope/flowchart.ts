@@ -16,6 +16,8 @@ export type { Chart } from "./types.js";
  * @returns The parsed chart, which can be drawn with `chart.draw(container, options)`.
  */
 export const parse = (input = ""): Chart => {
+  if (typeof input !== "string") throw new TypeError("parse() expects a string.");
+
   const chart: Chart = {
     symbols: {},
     start: null,
@@ -47,17 +49,23 @@ export const parse = (input = ""): Chart => {
     },
   };
 
-  for (const rawLine of getLines(input.trim())) {
+  for (const [index, rawLine] of getLines(input.trim()).entries()) {
     const line = rawLine.trim();
 
-    if (line.includes("=>")) {
-      const symbol = parseDefinition(line);
+    try {
+      if (line.includes("=>")) {
+        const symbol = parseDefinition(line);
 
-      chart.symbols[symbol.key] = symbol;
-    } else if (line.includes("->")) {
-      applyFlowLine(line, chart);
-    } else if (line.includes("@>")) {
-      applyStyleLine(line, chart);
+        chart.symbols[symbol.key] = symbol;
+      } else if (line.includes("->")) {
+        applyFlowLine(line, chart);
+      } else if (line.includes("@>")) {
+        applyStyleLine(line, chart);
+      }
+    } catch (err) {
+      // Keep the original error class (SyntaxError / FlowchartSecurityError) and stack.
+      (err as Error).message = `Line ${index + 1}: ${(err as Error).message}`;
+      throw err;
     }
   }
 
