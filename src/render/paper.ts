@@ -21,8 +21,40 @@ const toCssLength = (value: number | string): string =>
 
 let paperSequence = 0;
 
-/** Canvases created by this module, so a new chart can replace a stale one in the same container. */
+/** Canvases created by this module, used to detect a container that already holds a chart. */
 const flowchartCanvases = new WeakSet<Element>();
+
+/**
+ * Resolves the draw container.
+ *
+ * @param container Element or id of the element.
+ * @returns The resolved element.
+ */
+const getContainer = (container: string | HTMLElement): HTMLElement => {
+  const element =
+    typeof container === "string"
+      ? document.querySelector<HTMLElement>(`#${CSS.escape(container)}`)
+      : container;
+
+  if (element == null) throw new Error("Flowchart container not found.");
+
+  return element;
+};
+
+/**
+ * Rejects a container that still holds a chart created by this renderer.
+ *
+ * @param element Target container.
+ */
+const assertEmptyContainer = (element: HTMLElement): void => {
+  for (const child of element.children) {
+    if (flowchartCanvases.has(child)) {
+      throw new Error(
+        "Container already contains a flowchart. Draw into a separate container or clean the existing chart first.",
+      );
+    }
+  }
+};
 
 /**
  * Minimal SVG "paper" replacing raphael: it owns the `<svg>` element and creates shapes, text and
@@ -32,6 +64,8 @@ export class Paper {
   readonly canvas: SVGSVGElement;
 
   readonly defs: SVGDefsElement;
+
+  private readonly title: SVGTitleElement;
 
   /** Suffix appended to this chart's node ids so several charts can coexist in one document. */
   idSuffix = "";
@@ -46,36 +80,29 @@ export class Paper {
   private measurementHost: HTMLElement | null = null;
 
   constructor(container: string | HTMLElement) {
-    const element =
-      typeof container === "string"
-        ? document.querySelector<HTMLElement>(`#${CSS.escape(container)}`)
-        : container;
-
-    if (element == null) throw new Error("Flowchart container not found.");
+    const element = getContainer(container);
 
     // A container may only hold one chart: never stack a second one silently.
-    for (const child of element.children) {
-      if (flowchartCanvases.has(child)) {
-        throw new Error(
-          "Container already contains a flowchart. Draw into a separate container or clean the existing chart first.",
-        );
-      }
-    }
+    assertEmptyContainer(element);
 
     this.container = element;
     this.document = element.ownerDocument;
 
     const canvas = this.document.createElementNS(SVG_NAMESPACE, "svg");
+    const title = this.document.createElementNS(SVG_NAMESPACE, "title");
     const defs = this.document.createElementNS(SVG_NAMESPACE, "defs");
 
+    title.textContent = "Flowchart";
+    canvas.setAttribute("role", "img");
     canvas.setAttribute("version", "1.1");
     canvas.setAttribute("xmlns", SVG_NAMESPACE);
     canvas.setAttribute("width", String(DEFAULT_WIDTH));
     canvas.setAttribute("height", String(DEFAULT_HEIGHT));
     canvas.style.overflow = "hidden";
     canvas.style.position = "relative";
-    canvas.append(defs);
+    canvas.append(title, defs);
     flowchartCanvases.add(canvas);
+    this.title = title;
 
     if (element.isConnected) {
       element.prepend(canvas);
@@ -94,6 +121,15 @@ export class Paper {
     this.canvas = canvas;
     this.defs = defs;
     this.markers = new MarkerRegistry(defs, `flowchart-${paperSequence}`);
+  }
+
+  /**
+   * Sets the accessible name rendered as the SVG `<title>`.
+   *
+   * @param label Accessible name of the chart.
+   */
+  setTitle(label: string): void {
+    this.title.textContent = label;
   }
 
   /**

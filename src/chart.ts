@@ -56,6 +56,8 @@ class FlowChart {
     this.paper = new Paper(container);
     this.options = deepAssign<ParsedDrawOptions>(defaultOptions, options);
 
+    this.paper.setTitle(this.options.label ?? "Flowchart");
+
     assertNumberOption(this.options, "scale", false);
     assertNumberOption(this.options, "line-width", true);
     assertNumberOption(this.options, "line-length", true);

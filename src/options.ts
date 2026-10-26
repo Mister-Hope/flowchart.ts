@@ -62,6 +62,8 @@ export interface DrawOptions extends Partial<SVGOptions> {
   flowstate?: FlowStateStyles | null;
   /** Click handlers referenced by `:$callback` in the DSL. */
   callbacks?: Record<string, ClickCallback> | null;
+  /** Accessible name of the chart, rendered as the SVG `<title>`. Defaults to `"Flowchart"`. */
+  label?: string;
 }
 
 export interface ParsedDrawOptions extends SVGOptions {
@@ -75,6 +77,8 @@ export interface ParsedDrawOptions extends SVGOptions {
   flowstate?: FlowStateStyles | null;
   /** Click handlers referenced by `:$callback` in the DSL. */
   callbacks?: Record<string, ClickCallback> | null;
+  /** Accessible name of the chart, rendered as the SVG `<title>`. */
+  label: string;
 }
 
 export type Direction = "top" | "right" | "left" | "bottom" | "path1" | "path2" | "path3";

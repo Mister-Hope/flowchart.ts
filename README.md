@@ -69,6 +69,15 @@ chart.draw("diagram", { height: 200 }); // 200px high, width follows the aspect 
 
 `scale` multiplies the automatic content size and is ignored when `width` / `height` are set.
 
+### Accessibility
+
+The outer `<svg>` has `role="img"` and a `<title>` (default `"Flowchart"`). Pass `label` to give
+screen readers a meaningful description of the chart:
+
+```ts
+chart.draw("diagram", { label: "Login flow" });
+```
+
 ## Requirements
 
 - **ESM-only**: the package ships ES modules (`"type": "module"`, no CommonJS entry); use it with a bundler or an ESM-capable runtime
