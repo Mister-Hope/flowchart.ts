@@ -311,7 +311,7 @@ export class FlowChartSymbol {
   getAttr(attName: string): AttributeValue | null {
     const { options } = this.chart;
     const styleKey = attName as keyof SVGOptions;
-    const symbolOptions = options.symbols[this.symbolType];
+    const symbolOptions = options.symbols?.[this.symbolType] ?? null;
     const symbolOption = symbolOptions?.[styleKey];
     const flowStateOption = options.flowstate?.[this.flowstate]?.[attName];
     const value = flowStateOption ?? symbolOption ?? options[styleKey];
