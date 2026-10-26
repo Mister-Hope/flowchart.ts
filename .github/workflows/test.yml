@@ -61,6 +61,13 @@ jobs:
         with:
           use_oidc: true
 
+      - name: Cache Playwright browsers
+        if: ${{ matrix.node-version == 24 }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install Playwright Chromium
         if: ${{ matrix.node-version == 24 }}
         run: pnpm exec playwright install --with-deps chromium
