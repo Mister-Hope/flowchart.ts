@@ -4190,7 +4190,7 @@ exports[`rendered chart snapshots > renders condition-left-branch 1`] = `
     },
     {
       "attrs": {
-        "transform": "translate(-113.72,116.15)",
+        "transform": "translate(-73.52,116.15)",
       },
       "tag": "g",
     },
@@ -4282,7 +4282,7 @@ exports[`rendered chart snapshots > renders condition-left-branch 1`] = `
     },
     {
       "attrs": {
-        "d": "M6,134.2L-79.7,134.2",
+        "d": "M6,134.2L-39.5,134.2",
         "fill": "none",
         "marker-end": "url(#flowchart-marker-1)",
         "stroke": "black",
@@ -4340,8 +4340,8 @@ exports[`rendered chart snapshots > renders condition-left-branch 1`] = `
     },
   ],
   "preserveAspectRatio": "xMidYMid meet",
-  "viewBox": "-116.72000000000001 0 343.36 164.27499999999998",
-  "width": "343.36",
+  "viewBox": "-76.52000000000001 0 303.16 164.27499999999998",
+  "width": "303.16",
 }
 `;
 
@@ -13930,7 +13930,7 @@ exports[`rendered chart snapshots > renders routing-bottom-to-right 1`] = `
     },
     {
       "attrs": {
-        "transform": "translate(-116.24,116.15)",
+        "transform": "translate(-73.52,116.15)",
       },
       "tag": "g",
     },
@@ -14010,7 +14010,7 @@ exports[`rendered chart snapshots > renders routing-bottom-to-right 1`] = `
     },
     {
       "attrs": {
-        "d": "M6,134.2L-82.22,134.2",
+        "d": "M6,134.2L-39.5,134.2",
         "fill": "none",
         "marker-end": "url(#flowchart-marker-1)",
         "stroke": "black",
@@ -14039,7 +14039,7 @@ exports[`rendered chart snapshots > renders routing-bottom-to-right 1`] = `
     },
     {
       "attrs": {
-        "d": "M-101.48,152.25L-101.48,177.25L-260.44,177.25L-260.44,91.15L51.48,91.15C51.48,91.15,57.48,79.15,63.48,91.15L216.44,91.15L216.44,111.65",
+        "d": "M-58.76,152.25L-58.76,177.25L-196.36,177.25L-196.36,91.15L51.48,91.15C51.48,91.15,57.48,79.15,63.48,91.15L216.44,91.15L216.44,111.65",
         "fill": "none",
         "marker-end": "url(#flowchart-marker-1)",
         "stroke": "black",
@@ -14049,8 +14049,8 @@ exports[`rendered chart snapshots > renders routing-bottom-to-right 1`] = `
     },
   ],
   "preserveAspectRatio": "xMidYMid meet",
-  "viewBox": "-263.44 0 497.64 180.25",
-  "width": "497.64",
+  "viewBox": "-199.36 0 433.56000000000006 180.25",
+  "width": "433.56000000000006",
 }
 `;
 
@@ -14213,7 +14213,7 @@ exports[`rendered chart snapshots > renders routing-bottom-to-right-under 1`] = 
     },
     {
       "attrs": {
-        "transform": "translate(-116.24,116.15)",
+        "transform": "translate(-73.52,116.15)",
       },
       "tag": "g",
     },
@@ -14293,7 +14293,7 @@ exports[`rendered chart snapshots > renders routing-bottom-to-right-under 1`] = 
     },
     {
       "attrs": {
-        "d": "M6,134.2L-82.22,134.2",
+        "d": "M6,134.2L-39.5,134.2",
         "fill": "none",
         "marker-end": "url(#flowchart-marker-1)",
         "stroke": "black",
@@ -14322,7 +14322,7 @@ exports[`rendered chart snapshots > renders routing-bottom-to-right-under 1`] = 
     },
     {
       "attrs": {
-        "d": "M-101.48,152.25L-101.48,191.3L57.48,191.3L57.48,221.8",
+        "d": "M-58.76,152.25L-58.76,191.3L57.48,191.3L57.48,221.8",
         "fill": "none",
         "marker-end": "url(#flowchart-marker-1)",
         "stroke": "black",
@@ -14332,8 +14332,8 @@ exports[`rendered chart snapshots > renders routing-bottom-to-right-under 1`] = 
     },
   ],
   "preserveAspectRatio": "xMidYMid meet",
-  "viewBox": "-119.24000000000001 0 231.20000000000002 265.4",
-  "width": "231.20000000000002",
+  "viewBox": "-76.52000000000001 0 188.48000000000002 265.4",
+  "width": "188.48000000000002",
 }
 `;
 

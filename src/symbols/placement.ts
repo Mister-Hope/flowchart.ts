@@ -85,7 +85,7 @@ export const placeLeft = (symbol: FlowChartSymbol, lineLength: number): void => 
   const leftPoint = symbol.getLeft();
 
   leftSymbol.setY(leftPoint.y - leftSymbol.height / 2);
-  leftSymbol.shiftX(-(symbol.getX() + symbol.width + lineLength));
+  leftSymbol.setX(symbol.getX() - lineLength - leftSymbol.width);
 
   shiftBeside(symbol, leftSymbol, lineLength);
 
