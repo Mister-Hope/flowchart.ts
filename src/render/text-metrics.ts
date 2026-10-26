@@ -1,3 +1,4 @@
+import { codePointOf } from "../utils.js";
 import type { BBox } from "./types.js";
 import { SVG_NAMESPACE } from "./types.js";
 
@@ -12,7 +13,7 @@ const WIDE_CHARS = "mwMW@%&";
 const DIGIT_CHARS = "0123456789";
 
 const charWidthFactor = (char: string): number => {
-  const codePoint = char.codePointAt(0) ?? 0;
+  const codePoint = codePointOf(char);
 
   // CJK, full-width punctuation and emoji: roughly one em per character.
   if (codePoint >= 0x2e80) return 1;
@@ -87,7 +88,6 @@ export const measureNativeBBox = (node: SVGGraphicsElement): BBox | null => {
 
   try {
     const box = node.getBBox();
-
     if (!Number.isFinite(box.width) || !Number.isFinite(box.height)) return null;
 
     // Connected elements inside a `display: none` subtree have no layout, so browsers report an

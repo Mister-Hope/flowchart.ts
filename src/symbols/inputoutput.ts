@@ -4,7 +4,7 @@ import { TrapezoidSymbol } from "./trapezoid.js";
 
 /** Input/output node: a parallelogram whose edges lean to the right. */
 export class InputOutput extends TrapezoidSymbol {
-  constructor(chart: FlowChart, options: Partial<SymbolOptions> = {}) {
+  constructor(chart: FlowChart, options: SymbolOptions) {
     super(chart, options);
 
     const textBox = this.text.getBBox();

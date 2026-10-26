@@ -74,6 +74,18 @@ pnpm deps:update   # ncu -u + pnpm install
   connection details; parser edge cases live in `parse.spec.ts`.
 - CI runs `pnpm test:coverage`; `TEST_REPORT=true` switches vitest to JUnit + Cobertura output for
   Codecov, and `BUNDLE_ANALYSIS=true` enables Codecov bundle analysis during `pnpm build`.
+  `vitest.config.ts` enforces **100%** statements, branches, functions and lines, so
+  `pnpm test:coverage` fails when new code lands untested.
+- Coverage is kept at 100% without `istanbul ignore` directives: a branch that normal input can
+  never reach is removed instead of hidden. Environment-dependent fallbacks (no DOM, throwing
+  `getBBox`, non-finite boxes) are exercised by unit tests that stub the browser API, and the
+  remaining defensive paths are reachable through documented programmatic mutations of the parsed
+  options. `eslint-disable` / `oxlint-disable` stay forbidden.
+- `__tests__/fixtures/charts.ts` holds the main corpus; sizeable fixture groups that do not use the
+  shared `EXAMPLES` / `ALL_NODE_TYPES` inputs live in `charts-extra.ts` because of the per-file
+  line limit. `render-primitives.spec.ts` unit-tests renderer internals (text anchors, path
+  trimming, links, sets, markers, sizing) directly.
+- The `routing-*` fixtures specifically exercise every `line-routing.ts` rule.
 - The renderer was cross-checked against the legacy raphael implementation (screenshots + geometry
   for the template examples, plus a 33-fixture browser diff). If you touch text metrics, routing or
   placement, validate the rendered output against that baseline again; the ad-hoc Playwright

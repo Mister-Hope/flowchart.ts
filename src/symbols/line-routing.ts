@@ -326,10 +326,7 @@ const routeBottomAroundColumn = (context: RouteContext): RoutedConnection => {
 
 const routeLeftAroundColumn = (context: RouteContext): RoutedConnection => {
   const { from, to, text, lineLength, fromGeometry, toGeometry } = context;
-  const diffX =
-    toGeometry.left.x < fromGeometry.left.x
-      ? toGeometry.left.x - lineLength / 2
-      : fromGeometry.left.x - lineLength / 2;
+  const diffX = Math.min(toGeometry.left.x, fromGeometry.left.x) - lineLength / 2;
   const yOffset = lineOffset(to.topLines, from.leftLines);
   const line = drawLine(
     from.chart,
@@ -487,6 +484,5 @@ export const routeConnection = (
     fromGeometry: geometryOf(from),
     toGeometry: geometryOf(to),
   };
-
   return ROUTE_RULES.find((rule) => rule.matches(context))?.route(context) ?? null;
 };

@@ -286,3 +286,41 @@ describe("render: parallel directions", () => {
     expect(symbolCenterY(chart, "c")).toBeGreaterThan(symbolCenterY(chart, "para"));
   });
 });
+
+describe("layout: invalid callbacks", () => {
+  it("ignores callback names that are not identifiers", () => {
+    const chart = render("st=>start: Start:$bad.name\ne=>end: End\nst->e");
+
+    expect(chart.symbols.st?.function).toBe("bad.name");
+    expect(document.querySelector("#st")?.getAttribute("cursor")).toBeNull();
+  });
+});
+
+describe("layout: programmatic option mutations", () => {
+  it("skips unsupported branch directions instead of crashing", () => {
+    document.body.innerHTML = "";
+
+    const container = document.createElement("div");
+
+    document.body.append(container);
+
+    const chart = parse("c=>condition: C?\na=>operation: A\nb=>operation: B\nc(yes)->a\nc(no)->b");
+
+    chart.symbols.c.direction_yes = "path1";
+    chart.symbols.c.direction_next = "path2";
+
+    expect(() => chart.draw(container)).not.toThrow();
+  });
+
+  it("does not emit ids for unsafe node keys", () => {
+    document.body.innerHTML = "";
+
+    const container = document.createElement("div");
+
+    document.body.append(container);
+
+    parse("bad key=>subroutine: Sub\ne=>end: E\nbad key->e").draw(container);
+
+    expect(document.querySelector('[id="bad keyi"]')).toBeNull();
+  });
+});

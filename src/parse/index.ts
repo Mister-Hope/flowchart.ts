@@ -23,7 +23,9 @@ export const parse = (input = ""): Chart => {
 
     draw(container: HTMLElement | string, options: DrawOptions = {}): void {
       // Nothing is defined in the DSL, so there is nothing to render (and no empty `<svg>` left).
-      if (this.start == null) return;
+      const { start } = this;
+
+      if (start == null) return;
 
       this.diagram?.clean();
 
@@ -33,7 +35,7 @@ export const parse = (input = ""): Chart => {
       diagram.paper.idSuffix = diagram.paper.resolveIdSuffix(Object.keys(this.symbols));
 
       this.diagram = diagram;
-      renderDiagram(this, diagram);
+      renderDiagram(this, diagram, start);
     },
 
     clean(): void {

@@ -346,3 +346,22 @@ describe("security: DOM ids", () => {
     expect(document.querySelector("#st")).not.toBeNull();
   });
 });
+
+describe("security: target and style edge cases", () => {
+  it("treats empty targets as unset", () => {
+    expect(validateTarget("")).toBeNull();
+    expect(validateTarget("   ")).toBeNull();
+  });
+
+  it("rejects overlong targets", () => {
+    expect(() => validateTarget("a".repeat(500))).toThrow(FlowchartSecurityError);
+  });
+
+  it("rejects non-string and non-finite line style values", () => {
+    expect(() => sanitizeLineStyle({ stroke: Number.POSITIVE_INFINITY })).toThrow(
+      FlowchartSecurityError,
+    );
+    expect(() => sanitizeLineStyle({ stroke: true })).toThrow(FlowchartSecurityError);
+    expect(() => sanitizeLineStyle({ stroke: "red\u0000" })).toThrow(FlowchartSecurityError);
+  });
+});

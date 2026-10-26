@@ -139,27 +139,6 @@ export const placeBeside = (
 
   if (side === "right") next.shiftX(symbol.getX() + symbol.width + lineLength);
   else next.shiftX(-(symbol.getX() + symbol.width + lineLength));
-
-  const shift = (): void => {
-    let symbolUnder: FlowChartSymbol | undefined;
-
-    for (const otherSymbol of symbol.chart.symbols) {
-      const diff = Math.abs(otherSymbol.getCenter().x - next.getCenter().x);
-
-      if (otherSymbol.getCenter().y > next.getCenter().y && diff <= next.width / 2) {
-        symbolUnder = otherSymbol;
-        break;
-      }
-    }
-
-    if (symbolUnder == null || next.symbolType === "end") return;
-
-    next.setX(symbolUnder.getX() + symbolUnder.width + lineLength);
-    shift();
-  };
-
-  shift();
-
   next.isPositioned = true;
 
   next.render();

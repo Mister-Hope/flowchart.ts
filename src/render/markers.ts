@@ -1,9 +1,7 @@
 import { SVG_NAMESPACE } from "./types.js";
 
-type ArrowType = "block" | "classic" | "diamond" | "none" | "open" | "oval";
-
 interface ArrowSpec {
-  type: ArrowType;
+  type: ArrowShape;
   /** Marker viewport size along the line, in stroke-width units. */
   width: number;
   /** Marker viewport size across the line, in stroke-width units. */
@@ -26,16 +24,18 @@ export interface ArrowMarker {
 }
 
 /** Marker shape paths, kept identical to raphael's so existing flowcharts look the same. */
-const ARROW_PATHS: Record<string, string> = {
+const ARROW_PATHS = {
   block: "M5,0 0,2.5 5,5z",
   classic: "M5,0 0,2.5 5,5 3.5,3 3.5,2z",
   diamond: "M2.5,0 5,2.5 2.5,5 0,2.5z",
   open: "M6,1 1,3.5 6,6",
   oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z",
-};
+} as const;
+
+type ArrowShape = keyof typeof ARROW_PATHS;
 
 const parseArrowSpec = (spec: string, strokeWidth: number): ArrowSpec | null => {
-  let type: ArrowType = "classic";
+  let type: ArrowShape = "classic";
   let width = 3;
   let height = 3;
   let source = 5;
@@ -45,11 +45,13 @@ const parseArrowSpec = (spec: string, strokeWidth: number): ArrowSpec | null => 
       case "block":
       case "classic":
       case "diamond":
-      case "none":
       case "open":
       case "oval": {
         type = value;
         break;
+      }
+      case "none": {
+        return null;
       }
       case "wide": {
         height = 5;
@@ -72,8 +74,6 @@ const parseArrowSpec = (spec: string, strokeWidth: number): ArrowSpec | null => 
       }
     }
   }
-
-  if (type === "none") return null;
 
   if (type === "open") {
     width += 2;
@@ -129,7 +129,7 @@ export class MarkerRegistry {
     return { url, trim: arrow.trim };
   }
 
-  private getShape(type: string): string {
+  private getShape(type: ArrowShape): string {
     const shapeId = this.shapes.get(type);
 
     if (shapeId != null) return shapeId;
@@ -140,7 +140,7 @@ export class MarkerRegistry {
 
     path.setAttribute("id", id);
     path.setAttribute("stroke-linecap", "round");
-    path.setAttribute("d", ARROW_PATHS[type] ?? ARROW_PATHS.classic);
+    path.setAttribute("d", ARROW_PATHS[type]);
     this.defs.append(path);
     this.shapes.set(type, id);
 
