@@ -53,7 +53,7 @@ export const parse = (input = ""): Chart => {
       this.diagram?.clean();
     },
 
-    options(): ParsedDrawOptions | Record<string, never> {
+    options(): Partial<ParsedDrawOptions> {
       return this.diagram?.options ?? {};
     },
   };
