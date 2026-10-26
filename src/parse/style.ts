@@ -1,5 +1,5 @@
 import { sanitizeLineStyle } from "../security.js";
-import { getStyle, requireSymbol } from "./definition.js";
+import { getStyle, requireSymbol, splitStyleFragments } from "./definition.js";
 import type { Chart } from "./types.js";
 
 /**
@@ -9,7 +9,7 @@ import type { Chart } from "./types.js";
  * @param chart Chart being built.
  */
 export const applyStyleLine = (line: string, chart: Chart): void => {
-  const lineStyleSymbols = line.split("@>");
+  const lineStyleSymbols = splitStyleFragments(line);
 
   for (const [index, current] of lineStyleSymbols.entries()) {
     const next = lineStyleSymbols[index + 1];

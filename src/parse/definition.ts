@@ -5,20 +5,72 @@ import type { Chart } from "./types.js";
 /**
  * Extracts the JSON object of a line style, e.g. `{"stroke":"red"}`.
  *
+ * Parentheses inside JSON strings (e.g. `{"font-family":"Arial (Bold)"}`) do not close the object.
+ *
  * @param line DSL fragment such as `a({"stroke":"red"})`.
- * @returns The JSON text, or `{}` when the line has no parentheses.
+ * @returns The JSON text, or `{}` when the line has no / an unterminated payload.
  */
 export const getStyle = (line: string): string => {
-  const startIndex = line.indexOf("(") + 1;
-  const endIndex = line.indexOf(")");
+  const start = line.indexOf("(");
 
-  if (startIndex > 0 && endIndex > 0) return line.slice(startIndex, endIndex);
+  if (start === -1) return "{}";
+
+  let quoted = false;
+  let escaped = false;
+
+  for (let index = start + 1; index < line.length; index += 1) {
+    const character = line.charAt(index);
+
+    if (escaped) escaped = false;
+    else if (character === "\\") escaped = true;
+    else if (character === '"') quoted = !quoted;
+    else if (!quoted && character === ")") return line.slice(start + 1, index);
+  }
 
   return "{}";
 };
 
 /**
- * Looks up a symbol by the key used in a flow line.
+ * Splits a line-style line on `@>` separators, ignoring separators inside JSON strings.
+ *
+ * @param line Line-style line such as `a@>b({"stroke":"red"})`.
+ * @returns The symbol fragments in order.
+ */
+export const splitStyleFragments = (line: string): string[] => {
+  const fragments: string[] = [];
+  let current = "";
+  let quoted = false;
+  let escaped = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line.charAt(index);
+
+    if (escaped) {
+      current += character;
+      escaped = false;
+    } else if (character === "\\") {
+      current += character;
+      escaped = true;
+    } else if (character === '"') {
+      quoted = !quoted;
+      current += character;
+    } else if (!quoted && character === "@" && line.charAt(index + 1) === ">") {
+      fragments.push(current);
+      current = "";
+      index += 1;
+    } else {
+      current += character;
+    }
+  }
+
+  fragments.push(current);
+
+  return fragments;
+};
+
+/**
+ * Looks up a symbol by the key used in a flow line. Looks up a symbol by the key used in a flow
+ * line.
  *
  * @param line Flow fragment, optionally with a branch specifier.
  * @param chart Parsed chart.
