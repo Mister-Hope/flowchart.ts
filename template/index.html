@@ -90,6 +90,15 @@ st->cond
 cond(no@client)->subc->op->io->e
 cond(yes@translator)->subt->op->io->e
 `,
+        `\
+st=>start: Submit form
+in=>input: Read form values
+op=>operation: Validate input
+out=>output: Show result
+e=>end: Done
+
+st->in->op->out->e
+`,
       ];
 
       examples.forEach((item, index) => {

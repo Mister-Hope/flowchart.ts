@@ -95,7 +95,7 @@ pnpm deps:update   # ncu -u + pnpm install
   does not treat these files as Vitest specs; `playwright.config.ts` starts `e2e/vite.config.ts`,
   which serves the built `dist/` bundle. CI installs Chromium for the Node 24 job only.
 - The renderer was cross-checked against the legacy raphael implementation (screenshots + geometry
-  for the template examples, plus a 33-fixture browser diff). If you touch text metrics, routing or
+  for the template examples, plus a 55-fixture browser diff). If you touch text metrics, routing or
   placement, validate the rendered output against that baseline again; the ad-hoc Playwright
   harness was not committed.
 
@@ -111,7 +111,7 @@ pnpm deps:update   # ncu -u + pnpm install
   go through `src/security.ts` (link/target validation, `sanitizeLineStyle`, `isSafeDomId`). Never
   add an `innerHTML` path, and never write `on*`/`style`/`href` attributes from raw DSL values.
 - Bundle size matters (the user rejected a `ts-deepmerge` dependency for +0.46 kB gzip). Current
-  runtime bundle is ~43.8 kB min / ~12.8 kB gzip; avoid adding runtime dependencies and check
+  runtime bundle is ~46 kB min / ~13.8 kB gzip; avoid adding runtime dependencies and check
   `pnpm build` output when touching shared code.
 
 ## Releasing

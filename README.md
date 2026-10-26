@@ -78,6 +78,83 @@ screen readers a meaningful description of the chart:
 chart.draw("diagram", { label: "Login flow" });
 ```
 
+## API
+
+```ts
+import { parse } from "flowchart.ts";
+
+const chart = parse(dsl); // parse the DSL, nothing is rendered yet
+chart.draw("diagram"); // render into an element or element id
+chart.draw("diagram", options); // render with options
+
+chart.options(); // parsed options (partial before the first draw)
+chart.clean(); // remove the rendered SVG
+chart.symbols; // parsed node definitions, keyed by node name
+chart.start; // parsed start node, or null
+```
+
+`parse()` throws on invalid input: unknown nodes / branches / directions, unsafe links, invalid line
+styles and malformed option values. Errors raised while parsing a line are prefixed with
+`Line <n>:` (and keep their original class, e.g. `FlowchartSecurityError` / `SyntaxError`).
+
+## Options
+
+All draw options are optional. `width`, `height`, `symbols`, `flowstate`, `callbacks` and `label`
+extend the global style options:
+
+| Option                      | Type                            | Default          | Description                                                                    |
+| --------------------------- | ------------------------------- | ---------------- | ------------------------------------------------------------------------------ |
+| `x` / `y`                   | `number`                        | `0`              | Padding around the rendered content                                            |
+| `width` / `height`          | `number \| string`              | content size     | Outer SVG size in px or any CSS length (e.g. `"100%"`); see [Sizing](#sizing)  |
+| `scale`                     | `number`                        | `1`              | Multiplies the automatic content size; ignored when `width` / `height` are set |
+| `text-margin`               | `number`                        | `10`             | Inner padding of node boxes                                                    |
+| `font`                      | `string`                        | —                | `font` shorthand, e.g. `"16px Arial"`                                          |
+| `font-family`               | `string`                        | —                | Font family                                                                    |
+| `font-weight`               | `string \| number`              | —                | Font weight                                                                    |
+| `font-size`                 | `number`                        | `14`             | Font size in px                                                                |
+| `font-color`                | `string`                        | `"black"`        | Text colour                                                                    |
+| `line-width`                | `number`                        | `3`              | Connector width                                                                |
+| `line-length`               | `number`                        | `50`             | Minimum connector length                                                       |
+| `line-color`                | `string`                        | `"black"`        | Connector colour                                                               |
+| `element-color`             | `string`                        | `"black"`        | Node border colour                                                             |
+| `fill`                      | `string`                        | `"white"`        | Node fill colour                                                               |
+| `yes-text` / `no-text`      | `string`                        | `"yes"` / `"no"` | Labels on condition branches                                                   |
+| `arrow-end` / `arrow-start` | `string`                        | `"block"` / —    | Arrow marker names (e.g. `"classic"`)                                          |
+| `arrow-text`                | `string`                        | —                | Arrow marker variant text                                                      |
+| `maxWidth`                  | `number`                        | —                | Wrap node text above this width in px                                          |
+| `roundness`                 | `number`                        | —                | Corner radius for roundable nodes                                              |
+| `class`                     | `string`                        | `"flowchart"`    | CSS class on the `<svg>`                                                       |
+| `label`                     | `string`                        | `"Flowchart"`    | Accessible name rendered as `<title>`; see [Accessibility](#accessibility)     |
+| `symbols`                   | `SymbolStyles`                  | —                | Per-node-type overrides, e.g. `{ operation: { fill: "#eef" } }`                |
+| `flowstate`                 | `FlowStateStyles`               | —                | Per-flowstate overrides, e.g. `{ past: { fill: "#ddd" } }`                     |
+| `callbacks`                 | `Record<string, ClickCallback>` | —                | Handlers for `:$name` click callbacks                                          |
+
+```ts
+chart.draw("diagram", {
+  width: "100%",
+  label: "Order flow",
+  "line-width": 2,
+  symbols: { operation: { fill: "#eef" } },
+  flowstate: { past: { fill: "#ddd" } },
+});
+```
+
+`DrawOptions`, `SVGOptions`, `ParsedDrawOptions`, `SymbolOptions`, `LineStyle`, `FlowStateStyles`,
+`SymbolType`, `Direction`, `Chart` and `ClickCallback` are exported from the package entry.
+
+## Browser behaviour and limits
+
+- Text is measured with native `getBBox()` when the container is connected to the document. Hidden
+  containers (`display: none`) fall back to deterministic estimates so the chart does not collapse.
+- Detached containers are measured through a temporary host and keep the same size as a visible
+  chart; attach the container afterwards to show it.
+- Charts are laid out once at draw time; resizing the container does not re-layout the diagram (the
+  SVG keeps the content viewBox and scales with CSS).
+- Plain `next` chains of any length are rendered iteratively. Extremely deep **condition / parallel**
+  nesting (thousands of levels) still uses recursive layout and can exceed the JavaScript call stack.
+- A container holds one chart at a time: drawing a second chart into the same container throws;
+  call `chart.clean()` or use a fresh container. Charts in different containers are independent.
+
 ## Requirements
 
 - **ESM-only**: the package ships ES modules (`"type": "module"`, no CommonJS entry); use it with a bundler or an ESM-capable runtime
@@ -103,7 +180,7 @@ para(path1, bottom)->sub1(right)->op1
 para(path2, top)->op1
 ```
 
-![Example Flowchart](/imgs/example.svg)
+![Example Flowchart](./imgs/example.svg)
 
 ## Node Syntax
 
@@ -219,7 +296,7 @@ para=>parallel: parallel
 Connections are defined in their own section below the node definitions.
 The `->` operator specifies a connection from one node to another like `nodeVar1->nodeVar2->nodeVar3`.
 
-Not all nodes need to be specified in one string and can be separaged like so
+Not all nodes need to be specified in one string and can be separated like so
 
 ```flowchart
 nodeVar1->nodeVar2

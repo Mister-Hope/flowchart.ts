@@ -24,7 +24,8 @@
     "url": "git+https://github.com/Mister-Hope/flowchart.ts.git"
   },
   "files": [
-    "dist"
+    "dist",
+    "imgs"
   ],
   "type": "module",
   "sideEffects": false,
