@@ -35,17 +35,47 @@ on:
         default: false
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: publish
   cancel-in-progress: false
 
 jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/setup@v3
+        with:
+          runtime: node@^24.22.1
+
+      - name: Install deps
+        run: pnpm ci
+
+      - name: Linter test
+        run: pnpm lint:check
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Unit test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
   publish:
     name: Publish package
+    needs: verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - name: Check if user is allowed to publish
         if: ${{ github.actor != 'Mister-Hope' }}
@@ -71,18 +101,6 @@ jobs:
 
       - name: Install deps
         run: pnpm ci
-
-      - name: Linter test
-        run: pnpm lint:check
-
-      - name: Type check
-        run: pnpm type-check
-
-      - name: Unit test
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
 
       - name: Config git
         run: |
