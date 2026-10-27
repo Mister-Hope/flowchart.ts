@@ -8,5 +8,6 @@ export interface Chart {
   diagram: FlowChart | null;
   draw: (container: HTMLElement | string, options?: DrawOptions) => void;
   clean: () => void;
-  options: () => ParsedDrawOptions | Record<string, never>;
+  /** Parsed draw options, or an empty object before the first `draw()` call. */
+  options: () => Partial<ParsedDrawOptions>;
 }

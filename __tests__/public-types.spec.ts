@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { parse } from "../src/index.js";
 import type {
@@ -40,7 +40,10 @@ describe("public option types", () => {
 
     chart.draw(container, options);
 
-    const parsed = chart.options() as ParsedDrawOptions;
+    const parsed = chart.options();
+
+    expectTypeOf(parsed).toEqualTypeOf<Partial<ParsedDrawOptions>>();
+
     const svgOptions: Partial<SVGOptions> = { "line-width": 2 };
 
     expect(parsed["line-width"]).toBe(2);
