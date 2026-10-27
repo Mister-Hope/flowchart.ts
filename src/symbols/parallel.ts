@@ -83,8 +83,6 @@ export class Parallel extends FlowChartSymbol {
 
   path3?: (nextSymbol: FlowChartSymbol) => FlowChartSymbol;
 
-  textMargin?: number;
-
   constructor(chart: FlowChart, options: SymbolOptions) {
     const symbol = chart.paper.rect({ x: 0, y: 0, width: 0, height: 0 });
 
@@ -93,7 +91,6 @@ export class Parallel extends FlowChartSymbol {
     this.path1_annotation = options.path1_annotation ?? "";
     this.path2_annotation = options.path2_annotation ?? "";
     this.path3_annotation = options.path3_annotation ?? "";
-    this.textMargin = this.getAttr("text-margin");
 
     const direction1 = options.direction_path1 ?? null;
     const direction2 = options.direction_path2 ?? null;
